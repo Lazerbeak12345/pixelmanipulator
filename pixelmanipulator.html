@@ -1,0 +1,578 @@
+<!doctype html>
+<html>
+	<head>
+		<!--Declarations and types (media objs and favicons)-->
+		<title>Pixel Manipulator</title>
+		<!--CSS files-->
+		<style>
+		body{
+			background-color:grey;
+		}
+		#canvas{/*This is where the pixels are being renderd*/
+			position:fixed;
+			top:0;
+			left:0;
+		}
+		#zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
+			position:fixed;
+			top:0;
+			right:0;
+			/*background-color:black;*/
+			z-index:999;
+			height:100%
+		}
+		</style>
+	</head>
+	<body>
+		<!--Content-->
+		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
+		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
+			<canvas id="zoom" width="400" height="400"></canvas><br/><!--This is the zoomed-in box that the user can interact with-->
+			<input id="file" type="file" /><!--This is where the user can upload an image that will then applied to the canvas, and will allow for coming back from saving-->
+			<button id="play" alt="Play/Resume/Rewind" title="Play/Resume">►</button><!--The play button that changes into a restart button when pressed, unless it's paused, then it's a play button again.-->
+			<button id="pause" alt="Pause" title="Pause">▌▌</button><!--This pauses everything in #canvas-->
+			<button id="oneFrameAtATime" onclick="loop();" alt="Next frame" title="Next frame">►▌</button><!--This executes the function called by setInterval in the play button once per click, iterating one frame at a time-->
+			<!--button id="record" alt="Toggle Recording" title="Toggle Recording">•</button><!--This records #canvas as a .gif file and once clicked a second time, allows for the user to download the .gif. (it also resets the .gif if clicked again, and starts recoring again)-->
+			<br/>
+			Width: <input id="width"/><br/>
+			Height: <input id="height" /><br/>
+			Zoom Width: <input id="zoomWidthElm"/><br/>
+			Zoom Height: <input id="zoomHeightElm"/><br/>
+			<br/>
+			Normal click: 
+			<select class="elmDrop" onchange="normalClickChange(this)">
+				<option>Acid</option>
+				<option>Blocks</option>
+				<option>Conductor</option>
+				<option selected="selected">Conway's Game Of Life</option>
+				<option>Electricity</option>
+				<option>FadingElectricity</option>
+				<option>No-loop Conway's Game Of Life</option>
+				<option>Water</option>
+			</select>
+			<br/>
+			Ctrl click: 
+			<select class="elmDrop" onchange="ctrlClickChange(this)">
+				<option>Acid</option>
+				<option selected="selected">Blocks</option>
+				<option>Conductor</option>
+				<option>Conway's Game Of Life</option>
+				<option>Electricity</option>
+				<option>FadingElectricity</option>
+				<option>No-loop Conway's Game Of Life</option>
+				<option>Water</option>
+			</select><br/>
+			<span style="position:absolute; right:0px; bottom:0px">v1.0.0-alfa-30.86</span>
+		</div>
+		<!--script src="https://jnordberg.github.io/gif.js/gif.js?v=3"></script><!---->
+		<!--script src="https://jnordberg.github.io/gif.js/gif.worker.js"></script><!---->
+		<script>
+var canvas = document.getElementById('canvas'),
+	ctx = canvas.getContext('2d'),
+	zoomelm = document.getElementById('zoom'),
+	zoomctx = zoomelm.getContext('2d'),
+	file = document.getElementById('file'),
+	normalClick=[0,255,0,255],
+	ctrlClick=[127,127,127,255],
+	//recording=false,
+	//gifsettings={workers: 2, workerScript:"https://jnordberg.github.io/gif.js/gif.worker.js", quality: 10},
+	//gif={},
+	elementTypeMap={
+		"Acid":[110, 162, 10,255],
+		"Conway's Game Of Life":[0,255,0,255],
+		"No-loop Conway's Game Of Life":[0,150,0,255],
+		"Blocks":[127,127,127,255],
+		"Water":[23,103,167,255],
+		"Electricity":[148, 133, 0,255],
+		"FadingElectricity":[148, 133, 0,254],
+		"Conductor":[67,75,77,255],
+	};
+
+ctx.imageSmoothingEnabled=false;
+ctx.mozImageSmoothingEnabled=false;
+ctx.webkitImageSmoothingEnabled=false;
+ctx.msImageSmoothingEnabled=false;
+
+zoomctx.imageSmoothingEnabled=false;
+zoomctx.mozImageSmoothingEnabled=false;
+zoomctx.webkitImageSmoothingEnabled=false;
+zoomctx.msImageSmoothingEnabled=false;
+
+var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height),
+	data = imageData.data,
+	i,
+	mouseX,
+	mouseY;
+canvas.addEventListener('click', zoom);
+function getPixel(x,y,loop) {
+//               (#,#)
+	loop=typeof loop!=="undefined"?loop:true;
+	if (loop) {
+		while (x<0) {
+			x=canvas.width+x;
+		}
+		while (y<0) {
+			y=canvas.height+y;
+		}
+		
+		while (x>=canvas.width) {
+			x=x-canvas.width;
+		}
+		while (y>=canvas.height) {
+			y=y-canvas.height;
+		}
+	}else{
+		if (x<0||x>=canvas.width||y<0||x>=canvas.height) return [127,127,127,255]
+	}
+	
+	return data.slice(((canvas.width*y)+x)*4,(((canvas.width*y)+x)*4)+4);
+};
+function setPixel(x,y,rgb,val,loop) {
+/*               (#,#,#  ,#  )
+rgb:
+ 0=red
+ 1=green
+ 2=blue
+ 3=alfa
+*/
+	loop=typeof loop!=="undefined"?loop:true;
+	if (loop) {
+		while (x<0) {
+			x=canvas.width+x;
+		}
+		while (y<0) {
+			y=canvas.height+y;
+		}
+		
+		while (x>=canvas.width) {
+			x=x-canvas.width;
+		}
+		while (y>=canvas.height) {
+			y=y-canvas.height;
+		}
+	}else{
+		if (x<0||x>=canvas.width||y<0||x>=canvas.height) return;
+	}
+	
+	data[(((canvas.width*y)+x)*4)+rgb]=val;
+};
+function apply() {
+	ctx.putImageData(imageData, 0, 0);
+}
+
+function makeConfirmColor(x,y,f,loop) {
+	loop=typeof loop!=="undefined"?loop:true;
+	var colors=f(x,y,loop);
+	return function(r,g,b,a) {
+		return colors[0]==(r||0)&&colors[1]==(g||0)&&colors[2]==(b||0)&&colors[3]==(a||0);
+	}
+}
+function loop() {
+	var old=[];
+	for (i=0;i<data.length;i++) {
+		old[i]=data[i];
+	}
+	//throw old
+	function getOldPixel(x,y,loop) {
+	//                  (#,#)
+		loop=typeof loop!=="undefined"?loop:true;
+		if (loop) {
+			while (x<0) {
+				x=canvas.width+x;
+			}
+			while (y<0) {
+				y=canvas.height+y;
+			}
+			
+			while (x>=canvas.width) {
+				x=x-canvas.width;
+			}
+			while (y>=canvas.height) {
+				y=y-canvas.height;
+			}
+		}else{
+			if (x<0||x>=canvas.width||y<0||x>=canvas.height) return [127,127,127,255]
+		}
+		
+		return old.slice(((canvas.width*y)+x)*4,(((canvas.width*y)+x)*4)+4);
+	};
+	for (var x=0; x<canvas.width; x++) {
+		for (var y=0; y<canvas.height; y++) {
+			var confirmColor=makeConfirmColor(x,y,getOldPixel);//initiallises a confirmColor(), that returns a bool of if this pixel is the inputted color
+				
+			
+			if (confirmColor(0,150,0,255)) {//no-loop conways game of life
+				var nearbyTotalG=(makeConfirmColor(x-1,y-1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x-1,y,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x-1,y+1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x,y-1,getOldPixel,false)(0,150,0,255))+
+				//(makeConfirmColor(x,y,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x,y+1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x+1,y-1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x+1,y,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x+1,y+1,getOldPixel,false)(0,150,0,255));
+				if(nearbyTotalG<2||nearbyTotalG>=4) {
+					setPixel(x,y,1,0);//Any alive cell that is touching less than two alive neighbours dies.
+					//Any alive cell touching four or more alive neighbours dies.
+				}
+			}else if (confirmColor(0,255,0,255)) {//conways game of life
+				var nearbyTotalG=(makeConfirmColor(x-1,y-1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x-1,y,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x-1,y+1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x,y-1,getOldPixel)(0,255,0,255))+
+				//(makeConfirmColor(x,y,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x,y+1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x+1,y-1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x+1,y,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x+1,y+1,getOldPixel)(0,255,0,255));
+				if(nearbyTotalG<2||nearbyTotalG>=4) {
+					setPixel(x,y,1,0);//Any alive cell that is touching less than two alive neighbours dies.
+					//Any alive cell touching four or more alive neighbours dies.
+				}
+			}else if (confirmColor(0,0,0,255)) {
+				var noLoopNearbyTotalG=(makeConfirmColor(x-1,y-1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x-1,y,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x-1,y+1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x,y-1,getOldPixel,false)(0,150,0,255))+
+				//(makeConfirmColor(x,y,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x,y+1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x+1,y-1,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x+1,y,getOldPixel,false)(0,150,0,255))+
+				(makeConfirmColor(x+1,y+1,getOldPixel,false)(0,150,0,255));
+				if(noLoopNearbyTotalG===3) {
+					setPixel(x,y,0,0);//Any dead cell touching exactly three alive neighbours becomes alive.
+					setPixel(x,y,1,150);
+					setPixel(x,y,2,0);
+					setPixel(x,y,3,255);
+				}
+				var nearbyTotalG=(makeConfirmColor(x-1,y-1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x-1,y,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x-1,y+1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x,y-1,getOldPixel)(0,255,0,255))+
+				//(makeConfirmColor(x,y,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x,y+1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x+1,y-1,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x+1,y,getOldPixel)(0,255,0,255))+
+				(makeConfirmColor(x+1,y+1,getOldPixel)(0,255,0,255));
+				if(nearbyTotalG===3) {
+					setPixel(x,y,0,0);//Any dead cell touching exactly three alive neighbours becomes alive.
+					setPixel(x,y,1,255);
+					setPixel(x,y,2,0);
+					setPixel(x,y,3,255);
+				}
+			}else if (confirmColor(23,103,167,255)) {//water
+				var rand=Math.round(Math.random()*2)-1,
+					factor=0;
+				while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)(0,0,0,255))&&factor<2) {
+					factor++;
+				}
+				if (factor<=2&&(makeConfirmColor(x+rand,y+factor,getPixel,false)(0,0,0,255))){
+					setPixel(x,y,0,0,false);
+					setPixel(x,y,1,0,false);
+					setPixel(x,y,2,0,false);
+					setPixel(x,y,3,255,false);
+					setPixel(x+rand,y+factor,0,23,false);
+					setPixel(x+rand,y+factor,1,103,false);
+					setPixel(x+rand,y+factor,2,167,false);
+					setPixel(x+rand,y+factor,3,255,false);
+				}
+			}else if (confirmColor(110,162,10,255)) {//acid
+				var rand=Math.round(Math.random()*2)-1,
+					factor=0;
+				while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)(0,0,0,255)||Math.random()<=.3)&&factor<3) {
+					factor++;
+				}
+				if (factor<=3){
+					if (Math.random()>.3) {
+						setPixel(x,y,0,0,false);
+						setPixel(x,y,1,0,false);
+						setPixel(x,y,2,0,false);
+						setPixel(x,y,3,255,false);
+					}
+					setPixel(x+rand,y+factor,0,110,false);
+					setPixel(x+rand,y+factor,1,162,false);
+					setPixel(x+rand,y+factor,2,10,false);
+					setPixel(x+rand,y+factor,3,255,false);
+				}
+			}else if (confirmColor(148, 133, 0,254)) {//fadingelectricity
+				setPixel(x,y,0,67,false);
+				setPixel(x,y,1,75,false);
+				setPixel(x,y,2,77,false);
+				setPixel(x,y,3,255,false);
+			}else if (confirmColor(148, 133, 0,255)) {//electricity
+				setPixel(x,y,0,148,false);
+				setPixel(x,y,1,133,false);
+				setPixel(x,y,2,0,false);
+				setPixel(x,y,3,254,false);
+				if (makeConfirmColor(x-1,y-1,getOldPixel)(67,75,77,255)) {
+					setPixel(x-1,y-1,0,148,false);
+					setPixel(x-1,y-1,1,133,false);
+					setPixel(x-1,y-1,2,0,false);
+					setPixel(x-1,y-1,3,255,false);
+				}
+				if (makeConfirmColor(x,y-1,getOldPixel)(67,75,77,255)) {
+					setPixel(x,y-1,0,148,false);
+					setPixel(x,y-1,1,133,false);
+					setPixel(x,y-1,2,0,false);
+					setPixel(x,y-1,3,255,false);
+				}
+				if (makeConfirmColor(x+1,y-1,getOldPixel)(67,75,77,255)) {
+					setPixel(x+1,y-1,0,148,false);
+					setPixel(x+1,y-1,1,133,false);
+					setPixel(x+1,y-1,2,0,false);
+					setPixel(x+1,y-1,3,255,false);
+				}
+				if (makeConfirmColor(x-1,y,getOldPixel)(67,75,77,255)) {
+					setPixel(x-1,y,0,148,false);
+					setPixel(x-1,y,1,133,false);
+					setPixel(x-1,y,2,0,false);
+					setPixel(x-1,y,3,255,false);
+				}
+				if (makeConfirmColor(x,y,getOldPixel)(67,75,77,255)) {
+					setPixel(x,y,0,148,false);
+					setPixel(x,y,1,133,false);
+					setPixel(x,y,2,0,false);
+					setPixel(x,y,3,255,false);
+				}
+				if (makeConfirmColor(x+1,y,getOldPixel)(67,75,77,255)) {
+					setPixel(x+1,y,0,148,false);
+					setPixel(x+1,y,1,133,false);
+					setPixel(x+1,y,2,0,false);
+					setPixel(x+1,y,3,255,false);
+				}
+				if (makeConfirmColor(x-1,y+1,getOldPixel)(67,75,77,255)) {
+					setPixel(x-1,y+1,0,148,false);
+					setPixel(x-1,y+1,1,133,false);
+					setPixel(x-1,y+1,2,0,false);
+					setPixel(x-1,y+1,3,255,false);
+				}
+				if (makeConfirmColor(x,y+1,getOldPixel)(67,75,77,255)) {
+					setPixel(x,y+1,0,148,false);
+					setPixel(x,y+1,1,133,false);
+					setPixel(x,y+1,2,0,false);
+					setPixel(x,y+1,3,255,false);
+				}
+				if (makeConfirmColor(x+1,y+1,getOldPixel)(67,75,77,255)) {
+					setPixel(x+1,y+1,0,148,false);
+					setPixel(x+1,y+1,1,133,false);
+					setPixel(x+1,y+1,2,0,false);
+					setPixel(x+1,y+1,3,255,false);
+				}
+			}else if (confirmColor(127,127,127,255)||confirmColor(67,75,77,255)) {//block, conductor (do nothing)
+			}else{
+				console.log("Nothing happened with",getOldPixel(x,y));
+			}
+		}
+	}
+	apply();
+	zoom({
+		layerX:mouseX,
+		layerY:mouseY,
+	});
+	//if (recording) gif.addFrame(canvas);
+};
+var loopint=0;
+file.addEventListener('change', function(e) {
+    var img = new Image;
+    img.src = URL.createObjectURL(e.target.files[0]);
+    img.onload = function() {
+        ctx.drawImage(this, 0,0);
+		this.style.display = 'none';
+		canvas = document.getElementById('canvas');
+		canvas.width=document.getElementById("width").value||100;
+		canvas.height=document.getElementById("height").value||100;
+		canvas.width=document.getElementById("width").value||100;
+		canvas.height=document.getElementById("height").value||100;
+		ctx = canvas.getContext('2d');
+		imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		data=imageData.data;
+        document.getElementById('pause').disabled=true;
+    }
+});
+
+document.getElementById("play").addEventListener('click',function() {
+	if (!document.getElementById('pause').disabled) {
+		clearInterval(loopint);
+		canvas.width=document.getElementById("width").value||100;
+		canvas.height=document.getElementById("height").value||100;
+		imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		data = imageData.data;
+		for (i=0; i < data.length; i+=4) {
+			data[i]=0;
+			data[i+1]=0;
+			data[i+2]=0;
+			data[i+3]=255;
+		}
+		ctx.putImageData(imageData, 0, 0);
+	}
+	document.getElementById('pause').disabled = false;
+	document.getElementById('play').innerHTML = "◄";
+	loopint=setInterval(loop,1);
+});
+/*document.getElementById("record").addEventListener('click',function() {
+	if (!recording) {
+		gif = new GIF(gifsettings);
+		gif.addFrame(canvas);
+		gif.on('finished', function(blob) {
+			console.log(blob);
+		  //window.open(URL.createObjectURL(blob));
+		});
+	}else{
+		gif.render();
+	}
+	this.innerText=((recording=!recording)?'◘':'•');
+});*/
+document.getElementById("pause").addEventListener('click',function() {
+	document.getElementById('pause').disabled = true;
+	document.getElementById('play').innerHTML = "►";
+	clearInterval(loopint);
+});
+function ctrlClickChange(th) {
+	ctrlClick=elementTypeMap[th.value];
+}
+function normalClickChange(th) {
+	normalClick=elementTypeMap[th.value];
+}
+var zoomClick=function(e) {
+	var old=[];
+	for (i=0;i<data.length;i++) {
+		old[i]=data[i];
+	}
+	//throw old
+	function getOldPixel(x,y,loop) {
+	//                  (#,#)
+		loop=typeof loop!=="undefined"?loop:true;
+		if (loop) {
+			while (x<0) {
+				x=canvas.width+x;
+			}
+			while (y<0) {
+				y=canvas.height+y;
+			}
+			
+			while (x>=canvas.width) {
+				x=x-canvas.width;
+			}
+			while (y>=canvas.height) {
+				y=y-canvas.height;
+			}
+		}else{
+			if (x<0||x>=canvas.width||y<0||x>=canvas.height) return [127,127,127,255]
+		}
+		
+		return old.slice(((canvas.width*y)+x)*4,(((canvas.width*y)+x)*4)+4);
+	};
+	var zoomXPos=Math.floor(e.layerX/20)+(mouseX-10),
+		zoomYPos=Math.floor(e.layerY/20)+(mouseY-10),
+		confirmColor=makeConfirmColor(zoomXPos,zoomYPos,getOldPixel);
+	if (e.ctrlKey) {
+		if (confirmColor(ctrlClick[0],ctrlClick[1],ctrlClick[2],ctrlClick[3])) {				
+			setPixel(zoomXPos,zoomYPos,0,0);	
+			setPixel(zoomXPos,zoomYPos,1,0);	
+			setPixel(zoomXPos,zoomYPos,2,0);	
+			setPixel(zoomXPos,zoomYPos,3,255);
+		}else{
+			setPixel(zoomXPos,zoomYPos,0,ctrlClick[0]);
+			setPixel(zoomXPos,zoomYPos,1,ctrlClick[1]);
+			setPixel(zoomXPos,zoomYPos,2,ctrlClick[2]);
+			setPixel(zoomXPos,zoomYPos,3,ctrlClick[3]);
+		}
+	}else{//green
+		if (confirmColor(normalClick[0],normalClick[1],normalClick[2],normalClick[3])) {				
+			setPixel(zoomXPos,zoomYPos,0,0);	
+			setPixel(zoomXPos,zoomYPos,1,0);	
+			setPixel(zoomXPos,zoomYPos,2,0);	
+			setPixel(zoomXPos,zoomYPos,3,255);
+		}else{
+			setPixel(zoomXPos,zoomYPos,0,normalClick[0]);
+			setPixel(zoomXPos,zoomYPos,1,normalClick[1]);
+			setPixel(zoomXPos,zoomYPos,2,normalClick[2]);
+			setPixel(zoomXPos,zoomYPos,3,normalClick[3]);
+		}
+	}
+	apply();
+	zoom({
+		layerX:mouseX,
+		layerY:mouseY,
+	});
+};
+document.getElementById('zoom').addEventListener('click',zoomClick);
+document.getElementById('zoom').addEventListener('drag',zoomClick);
+
+//loop();
+function zoom(event) {
+	mouseX = event.layerX;
+	mouseY = event.layerY;	
+	
+	zoomctx.clearRect(0,0,20*20,20*20);
+	zoomctx.drawImage(canvas,
+					  /*Math.abs*/(mouseX - 10),
+					  /*Math.abs*/(mouseY - 10),
+					  20, 20,
+					  0, 0,
+					  20*20, 20*20);
+	zoomctx.strokeStyle="gray";
+	zoomctx.beginPath();
+	for (i=1; i<20; i++) {
+		zoomctx.moveTo(i*20,0);
+		zoomctx.lineTo(i*20,400);
+	}
+	for (i=1; i<20; i++) {
+		zoomctx.moveTo(0,i*20);
+		zoomctx.lineTo(400,i*20);
+	}
+	zoomctx.stroke();
+};
+function zoomtlkheih(event) {
+	mouseX = event.layerX;
+	mouseY = event.layerY;	
+	var xinarow=zoomelm.width=document.getElementById("zoomWidthElm").value||20,
+		yinarow=zoomelm.height=document.getElementById("zoomHeightElm").value||20;
+	zoomelm.width*=20;
+	zoomelm.height*=20;
+	zoomctx.clearRect(0,0,20*xinarow,20*yinarow);
+	zoomctx.drawImage(canvas,
+					  /*Math.abs*/(mouseX - 10),
+					  /*Math.abs*/(mouseY - 10),
+					  20, 20,
+					  0, 0,
+					  20*xinarow, 20*yinarow);
+	zoomctx.strokeStyle="gray";
+	zoomctx.beginPath();
+	for (i=1; i<xinarow; i++) {
+		zoomctx.moveTo(i*xinarow,0);
+		zoomctx.lineTo(i*xinarow,20*xinarow);
+	}
+	for (i=1; i<yinarow; i++) {
+		zoomctx.moveTo(0,i*20*yinarow);
+		zoomctx.lineTo(20*yinarow,i*20*yinarow);
+	}
+	zoomctx.stroke();
+};
+//*
+var invert = function() {
+	for (i = 0; i < data.length; i += 4) {
+	  data[i]     = 255 - data[i];     // red
+	  data[i + 1] = 255 - data[i + 1]; // green
+	  data[i + 2] = 255 - data[i + 2]; // blue
+	}
+	ctx.putImageData(imageData, 0, 0);
+};
+
+var grayscale = function() {
+	for (i = 0; i < data.length; i += 4) {
+	  var avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+	  data[i]     = avg; // red
+	  data[i + 1] = avg; // green
+	  data[i + 2] = avg; // blue
+	}
+	ctx.putImageData(imageData, 0, 0);
+};
+//*/
+zoom({
+	layerX:0,
+	layerY:0,
+});
+		</script>
+	</body>
+</html>
