@@ -1,2 +1,2 @@
 # pixelmanipulator
-A super powerfull library for cellular automataon html5 canvas elements
+A super powerfull library for cellular automation on html5 canvas elements
