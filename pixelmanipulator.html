@@ -32,7 +32,7 @@
 			<button id="play" alt="Play/Resume/Rewind" title="Play/Resume">►</button><!--The play button that changes into a restart button when pressed, unless it's paused, then it's a play button again.-->
 			<button id="pause" alt="Pause" title="Pause">▌▌</button><!--This pauses everything in #canvas-->
 			<button id="oneFrameAtATime" onclick="loop();" alt="Next frame" title="Next frame">►▌</button><!--This executes the function called by setInterval in the play button once per click, iterating one frame at a time-->
-			<!--button id="record" alt="Toggle Recording" title="Toggle Recording">•</button><!--This records #canvas as a .gif file and once clicked a second time, allows for the user to download the .gif. (var it also resets the .gif if clicked again, and starts recoring again)-->
+			<!--button id="record" alt="Toggle Recording" title="Toggle Recording">•</button><!--This records #canvas as a .gif file and once clicked a second time, allows for the user to download the .gif. (it also resets the .gif if clicked again, and starts recoring again)-->
 			<br/>
 			Width: <input id="width"/><br/>
 			Height: <input id="height" /><br/>
@@ -64,7 +64,7 @@
 				<option>Rule 110</option>
 				<option>Water</option>
 			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.0.0-alfa-38.97</span>
+			<span style="position:absolute; right:0px; bottom:0px">v1.0.0-alfa-38.100</span>
 		</div>
 		<!--script src="https://jnordberg.github.io/gif.js/gif.js?v=3"></script><!---->
 		<!--script src="https://jnordberg.github.io/gif.js/gif.worker.js"></script><!---->
@@ -282,7 +282,7 @@ document.getElementById("play").addEventListener('click',function() {
 			for (var ii=0; ii <=2; ii++) data[i+ii]=0;
 			data[i+3]=255;
 		}
-		ctx.putImageData(var imageData, 0, 0);
+		ctx.putImageData(imageData, 0, 0);
 	}
 	document.getElementById('pause').disabled = false;
 	document.getElementById('play').innerHTML = "◄";
@@ -344,8 +344,8 @@ function zoom(event) {
 	zoomctx.strokeStyle="gray";
 	zoomctx.beginPath();
 	for (var i=1; i<(zoomelm.width/20); i++) {
-		zoomctx.moveTo(var i*20,0);
-		zoomctx.lineTo(var i*20,zoomelm.height);
+		zoomctx.moveTo(i*20,0);
+		zoomctx.lineTo(i*20,zoomelm.height);
 	}
 	for (var i=1; i<(zoomelm.height/20); i++) {
 		zoomctx.moveTo(0,i*20);
