@@ -28,11 +28,11 @@
 		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
 		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
 			<canvas id="zoom" width="400" height="400"></canvas><br/><!--This is the zoomed-in box that the user can interact with-->
-			<input id="file" type="file" /><!--This is where the user can upload an image that will then applied to the canvas, and will allow for coming back from saving-->
-			<button id="play" alt="Play/Resume/Rewind" title="Play/Resume">►</button><!--The play button that changes into a restart button when pressed, unless it's paused, then it's a play button again.-->
+			<input id="file" type="file" /><!--This is where the user can upload an image that will then applied to the canvas,and will allow for coming back from saving-->
+			<button id="play" alt="Play/Resume/Rewind" title="Play/Resume">►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
 			<button id="pause" alt="Pause" title="Pause">▌▌</button><!--This pauses everything in #canvas-->
-			<button id="oneFrameAtATime" onclick="loop();" alt="Next frame" title="Next frame">►▌</button><!--This executes the function called by setInterval in the play button once per click, iterating one frame at a time-->
-			<!--button id="record" alt="Toggle Recording" title="Toggle Recording">•</button><!--This records #canvas as a .gif file and once clicked a second time, allows for the user to download the .gif. (it also resets the .gif if clicked again, and starts recoring again)-->
+			<button id="oneFrameAtATime" onclick="loop();" alt="Next frame" title="Next frame">►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+			<!--button id="record" alt="Toggle Recording" title="Toggle Recording">•</button><!--This records #canvas as a .gif file and once clicked a second time,allows for the user to download the .gif. (it also resets the .gif if clicked again,and starts recoring again)-->
 			<br/>
 			Width: <input id="width"/><br/>
 			Height: <input id="height" /><br/>
@@ -47,8 +47,12 @@
 				<option selected="selected">Conway's Game Of Life</option>
 				<option>Electricity</option>
 				<option>FadingElectricity</option>
+				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
+				<option>Rule 30</option>
+				<option>Rule 90</option>
 				<option>Rule 110</option>
+				<option>Rule 184</option>
 				<option>Water</option>
 			</select>
 			<br/>
@@ -60,11 +64,31 @@
 				<option>Conway's Game Of Life</option>
 				<option>Electricity</option>
 				<option>FadingElectricity</option>
+				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
+				<option>Rule 30</option>
+				<option>Rule 90</option>
 				<option>Rule 110</option>
+				<option>Rule 184</option>
 				<option>Water</option>
 			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.0.0-alfa-38.100</span>
+			Alt click: 
+			<select class="elmDrop" onchange="altClickChange(this)">
+				<option>Acid</option>
+				<option>Blocks</option>
+				<option>Conductor</option>
+				<option>Conway's Game Of Life</option>
+				<option>Electricity</option>
+				<option>FadingElectricity</option>
+				<option>Highlife</option>
+				<option>No-loop Conway's Game Of Life</option>
+				<option>Rule 30</option>
+				<option>Rule 90</option>
+				<option>Rule 110</option>
+				<option>Rule 184</option>
+				<option selected="selected">Water</option>
+			</select><br/>
+			<span style="position:absolute; right:0px; bottom:0px">v1.0.0-alfa-46.110</span>
 		</div>
 		<!--script src="https://jnordberg.github.io/gif.js/gif.js?v=3"></script><!---->
 		<!--script src="https://jnordberg.github.io/gif.js/gif.worker.js"></script><!---->
@@ -74,28 +98,34 @@ var canvas = document.getElementById('canvas'),
 	zoomelm = document.getElementById('zoom'),
 	zoomctx = zoomelm.getContext('2d'),
 	file = document.getElementById('file'),
-	normalClick=[0,255,0,255],
-	ctrlClick=[127,127,127,255],
-	//recording=false,
-	//gifsettings={workers: 2, workerScript:"https://jnordberg.github.io/gif.js/gif.worker.js", quality: 10},
-	//gif={},
 	elementTypeMap={
-		"Acid":[110, 162, 10,255],
+		"Acid":[110,162,10,255],
 		"Blocks":[127,127,127,255],
 		"Conductor":[67,75,77,255],
 		"Conway's Game Of Life":[0,255,0,255],
-		"Electricity":[148, 133, 0,255],
-		"FadingElectricity":[148, 133, 0,254],
+		"Electricity":[148,133,0,255],
+		"FadingElectricity":[148,133,0,254],
+		"Highlife":[0,255,128],
 		"No-loop Conway's Game Of Life":[0,150,0,255],
+		"Rule 30":[255,0,255,255],
+		"Rule 90":[147,112,219,255],
 		"Rule 110":[128,0,128,255],
+		"Rule 184":[255,51,153,255],
 		"Water":[23,103,167,255],
 		"blank":[0,0,0,255]
 	},
-	imageData = ctx.getImageData(0, 0, canvas.width, canvas.height),
+	normalClick="Conway's Game Of Life",
+	ctrlClick="Blocks",
+	altClick="Water",
+	//recording=false,
+	//gifsettings={workers: 2,workerScript:"https://jnordberg.github.io/gif.js/gif.worker.js",quality: 10},
+	//gif={},
+	imageData = ctx.getImageData(0,0,canvas.width,canvas.height),
 	data = imageData.data,
 	mouseX,
-	mouseY;
-canvas.addEventListener('click', zoom);
+	mouseY,
+	row=0;
+canvas.addEventListener('click',zoom);
 function createGetPixel(d) {
 	return (function (x,y,loop) {
 	//               (#,#)
@@ -115,69 +145,54 @@ function createGetPixel(d) {
 				y=y-canvas.height;
 			}
 		}else{
-			if (x<0||x>=canvas.width||y<0||x>=canvas.height) return [127,127,127,255]
+			if (x<0||x>=canvas.width||y<0||x>=canvas.height) return "Blocks";
 		}
 		
 		return d.slice(((canvas.width*y)+x)*4,(((canvas.width*y)+x)*4)+4);
 	});
 };
 var getPixel=createGetPixel(data);
-function setPixel(x,y,rgb,val,loop) {
-/*               (#,#,#  ,#  )
-rgb:
- 0=red
- 1=green
- 2=blue
- 3=alfa
-*/
-	loop=typeof loop!=="undefined"?loop:true;
-	if (loop) {
-		while (x<0) {
-			x=canvas.width+x;
-		}
-		while (y<0) {
-			y=canvas.height+y;
-		}
-		
-		while (x>=canvas.width) {
-			x=x-canvas.width;
-		}
-		while (y>=canvas.height) {
-			y=y-canvas.height;
-		}
-	}else{
-		if (x<0||x>=canvas.width||y<0||x>=canvas.height) return;
-	}
-	
-	data[(((canvas.width*y)+x)*4)+rgb]=val;
-};
 function apply() {
-	ctx.putImageData(imageData, 0, 0);
+	ctx.putImageData(imageData,0,0);
 }
 
 function makeConfirmColor(x,y,f,loop) {
 	loop=typeof loop!=="undefined"?loop:true;
 	var colors=f(x,y,loop);
-	return function(r,g,b,a) {
-		return colors[0]==(r||0)&&colors[1]==(g||0)&&colors[2]==(b||0)&&colors[3]==(a||0);
+	return function(name) {
+		var arry=elementTypeMap[name];
+		return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
 	}
 }
 function makeMooreNearbyCounter(x,y,f) {
-	return (function (r,g,b,a,loop) {
-		return (makeConfirmColor(x-1,y-1,f,loop)(r,g,b,a))+
-		(makeConfirmColor(x-1,y,f,loop)(r,g,b,a))+
-		(makeConfirmColor(x-1,y+1,f,loop)(r,g,b,a))+
-		(makeConfirmColor(x,y-1,f,loop)(r,g,b,a))+
-		(makeConfirmColor(x,y+1,f,loop)(r,g,b,a))+
-		(makeConfirmColor(x+1,y-1,f,loop)(r,g,b,a))+
-		(makeConfirmColor(x+1,y,f,loop)(r,g,b,a))+
-		(makeConfirmColor(x+1,y+1,f,loop)(r,g,b,a));
+	return (function (name,loop) {
+		return (makeConfirmColor(x-1,y-1,f,loop)(name))+
+		(makeConfirmColor(x-1,y,f,loop)(name))+
+		(makeConfirmColor(x-1,y+1,f,loop)(name))+
+		(makeConfirmColor(x,y-1,f,loop)(name))+
+		(makeConfirmColor(x,y+1,f,loop)(name))+
+		(makeConfirmColor(x+1,y-1,f,loop)(name))+
+		(makeConfirmColor(x+1,y,f,loop)(name))+
+		(makeConfirmColor(x+1,y+1,f,loop)(name));
 	})
 }
-function setPixelSet(x,y,arry,loop) {
-	for (var i=0; i<arry.length; i++) {
-		setPixel(x,y,i,arry[i],loop);
-	}
+function makeWolframNearby(x,y,f) {
+	return (function (name,a,loop) {
+		loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
+		var near=[makeConfirmColor(x-1,y-1,f,loop)(name),makeConfirmColor(x,y-1,f,loop)(name),makeConfirmColor(x+1,y-1,f,loop)(name)];
+		return (near[0]==a[0]&&near[1]==a[1]&&near[2]==a[2]);
+	});
+}
+function setPixel(x,y,name,loop) {
+	var arry=elementTypeMap[name];
+	loop=typeof loop!=="undefined"?loop:true;
+	if (loop) {
+		while (x<0) x=canvas.width+x;
+		while (y<0) y=canvas.height+y;
+		while (x>=canvas.width) x=x-canvas.width;
+		while (y>=canvas.height) y=y-canvas.height;
+	}else if (x<0||x>=canvas.width||y<0||x>=canvas.height) return;
+	for (var i=0; i<arry.length; i++) data[(((canvas.width*y)+x)*4)+i]=arry[i];
 }
 function loop() {
 	var old=[];
@@ -188,52 +203,54 @@ function loop() {
 	var getOldPixel=createGetPixel(old);
 	for (var x=0; x<canvas.width; x++) {
 		for (var y=0; y<canvas.height; y++) {
-			var confirmColor=makeConfirmColor(x,y,getOldPixel);//initiallises a confirmColor(), that returns a bool of if this pixel is the inputted color
-				mooreNearbyCounter=makeMooreNearbyCounter(x,y,getOldPixel);
-			if (confirmColor(0,150,0,255)) {//no-loop conways game of life
-				var nearbyTotalG=mooreNearbyCounter(0,150,0,255,false);
-				if(nearbyTotalG<2||nearbyTotalG>=4) {
-					setPixel(x,y,1,0);//Any alive cell that is touching less than two alive neighbours dies.
-					//Any alive cell touching four or more alive neighbours dies.
+			var confirmElement=makeConfirmColor(x,y,getOldPixel);//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
+				mooreNearbyCounter=makeMooreNearbyCounter(x,y,getOldPixel),
+				wolframNearby=makeWolframNearby(x,y,getOldPixel);
+			if (confirmElement("No-loop Conway's Game Of Life")) {
+				var nearbyTotalG=mooreNearbyCounter("No-loop Conway's Game Of Life",false);
+				if(nearbyTotalG<2||nearbyTotalG>=4) setPixel(x,y,"blank",false);//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
+			}else if (confirmElement("Conway's Game Of Life")) {
+				var nearbyTotalG=mooreNearbyCounter("Conway's Game Of Life");
+				if(nearbyTotalG<2||nearbyTotalG>=4) setPixel(x,y,"blank");//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
+			}else if (confirmElement("Water")) {
+				var rand=Math.round(Math.random()*2)-1,factor=0;
+				while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank"))&&factor<2) factor++;
+				if (factor<=2&&(makeConfirmColor(x+rand,y+factor,getPixel,false)("blank"))){
+					setPixel(x,y,"blank",false);
+					setPixel(x+rand,y+factor,"Water",false);
 				}
-			}else if (confirmColor(0,255,0,255)) {//conways game of life
-				var nearbyTotalG=mooreNearbyCounter(0,255,0,255);
-				if(nearbyTotalG<2||nearbyTotalG>=4) {
-					setPixel(x,y,1,0);//Any alive cell that is touching less than two alive neighbours dies.
-					//Any alive cell touching four or more alive neighbours dies.
-				}
-			}else if (confirmColor(0,0,0,255)) {
-				if(mooreNearbyCounter(0,150,0,255,false)===3) setPixelSet(x,y,[0,150,0,255]);//Any dead cell touching exactly three alive neighbours becomes alive.
-				if(mooreNearbyCounter(0,255,0,255)===3) setPixelSet(x,y,[0,255,0,255]);//Any dead cell touching exactly three alive neighbours becomes alive.
-			}else if (confirmColor(23,103,167,255)) {//water
-				var rand=Math.round(Math.random()*2)-1,
-					factor=0;
-				while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)(0,0,0,255))&&factor<2) factor++;
-				if (factor<=2&&(makeConfirmColor(x+rand,y+factor,getPixel,false)(0,0,0,255))){
-					setPixelSet(x,y,[0,0,0,255],false);
-					setPixelSet(x+rand,y+factor,[23,103,167,255],false);
-				}
-			}else if (confirmColor(110,162,10,255)) {//acid
-				var rand=Math.round(Math.random()*2)-1,
-					factor=0;
-				while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)(0,0,0,255)||Math.random()<=.3)&&factor<3) factor++;
+			}else if (confirmElement("Acid")) {
+				var rand=Math.round(Math.random()*2)-1,factor=0;
+				while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank")||Math.random()<=.3)&&factor<3) factor++;
 				if (factor<=3){
-					if (Math.random()>.3) setPixelSet(x,y,[0,0,0,255],false);
-					setPixelSet(x+rand,y+factor,[110,162,10,255],false);
+					if (Math.random()>.3) setPixel(x,y,"blank",false);
+					setPixel(x+rand,y+factor,"Acid",false);
 				}
-			}else if (confirmColor(148, 133, 0,254)) {//fadingelectricity
-				setPixelSet(x,y,[67,75,77,255],false);
-			}else if (confirmColor(148, 133, 0,255)) {//electricity
-				setPixelSet(x,y,[148,133,0,254],false);
-			}else if (confirmColor(67,75,77,255)) {//conductor
-				var conductorNearbyTotal=mooreNearbyCounter(148, 133, 0,255,false);
-				if(conductorNearbyTotal===1||conductorNearbyTotal===2) setPixelSet(x,y,[148,133,0,255]);//copper stays as copper unless it has just one or two neighbours that are electron heads, in which case it becomes an electron head
-			}else if (confirmColor(127,127,127,255)) {
-			}else{
-				console.log("Nothing happened with",getOldPixel(x,y));
-			}
+			}else if (confirmElement("FadingElectricity")) {//fadingelectricity
+				setPixel(x,y,"Conductor",false);
+			}else if (confirmElement("Electricity")) {//electricity
+				setPixel(x,y,"FadingElectricity",false);
+			}else if (confirmElement("Conductor")) {//conductor
+				var conductorNearbyTotal=mooreNearbyCounter("Electricity",false);
+				if(conductorNearbyTotal===1||conductorNearbyTotal===2) setPixel(x,y,"Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
+			}else if (confirmElement("Highlife")){
+				if(!(mooreNearbyCounter("Highlife",false)===2||mooreNearbyCounter("Highlife",false)===3)) setPixel(x,y,"blank",false);
+			}else if (confirmElement("Blocks")) {
+			}else if (confirmElement("blank")||confirmElement("Rule 110")||confirmElement("Rule 30")||confirmElement("Rule 90")||confirmElement("Rule 184")) {
+				if (y==row) {
+					if (wolframNearby("Rule 110",[1,1,0])||wolframNearby("Rule 110",[1,0,1])||wolframNearby("Rule 110",[0,1,1])||wolframNearby("Rule 110",[0,1,0])||wolframNearby("Rule 110",[0,0,1])) setPixel(x,y,"Rule 110",false);
+					if (wolframNearby("Rule 30",[1,0,0])||wolframNearby("Rule 30",[0,1,1])||wolframNearby("Rule 30",[0,1,0])||wolframNearby("Rule 30",[0,0,1])) setPixel(x,y,"Rule 30",false);
+					if (wolframNearby("Rule 90",[1,1,0])||wolframNearby("Rule 90",[1,0,0])||wolframNearby("Rule 90",[0,1,1])||wolframNearby("Rule 90",[0,0,1])) setPixel(x,y,"Rule 90",false);
+					if (wolframNearby("Rule 184",[1,1,1])||wolframNearby("Rule 184",[1,0,1])||wolframNearby("Rule 184",[1,0,0])||wolframNearby("Rule 184",[0,1,1])) setPixel(x,y,"Rule 184",false);
+				}
+				if(mooreNearbyCounter("No-loop Conway's Game Of Life",false)===3) setPixel(x,y,"No-loop Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
+				if(mooreNearbyCounter("Conway's Game Of Life")===3) setPixel(x,y,"Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
+				if(mooreNearbyCounter("Highlife")===3||mooreNearbyCounter("Highlife")===6) setPixel(x,y,"Highlife");//a cell is born if it has 3 or 6 neighbors
+			}else console.log("Nothing happened with", getOldPixel(x,y));
 		}
 	}
+	row++;
+	if (row>canvas.height) row=0;
 	apply();
 	zoom({
 		layerX:mouseX,
@@ -241,29 +258,12 @@ function loop() {
 	});
 };
 var loopint=0;
-file.addEventListener('change', function(e) {
-    var img = new Image;
-    img.src = URL.createObjectURL(e.target.files[0]);
-    img.onload = function() {
-        ctx.drawImage(this, 0,0);
-		this.style.display = 'none';
-		canvas = document.getElementById('canvas');
-		canvas.width=document.getElementById("width").value||100;
-		canvas.height=document.getElementById("height").value||100;
-		canvas.width=document.getElementById("width").value||100;
-		canvas.height=document.getElementById("height").value||100;
-		ctx = canvas.getContext('2d');
-		imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-		data=imageData.data;
-        document.getElementById('pause').disabled=true;
-    }
-});
 function setCanvasSizes() {
 	canvas.width=document.getElementById("width").value||100;
 	canvas.height=document.getElementById("height").value||100;
 	zoomelm.width=(document.getElementById("zoomWidthElm").value||20)*20;
 	zoomelm.height=(document.getElementById("zoomHeightElm").value||20)*20;
-	imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
 	data = imageData.data;
 	ctx.imageSmoothingEnabled=false;
 	ctx.mozImageSmoothingEnabled=false;
@@ -273,7 +273,18 @@ function setCanvasSizes() {
 	zoomctx.mozImageSmoothingEnabled=false;
 	zoomctx.webkitImageSmoothingEnabled=false;
 	zoomctx.msImageSmoothingEnabled=false;
+	getPixel=createGetPixel(data);
 }
+file.addEventListener('change',function(e) {
+    var img = new Image;
+    img.src = URL.createObjectURL(e.target.files[0]);
+    img.onload = function() {
+		this.style.display = 'none';
+		setCanvasSizes();
+        ctx.drawImage(this,0,0);
+		document.getElementById('pause').disabled=true;
+    }
+});
 document.getElementById("play").addEventListener('click',function() {
 	if (!document.getElementById('pause').disabled) {
 		clearInterval(loopint);
@@ -282,7 +293,7 @@ document.getElementById("play").addEventListener('click',function() {
 			for (var ii=0; ii <=2; ii++) data[i+ii]=0;
 			data[i+3]=255;
 		}
-		ctx.putImageData(imageData, 0, 0);
+		ctx.putImageData(imageData,0,0);
 	}
 	document.getElementById('pause').disabled = false;
 	document.getElementById('play').innerHTML = "◄";
@@ -294,10 +305,13 @@ document.getElementById("pause").addEventListener('click',function() {
 	clearInterval(loopint);
 });
 function ctrlClickChange(th) {
-	ctrlClick=elementTypeMap[th.value];
+	ctrlClick=th.value;
 }
 function normalClickChange(th) {
-	normalClick=elementTypeMap[th.value];
+	normalClick=th.value;
+}
+function altClickChange(th) {
+	altClick=th.value;
 }
 var zoomClick=function(e) {
 	var old=[];
@@ -307,20 +321,14 @@ var zoomClick=function(e) {
 	var getOldPixel=createGetPixel(old);
 	var zoomXPos=Math.floor(e.layerX/20)+(mouseX-10),
 		zoomYPos=Math.floor(e.layerY/20)+(mouseY-10),
-		confirmColor=makeConfirmColor(zoomXPos,zoomYPos,getOldPixel);
-	if (e.ctrlKey) {
-		if (confirmColor(ctrlClick[0],ctrlClick[1],ctrlClick[2],ctrlClick[3])) {	
-			setPixelSet(zoomXPos,zoomYPos,[0,0,0,255]);
-		}else{
-			setPixelSet(zoomXPos,zoomYPos,ctrlClick);
-		}
-	}else{//green
-		if (confirmColor(normalClick[0],normalClick[1],normalClick[2],normalClick[3])) {
-			setPixelSet(zoomXPos,zoomYPos,[0,0,0,255]);
-		}else{
-			setPixelSet(zoomXPos,zoomYPos,normalClick);
-		}
+		active;
+	if (e.ctrlKey) active=ctrlClick;
+	else if(e.altKey) active=altClick;
+	else active=normalClick;
+	if (makeConfirmColor(zoomXPos,zoomYPos,getOldPixel)(active)) {
+		active="blank";
 	}
+	setPixel(zoomXPos,zoomYPos,active);
 	apply();
 	zoom({
 		layerX:mouseX,
@@ -338,9 +346,9 @@ function zoom(event) {
 	zoomctx.drawImage(canvas,
 					  (mouseX - 10),
 					  (mouseY - 10),
-					  (zoomelm.width/20), (zoomelm.height/20),
-					  0, 0,
-					  zoomelm.width, zoomelm.height);
+					  (zoomelm.width/20),(zoomelm.height/20),
+					  0,0,
+					  zoomelm.width,zoomelm.height);
 	zoomctx.strokeStyle="gray";
 	zoomctx.beginPath();
 	for (var i=1; i<(zoomelm.width/20); i++) {
