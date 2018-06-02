@@ -16,4 +16,31 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-//No code yet :/
+var pixelManipulator=(function () {
+	var p=function(o) {
+		/*
+		var o={
+			canvas = document.getElementById('canvas'),
+			zoomelm = document.getElementById('zoom'),
+		}
+		*/
+		this.__Canvas__=o.canvas;
+		this.__Ctx__ = this.__Canvas__.getContext('2d');
+		this.__ZoomElm__=o.zoomelm;
+		this.__ZoomCtx__ = this.__ZoomElm__.getContext('2d');
+		this.__ImageData__ = this.__Ctx__.getImageData(0,0,this.__Canvas__.width,this.__Canvas__.height);
+		this.__Data__ = this.__ImageData__.data;
+		this.__MouseX__=0;
+		this.__MouseY__=0;
+		this.__Row__=0;
+	};
+	p.elementTypeMap={
+		"Test Elm":[122,122,122,122],
+	};
+	p.elementInformation={
+		"Test Elm":function(l) {
+			//l.setPixel();
+		}
+	}
+	return p;
+})();

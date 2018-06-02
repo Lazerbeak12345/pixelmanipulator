@@ -105,10 +105,11 @@
 				<option>Rule 184</option>
 				<option selected="selected">Water</option>
 			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.0.0-alfa-46.110</span>
+			<span style="position:absolute; right:0px; bottom:0px">v1-beta.47.110</span><!-- -->
 		</div>
 		<!--script src="https://jnordberg.github.io/gif.js/gif.js?v=3"></script><!---->
 		<!--script src="https://jnordberg.github.io/gif.js/gif.worker.js"></script><!---->
+		<script src="pixelmanipulator.js"></script>
 		<script>
 var canvas = document.getElementById('canvas'),
 	ctx = canvas.getContext('2d'),
@@ -142,6 +143,10 @@ var canvas = document.getElementById('canvas'),
 	mouseX,
 	mouseY,
 	row=0;
+	pixelManipulator({
+		canvas = document.getElementById('canvas'),
+		zoomelm = document.getElementById('zoom'),
+	});
 canvas.addEventListener('click',zoom);
 function createGetPixel(d) {
 	return (function (x,y,loop) {
