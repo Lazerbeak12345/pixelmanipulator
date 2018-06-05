@@ -46,6 +46,14 @@ window.p=window.pixelManipulator=(function () {
 			value:function(event) {
 				this.mouseX = event.layerX;
 				this.mouseY = event.layerY;
+				if (canvas.height<2||canvas.width<2) {
+					canvas.height=400;
+					canvas.width=400;
+				}
+				if (canvas.height<2||canvas.width<2) {
+					canvas.height=400;
+					canvas.width=400;
+				}
 				zoomctx.clearRect(0,0,zoomelm.width,zoomelm.height);
 				zoomctx.drawImage(canvas,
 								  (this.mouseX - 10),
