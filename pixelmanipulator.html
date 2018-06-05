@@ -109,98 +109,100 @@
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
-			var file = document.getElementById('file'),
-				normalClick="Conway's Game Of Life",
-				ctrlClick="Blocks",
-				altClick="Water",
-				canvas = p.canvas = document.getElementById('canvas'),
-				zoomelm = p.zoomelm = document.getElementById('zoom');
-			console.log(zoomelm);
-			p.elementTypeMap={
-				"Acid":[110,162,10,255],
-				"Blocks":[127,127,127,255],
-				"Conductor":[67,75,77,255],
-				"Conway's Game Of Life":[0,255,0,255],
-				"Electricity":[148,133,0,255],
-				"FadingElectricity":[148,133,0,254],
-				"Highlife":[0,255,128],
-				"No-loop Conway's Game Of Life":[0,150,0,255],
-				"Rule 30":[255,0,255,255],
-				"Rule 90":[147,112,219,255],
-				"Rule 110":[128,0,128,255],
-				"Rule 184":[255,51,153,255],
-				"Water":[23,103,167,255],
-				"blank":[0,0,0,255]
-			};
-function setCanvasSizes() {
-	canvas.width=document.getElementById("width").value||100;
-	canvas.height=document.getElementById("height").value||100;
-	zoomelm.width=(document.getElementById("zoomWidthElm").value||20)*20;
-	zoomelm.height=(document.getElementById("zoomHeightElm").value||20)*20;
-	p.updateCanvasData();
-}
-file.addEventListener('change',function(e) {
-    var img = new Image;
-    img.src = URL.createObjectURL(e.target.files[0]);
-    img.onload = function() {
-		this.style.display = 'none';
-		setCanvasSizes();
-        p.ctx.drawImage(this,0,0);
-		document.getElementById('pause').disabled=true;
-    }
-});
-document.getElementById("play").addEventListener('click',function() {
-	if (!document.getElementById('pause').disabled) {
-		clearInterval(loopint);
-		setCanvasSizes();
-		for (var i=0; i < data.length; i+=4) {
-			for (var ii=0; ii <=2; ii++) data[i+ii]=0;
-			data[i+3]=255;
-		}
-		p.ctx.putImageData(p.imageData,0,0);
-	}
-	document.getElementById('pause').disabled = false;
-	document.getElementById('play').innerHTML = "◄";
-	p.loopint=setInterval(p.loop,1);
-});
-document.getElementById("pause").addEventListener('click',function() {
-	document.getElementById('pause').disabled = true;
-	document.getElementById('play').innerHTML = "►";
-	clearInterval(p.loopint);
-});
-function ctrlClickChange(th) {
-	ctrlClick=th.value;
-}
-function normalClickChange(th) {
-	normalClick=th.value;
-}
-function altClickChange(th) {
-	altClick=th.value;
-}
-var zoomClick=function(e) {
-	var old=[];
-	for (var i=0;i<p.data.length;i++) {
-		old[i]=p.data[i]-0;
-	}
-	var getOldPixel=p.createGetPixel(old);
-	var zoomXPos=Math.floor(e.layerX/20)+(p.mouseX-10),
-		zoomYPos=Math.floor(e.layerY/20)+(p.mouseY-10),
-		active;
-	if (e.ctrlKey) active=ctrlClick;
-	else if(e.altKey) active=altClick;
-	else active=normalClick;
-	if (p.makeConfirmColor(zoomXPos,zoomYPos,getOldPixel)(active)) {
-		active="blank";
-	}
-	p.setPixel(zoomXPos,zoomYPos,active);
-	p.apply();
-	p.zoom({
-		layerX:p.mouseX,
-		layerY:p.mouseY,
-	});
-};
-document.getElementById('zoom').addEventListener('click',zoomClick);
-document.getElementById('zoom').addEventListener('drag',zoomClick);
+			window.onready=function() {
+				var file = document.getElementById('file'),
+					normalClick="Conway's Game Of Life",
+					ctrlClick="Blocks",
+					altClick="Water",
+					canvas = p.canvas = document.getElementById('canvas'),
+					zoomelm = p.zoomelm = document.getElementById('zoom');
+				console.log(zoomelm);
+				p.elementTypeMap={
+					"Acid":[110,162,10,255],
+					"Blocks":[127,127,127,255],
+					"Conductor":[67,75,77,255],
+					"Conway's Game Of Life":[0,255,0,255],
+					"Electricity":[148,133,0,255],
+					"FadingElectricity":[148,133,0,254],
+					"Highlife":[0,255,128],
+					"No-loop Conway's Game Of Life":[0,150,0,255],
+					"Rule 30":[255,0,255,255],
+					"Rule 90":[147,112,219,255],
+					"Rule 110":[128,0,128,255],
+					"Rule 184":[255,51,153,255],
+					"Water":[23,103,167,255],
+					"blank":[0,0,0,255]
+				};
+				function setCanvasSizes() {
+					canvas.width=document.getElementById("width").value||100;
+					canvas.height=document.getElementById("height").value||100;
+					zoomelm.width=(document.getElementById("zoomWidthElm").value||20)*20;
+					zoomelm.height=(document.getElementById("zoomHeightElm").value||20)*20;
+					p.updateCanvasData();
+				}
+				file.addEventListener('change',function(e) {
+					var img = new Image;
+					img.src = URL.createObjectURL(e.target.files[0]);
+					img.onload = function() {
+						this.style.display = 'none';
+						setCanvasSizes();
+						p.ctx.drawImage(this,0,0);
+						document.getElementById('pause').disabled=true;
+					}
+				});
+				document.getElementById("play").addEventListener('click',function() {
+					if (!document.getElementById('pause').disabled) {
+						clearInterval(loopint);
+						setCanvasSizes();
+						for (var i=0; i < data.length; i+=4) {
+							for (var ii=0; ii <=2; ii++) data[i+ii]=0;
+							data[i+3]=255;
+						}
+						p.ctx.putImageData(p.imageData,0,0);
+					}
+					document.getElementById('pause').disabled = false;
+					document.getElementById('play').innerHTML = "◄";
+					p.loopint=setInterval(p.loop,1);
+				});
+				document.getElementById("pause").addEventListener('click',function() {
+					document.getElementById('pause').disabled = true;
+					document.getElementById('play').innerHTML = "►";
+					clearInterval(p.loopint);
+				});
+				function ctrlClickChange(th) {
+					ctrlClick=th.value;
+				}
+				function normalClickChange(th) {
+					normalClick=th.value;
+				}
+				function altClickChange(th) {
+					altClick=th.value;
+				}
+				var zoomClick=function(e) {
+					var old=[];
+					for (var i=0;i<p.data.length;i++) {
+						old[i]=p.data[i]-0;
+					}
+					var getOldPixel=p.createGetPixel(old);
+					var zoomXPos=Math.floor(e.layerX/20)+(p.mouseX-10),
+						zoomYPos=Math.floor(e.layerY/20)+(p.mouseY-10),
+						active;
+					if (e.ctrlKey) active=ctrlClick;
+					else if(e.altKey) active=altClick;
+					else active=normalClick;
+					if (p.makeConfirmColor(zoomXPos,zoomYPos,getOldPixel)(active)) {
+						active="blank";
+					}
+					p.setPixel(zoomXPos,zoomYPos,active);
+					p.apply();
+					p.zoom({
+						layerX:p.mouseX,
+						layerY:p.mouseY,
+					});
+				};
+				document.getElementById('zoom').addEventListener('click',zoomClick);
+				document.getElementById('zoom').addEventListener('drag',zoomClick);
+			}
 		</script>
 	</body>
 </html>
