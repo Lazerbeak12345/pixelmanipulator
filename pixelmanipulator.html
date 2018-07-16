@@ -49,7 +49,7 @@
 			<input id="file" type="file" /><!--This is where the user can upload an image that will then applied to the canvas,and will allow for coming back from saving-->
 			<button id="play" alt="Play/Resume/Rewind" title="Play/Resume">►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
 			<button id="pause" alt="Pause" title="Pause">▌▌</button><!--This pauses everything in #canvas-->
-			<button id="oneFrameAtATime" onclick="loop();" alt="Next frame" title="Next frame">►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+			<button id="oneFrameAtATime" onclick="p.loop();" alt="Next frame" title="Next frame">►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
 			<!--button id="record" alt="Toggle Recording" title="Toggle Recording">•</button><!--This records #canvas as a .gif file and once clicked a second time,allows for the user to download the .gif. (it also resets the .gif if clicked again,and starts recoring again)-->
 			<br/>
 			Width: <input id="width"/><br/>

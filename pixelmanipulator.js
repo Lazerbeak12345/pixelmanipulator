@@ -180,15 +180,18 @@ window.p=window.pixelManipulator=(function () {
 					for (var y=0; y<this.canvas.height; y++) {
 						var confirmElement=this.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
 							mooreNearbyCounter=this.makeMooreNearbyCounter(x,y,getOldPixel),
-							wolframNearby=makeWolframNearby(x,y,getOldPixel);
+							wolframNearby=this.makeWolframNearby(x,y,getOldPixel),
+							nearbyTotalG,
+							rand,
+							factor;
 						if (confirmElement("No-loop Conway's Game Of Life")) {
-							var nearbyTotalG=mooreNearbyCounter("No-loop Conway's Game Of Life",false);
+							nearbyTotalG=mooreNearbyCounter("No-loop Conway's Game Of Life",false);
 							if(nearbyTotalG<2||nearbyTotalG>=4) this.setPixel(x,y,"blank",false);//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
 						}else if (confirmElement("Conway's Game Of Life")) {
 							nearbyTotalG=mooreNearbyCounter("Conway's Game Of Life");
 							if(nearbyTotalG<2||nearbyTotalG>=4) this.setPixel(x,y,"blank");//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
 						}else if (confirmElement("Water")) {
-							var rand=Math.round(Math.random()*2)-1,factor=0;
+							rand=Math.round(Math.random()*2)-1;factor=0;
 							while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank"))&&factor<2) factor++;
 							if (factor<=2&&(makeConfirmColor(x+rand,y+factor,getPixel,false)("blank"))){
 								this.setPixel(x,y,"blank",false);
