@@ -9,7 +9,7 @@
 	"devDependencies": {
 		"grunt": "1.0.3",
 		"grunt-cli": "1.2.0",
-		"grunt-contrib-jshint": "1.0.0",
+		"grunt-contrib-jshint": "1.0.0"
 	},
 	"scripts": {
 		"test": "grunt --verbose"
