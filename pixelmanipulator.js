@@ -1,6 +1,6 @@
 //pixelmanipulator.js
 /*
-	This is the actual file that is in charge of interacting with canvas elements and such.
+	This is a javascript file that is in charge of interacting with canvas elements and such. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
 
     This program is free software: you can redistribute it and/or modify
@@ -31,16 +31,32 @@ window.p=window.pixelManipulator=(function () {
 		getPixel:function() {},
 		loopint:0,
 		imageData:{},
-		data:{},
+		data=[],
 		mouseX:0,
 		mouseY:0,
 		row:0,
 		elementTypeMap:{
 			"Test Elm":[122,122,122,122],
 		},
+		mode:"paused",
 	},{
 		licence:{
 			value:licence,
+		},
+		play:{
+			value:function() {
+				if (this.mode=="paused") {
+					clearInterval(this.loopint);
+					setCanvasSizes();
+					for (var i=0; i < this.data.length; i+=4) {
+						for (var ii=0; ii <=2; ii++) this.data[i+ii]=0;
+						this.data[i+3]=255;
+					}
+					this.ctx.putImageData(this.imageData,0,0);
+				}
+				this.mode="playing";
+				this.loopint=setInterval(this.loop,1);
+			},
 		},
 		zoom:{
 			value:function(event) {

@@ -110,14 +110,23 @@
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
-			window.onready=function() {
+			function ready(callback){ //from https://stackoverflow.com/a/7053197
+				// in case the document is already rendered
+				if (document.readyState!='loading') callback();
+				// modern browsers
+				else if (document.addEventListener) document.addEventListener('DOMContentLoaded', callback);
+				// IE <= 8
+				else document.attachEvent('onreadystatechange', function(){
+					if (document.readyState=='complete') callback();
+				});
+			}
+			ready(function() {
 				var file = document.getElementById('file'),
 					normalClick="Conway's Game Of Life",
 					ctrlClick="Blocks",
 					altClick="Water",
 					canvas = p.canvas = document.getElementById('canvas'),
 					zoomelm = p.zoomelm = document.getElementById('zoom');
-				console.log(zoomelm);
 				p.elementTypeMap={
 					"Acid":[110,162,10,255],
 					"Blocks":[127,127,127,255],
@@ -151,20 +160,7 @@
 						document.getElementById('pause').disabled=true;
 					}
 				});
-				document.getElementById("play").addEventListener('click',function() {
-					if (!document.getElementById('pause').disabled) {
-						clearInterval(loopint);
-						setCanvasSizes();
-						for (var i=0; i < data.length; i+=4) {
-							for (var ii=0; ii <=2; ii++) data[i+ii]=0;
-							data[i+3]=255;
-						}
-						p.ctx.putImageData(p.imageData,0,0);
-					}
-					document.getElementById('pause').disabled = false;
-					document.getElementById('play').innerHTML = "◄";
-					p.loopint=setInterval(p.loop,1);
-				});
+				document.getElementById("play").addEventListener('click',p.play);
 				document.getElementById("pause").addEventListener('click',function() {
 					document.getElementById('pause').disabled = true;
 					document.getElementById('play').innerHTML = "►";
@@ -203,7 +199,7 @@
 				};
 				document.getElementById('zoom').addEventListener('click',zoomClick);
 				document.getElementById('zoom').addEventListener('drag',zoomClick);
-			}
+			});
 		</script>
 	</body>
 </html>

@@ -1,0 +1,15 @@
+<NotepadPlus>
+    <Session activeView="0">
+        <mainView activeIndex="0">
+            <File firstVisibleLine="118" xOffset="0" scrollWidth="2216" startPos="943" endPos="943" selMode="0" lang="HTML" encoding="-1" filename="C:\Users\fritzkids\Documents\GitHub\pixelmanipulator\pixelmanipulator.html" backupFilePath="" originalFileLastModifTimestamp="1528162052" mapFirstVisibleDisplayLine="0" mapFirstVisibleDocLine="0" mapLastVisibleDocLine="34" mapNbLine="34" mapHigherPos="-1" mapWidth="185" mapHeight="102" mapKByteInDoc="7" mapWrapIndentMode="1" mapIsWrap="no">
+                <Fold line="19" />
+                <Fold line="60" />
+                <Fold line="77" />
+                <Fold line="93" />
+            </File>
+            <File firstVisibleLine="225" xOffset="0" scrollWidth="2080" startPos="1787" endPos="1787" selMode="0" lang="JavaScript" encoding="-1" filename="C:\Users\fritzkids\Documents\GitHub\pixelmanipulator\pixelmanipulator.js" backupFilePath="" originalFileLastModifTimestamp="1528161848" mapFirstVisibleDisplayLine="225" mapFirstVisibleDocLine="225" mapLastVisibleDocLine="261" mapNbLine="36" mapHigherPos="-1" mapWidth="196" mapHeight="108" mapKByteInDoc="10" mapWrapIndentMode="1" mapIsWrap="no" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="624" startPos="20" endPos="46" selMode="0" lang="Normal Text" encoding="-1" filename="C:\Users\fritzkids\Documents\GitHub\pixelmanipulator\LICENSE" backupFilePath="" originalFileLastModifTimestamp="1527978952" mapFirstVisibleDisplayLine="0" mapFirstVisibleDocLine="0" mapLastVisibleDocLine="37" mapNbLine="37" mapHigherPos="-1" mapWidth="199" mapHeight="111" mapKByteInDoc="34" mapWrapIndentMode="1" mapIsWrap="no" />
+        </mainView>
+        <subView activeIndex="0" />
+    </Session>
+</NotepadPlus>
