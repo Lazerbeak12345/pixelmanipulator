@@ -201,7 +201,7 @@ window.p=window.pixelManipulator=(function () {
 							rand=Math.round(Math.random()*2)-1;factor=0;
 							while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank")||Math.random()<=0.3)&&factor<3) factor++;
 							if (factor<=3){
-								if (Math.random()>.3) setPixel(x,y,"blank",false);
+								if (Math.random()>0.3) setPixel(x,y,"blank",false);
 								this.setPixel(x+rand,y+factor,"Acid",false);
 							}
 						}else if (confirmElement("FadingElectricity")) {//fadingelectricity
