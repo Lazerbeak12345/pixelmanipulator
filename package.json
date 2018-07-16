@@ -1,6 +1,6 @@
 {
 	"name":"PixelManipulator",
-	"version":"1.48.115",
+	"version":"1.48.119",
 	"license":"GNU",
 	"repository":{
 		"type":"git",
@@ -9,7 +9,7 @@
 	"devDependencies": {
 		"grunt": "1.0.3",
 		"grunt-cli": "1.2.0",
-		"grunt-contrib-jshint": "1.0.0"
+		"grunt-contrib-jshint": "1.1.0"
 	},
 	"scripts": {
 		"test": "grunt --verbose"
