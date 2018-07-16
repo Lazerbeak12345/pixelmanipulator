@@ -31,7 +31,7 @@ window.p=window.pixelManipulator=(function () {
 		getPixel:function() {},
 		loopint:0,
 		imageData:{},
-		data=[],
+		data:[],
 		mouseX:0,
 		mouseY:0,
 		row:0,
