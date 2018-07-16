@@ -83,7 +83,7 @@ window.p=window.pixelManipulator=(function () {
 					zoomctx.moveTo(i*20,0);
 					zoomctx.lineTo(i*20,zoomelm.height);
 				}
-				for (var i=1; i<(zoomelm.height/20); i++) {
+				for (i=1; i<(zoomelm.height/20); i++) {
 					zoomctx.moveTo(0,i*20);
 					zoomctx.lineTo(zoomelm.width,i*20);
 				}
@@ -129,7 +129,7 @@ window.p=window.pixelManipulator=(function () {
 				return function(name) {
 					var arry=this.elementTypeMap[name];
 					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
-				}
+				};
 			},
 		},
 		makeMooreNearbyCounter:{
@@ -178,14 +178,14 @@ window.p=window.pixelManipulator=(function () {
 				var getOldPixel=this.createGetPixel(old);
 				for (var x=0; x<this.canvas.width; x++) {
 					for (var y=0; y<this.canvas.height; y++) {
-						var confirmElement=this.makeConfirmColor(x,y,getOldPixel);//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
+						var confirmElement=this.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
 							mooreNearbyCounter=this.makeMooreNearbyCounter(x,y,getOldPixel),
 							wolframNearby=makeWolframNearby(x,y,getOldPixel);
 						if (confirmElement("No-loop Conway's Game Of Life")) {
 							var nearbyTotalG=mooreNearbyCounter("No-loop Conway's Game Of Life",false);
 							if(nearbyTotalG<2||nearbyTotalG>=4) this.setPixel(x,y,"blank",false);//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
 						}else if (confirmElement("Conway's Game Of Life")) {
-							var nearbyTotalG=mooreNearbyCounter("Conway's Game Of Life");
+							nearbyTotalG=mooreNearbyCounter("Conway's Game Of Life");
 							if(nearbyTotalG<2||nearbyTotalG>=4) this.setPixel(x,y,"blank");//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
 						}else if (confirmElement("Water")) {
 							var rand=Math.round(Math.random()*2)-1,factor=0;
@@ -195,8 +195,8 @@ window.p=window.pixelManipulator=(function () {
 								this.setPixel(x+rand,y+factor,"Water",false);
 							}
 						}else if (confirmElement("Acid")) {
-							var rand=Math.round(Math.random()*2)-1,factor=0;
-							while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank")||Math.random()<=.3)&&factor<3) factor++;
+							rand=Math.round(Math.random()*2)-1;factor=0;
+							while ((!makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank")||Math.random()<=0.3)&&factor<3) factor++;
 							if (factor<=3){
 								if (Math.random()>.3) setPixel(x,y,"blank",false);
 								this.setPixel(x+rand,y+factor,"Acid",false);
