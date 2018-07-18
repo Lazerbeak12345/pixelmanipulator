@@ -1,4 +1,4 @@
-//pixelmanipulator.js
+//pixelmanipulator.js v1.49.129 (beta)
 /*
 	This is a javascript file that is in charge of interacting with canvas elements and such. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
@@ -23,9 +23,7 @@ window.p=window.pixelManipulator=(function () {
 			return v;
 		});
 	}
-	var canvas={},
-		ctx,
-		zoomelm={},
+	var zoomelm={},
 		zoomctx={};
 	return Object.create({
 		getPixel:function() {},
@@ -39,27 +37,55 @@ window.p=window.pixelManipulator=(function () {
 			"Test Elm":[122,122,122,122],
 		},
 		mode:"paused",
+		zoomScaleFactor:20,
+		ctx:{},
+		canvas:{},
+		zoomelm:{},
+		zoomctx:{},
 	},{
 		licence:{
 			value:licence,
 		},
+		setCanvasSizes:{
+			value:function(canvasSizes) {
+				console.log("setCanvasSizes");
+				this.canvas.width=canvasSizes.canvasW||100;
+				console.info("cw");
+				this.canvas.height=canvasSizes.canvasH||100;
+				console.info("ch");
+				this.zoomelm.width=(canvasSizes.zoomW||20)*this.zoomScaleFactor;
+				console.info("zw");
+				this.zoomelm.height=(canvasSizes.zoomH||20)*this.zoomScaleFactor;
+				console.info("zh");
+				this.updateCanvasData();
+				console.info("updated");
+			},
+		},
 		play:{
-			value:function() {
+			value:function(canvasSizes) {
+				console.log("play");
 				if (this.mode=="paused") {
+					console.info("paused");
 					clearInterval(this.loopint);
-					setCanvasSizes();
+					console.info("cleared");
+					this.setCanvasSizes(canvasSizes);
+					console.info("canvasSizes");
 					for (var i=0; i < this.data.length; i+=4) {
 						for (var ii=0; ii <=2; ii++) this.data[i+ii]=0;
 						this.data[i+3]=255;
 					}
+					console.info("after loop");
 					this.ctx.putImageData(this.imageData,0,0);
+					console.info("image data");
 				}
+				console.info("playing");
 				this.mode="playing";
 				this.loopint=setInterval(this.loop,1);
 			},
 		},
 		zoom:{
 			value:function(event) {
+				console.log("zoom");
 				this.mouseX = event.layerX;
 				this.mouseY = event.layerY;
 				if (canvas.height<2||canvas.width<2) {
@@ -92,6 +118,7 @@ window.p=window.pixelManipulator=(function () {
 		},
 		createGetPixel:{
 			value:function(d) {
+				console.log("createGetPixel");
 				return (function (x,y,loop) {
 				//               (#,#)
 					loop=typeof loop!=="undefined"?loop:true;
@@ -119,14 +146,17 @@ window.p=window.pixelManipulator=(function () {
 		},
 		apply:{
 			value:function() {
+				console.log("apply");
 				ctx.putImageData(this.imageData,0,0);
 			},
 		},
 		makeConfirmColor:{
 			value:function(x,y,f,loop) {
+				console.log("makeConfirmColor");
 				loop=typeof loop!=="undefined"?loop:true;
 				var colors=f(x,y,loop);
 				return function(name) {
+					console.log("ConfirmColor");
 					var arry=this.elementTypeMap[name];
 					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
 				};
@@ -134,7 +164,9 @@ window.p=window.pixelManipulator=(function () {
 		},
 		makeMooreNearbyCounter:{
 			value:function(x,y,f) {
+				console.log("makeMooreNearbyCounter");
 				return (function (name,loop) {
+					console.log("mooreNearbyCounter");
 					return (this.makeConfirmColor(x-1,y-1,f,loop)(name))+
 					(this.makeConfirmColor(x-1,y,f,loop)(name))+
 					(this.makeConfirmColor(x-1,y+1,f,loop)(name))+
@@ -148,7 +180,9 @@ window.p=window.pixelManipulator=(function () {
 		},
 		makeWolframNearby:{
 			value:function(x,y,f) {
+				console.log("makeWolframNearby");
 				return (function (name,a,loop) {
+					console.log("wolframNearby");
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
 					var near=[this.makeConfirmColor(x-1,y-1,f,loop)(name),this.makeConfirmColor(x,y-1,f,loop)(name),this.makeConfirmColor(x+1,y-1,f,loop)(name)];
 					return (near[0]==a[0]&&near[1]==a[1]&&near[2]==a[2]);
@@ -157,6 +191,7 @@ window.p=window.pixelManipulator=(function () {
 		},
 		setPixel:{
 			value:function(x,y,name,loop) {
+				console.log("setPixel");
 				var arry=this.elementTypeMap[name];
 				loop=typeof loop!=="undefined"?loop:true;
 				if (loop) {
@@ -170,6 +205,7 @@ window.p=window.pixelManipulator=(function () {
 		},
 		loop:{
 			value:function() {
+				console.log("loop");
 				var old=[];
 				for (var i=0;i<this.data.length;i++) {
 					old[i]=this.data[i]-0;
@@ -238,41 +274,40 @@ window.p=window.pixelManipulator=(function () {
 		},
 		updateCanvasData:{
 			value:function() {
-				this.imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+				console.log("updateCanvasData");
+				this.imageData=this.ctx.getImageData(0,0,this.canvas.width,this.canvas.height);
 				this.data=this.imageData.data;
-				ctx.imageSmoothingEnabled=false;
-				ctx.mozImageSmoothingEnabled=false;
-				ctx.webkitImageSmoothingEnabled=false;
-				ctx.msImageSmoothingEnabled=false;
-				zoomctx.imageSmoothingEnabled=false;
-				zoomctx.mozImageSmoothingEnabled=false;
-				zoomctx.webkitImageSmoothingEnabled=false;
-				zoomctx.msImageSmoothingEnabled=false;
+				this.ctx.imageSmoothingEnabled=false;
+				this.ctx.mozImageSmoothingEnabled=false;
+				this.ctx.webkitImageSmoothingEnabled=false;
+				this.ctx.msImageSmoothingEnabled=false;
+				this.zoomctx.imageSmoothingEnabled=false;
+				this.zoomctx.mozImageSmoothingEnabled=false;
+				this.zoomctx.webkitImageSmoothingEnabled=false;
+				this.zoomctx.msImageSmoothingEnabled=false;
 				this.getPixel=this.createGetPixel(this.data);
 			},
 		},
-		canvas:{
-			set:function(v) {
-				canvas=v;
-				ctx=canvas.getContext('2d');
-				canvas.addEventListener('click',this.zoom);
-			},
-			get:function () {
-				return canvas;
+		setCanvas:{
+			value:function(v) {
+				console.log("setCanvas");
+				this.canvas=v;
+				this.ctx=this.canvas.getContext('2d');
+				this.canvas.addEventListener('click',this.zoom);
+				return this.canvas;
 			},
 		},
-		zoomelm:{
-			set:function(v) {
-				zoomelm=v;
-				zoomctx=zoomelm.getContext('2d');
+		setZoomelm:{
+			value:function(v) {
+				console.log("setZoomelm");
+				this.zoomelm=v;
+				this.ctx=this.zoomelm.getContext('2d');
 				this.updateCanvasData();
 				this.zoom({
 					layerX:0,
 					layerY:0,
 				});
-			},
-			get:function () {
-				return zoomelm;
+				return this.zoomelm;
 			},
 		},
 	});
