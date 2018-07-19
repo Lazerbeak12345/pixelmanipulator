@@ -105,7 +105,7 @@
 				<option>Rule 184</option>
 				<option selected="selected">Water</option>
 			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.49.129 (beta)</span><!-- -->
+			<span style="position:absolute; right:0px; bottom:0px">v1.49.130 (beta)</span><!-- -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -142,6 +142,12 @@
 					"Water":[23,103,167,255],
 					"blank":[0,0,0,255]
 				};
+				p.onZoomClick=function(e) {
+					var active=normalClick
+					if (e.ctrlKey) active=ctrlClick;
+					else if(e.altKey) active=altClick;
+					return active;
+				};
 				file.addEventListener('change',function(e) {
 					var img = new Image;
 					img.src = URL.createObjectURL(e.target.files[0]);
@@ -159,7 +165,12 @@
 					}
 				});
 				document.getElementById("play").addEventListener('click',function() {
-					p.play();//pass a function in that you want called if it is becoming unpaused. Reccomended to have a function here that sets the canvas size here, due to how startup works.
+					p.play({
+						canvasW:document.getElementById("width").value||100,
+						canvasH:document.getElementById("height").value||100,
+						zoomW:document.getElementById("zoomWidthElm").value||20,
+						zoomH:document.getElementById("zoomHeightElm").value||20,
+					});//pass a function in that you want called if it is becoming unpaused. Reccomended to have a function here that sets the canvas size here, due to how startup works.
 					document.getElementById('pause').disabled = false;
 					document.getElementById('play').innerHTML = "◄";
 				});
@@ -177,35 +188,7 @@
 				}
 				function altClickChange(th) {
 					altClick=th.value;
-				}
-				var zoomClick=function(e) {
-					var old=[];
-					for (var i=0;i<p.data.length;i++) {
-						old[i]=p.data[i]-0;
-					}
-					var getOldPixel=p.createGetPixel(old);
-					var zoomXPos=Math.floor(e.layerX/p.zoomScaleFactor)+(p.mouseX-10),
-						zoomYPos=Math.floor(e.layerY/p.zoomScaleFactor)+(p.mouseY-10),
-						active;
-					if (e.ctrlKey) active=ctrlClick;
-					else if(e.altKey) active=altClick;
-					else active=normalClick;
-					if (p.makeConfirmColor(zoomXPos,zoomYPos,getOldPixel)(active)) {
-						active="blank";
-					}
-					p.setPixel(zoomXPos,zoomYPos,active);
-					p.apply();
-					p.zoom({
-						layerX:p.mouseX,
-						layerY:p.mouseY,
-					});
-				};
-				document.getElementById('zoom').addEventListener('click',zoomClick);
-				document.getElementById('zoom').addEventListener('drag',zoomClick);
-				/*p.zoom({
-					layerX:0,
-					layerY:0,
-				});*/
+				}			
 			});
 		</script>
 	</body>
