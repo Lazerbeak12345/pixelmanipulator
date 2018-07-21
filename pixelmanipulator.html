@@ -57,7 +57,7 @@
 			Zoom Height: <input id="zoomHeightElm"/><br/>
 			<br/>
 			Normal click: 
-			<select class="elmDrop" onchange="normalClickChange(this)">
+			<select class="elmDrop" onchange="normalClick=this.value;">
 				<option>Acid</option>
 				<option>Blocks</option>
 				<option>Conductor</option>
@@ -74,7 +74,7 @@
 			</select>
 			<br/>
 			Ctrl click: 
-			<select class="elmDrop" onchange="ctrlClickChange(this)">
+			<select class="elmDrop" onchange="ctrlClick=this.value;">
 				<option>Acid</option>
 				<option selected="selected">Blocks</option>
 				<option>Conductor</option>
@@ -90,7 +90,7 @@
 				<option>Water</option>
 			</select><br/>
 			Alt click: 
-			<select class="elmDrop" onchange="altClickChange(this)">
+			<select class="elmDrop" onchange="altClick=this.value;">
 				<option>Acid</option>
 				<option>Blocks</option>
 				<option>Conductor</option>
@@ -105,17 +105,17 @@
 				<option>Rule 184</option>
 				<option selected="selected">Water</option>
 			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.49.130 (beta)</span><!-- -->
+			<span style="position:absolute; right:0px; bottom:0px">v1.49.131 (beta)</span><!-- -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
-			function ready(callback){ //from https://stackoverflow.com/a/7053197
+			function ready(callback){ //the original was from https://stackoverflow.com/a/7053197 , but I added returns in order to speed up the prossess.
 				// in case the document is already rendered
-				if (document.readyState!='loading') callback();
+				if (document.readyState!='loading') {callback(); return;}
 				// modern browsers
-				else if (document.addEventListener) document.addEventListener('DOMContentLoaded', callback);
+				if (document.addEventListener) {document.addEventListener('DOMContentLoaded', callback); return;}
 				// IE <= 8
-				else document.attachEvent('onreadystatechange', function(){
+				document.attachEvent('onreadystatechange', function(){
 					if (document.readyState=='complete') callback();
 				});
 			}
@@ -141,12 +141,6 @@
 					"Rule 184":[255,51,153,255],
 					"Water":[23,103,167,255],
 					"blank":[0,0,0,255]
-				};
-				p.onZoomClick=function(e) {
-					var active=normalClick
-					if (e.ctrlKey) active=ctrlClick;
-					else if(e.altKey) active=altClick;
-					return active;
 				};
 				file.addEventListener('change',function(e) {
 					var img = new Image;
@@ -180,15 +174,15 @@
 					p.mode="paused";
 					clearInterval(p.loopint);
 				});
-				function ctrlClickChange(th) {
-					ctrlClick=th.value;
-				}
-				function normalClickChange(th) {
-					normalClick=th.value;
-				}
-				function altClickChange(th) {
-					altClick=th.value;
-				}			
+				p.onZoomClick=function(e,theVictomPixelsNameIsTheValueOf) {
+					console.log("onZoomClick");
+					var active=normalClick//The default is normalClick.
+					if (e.ctrlKey) active=ctrlClick;
+					else if(e.altKey) active=altClick;
+					if (theVictomPixelsNameIsTheValueOf(active)) active="blank";
+					console.log("zoom",active)
+					return active;
+				};
 			});
 		</script>
 	</body>

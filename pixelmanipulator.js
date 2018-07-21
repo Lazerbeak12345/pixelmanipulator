@@ -1,4 +1,4 @@
-//pixelmanipulator.js v1.49.130 (beta)
+//pixelmanipulator.js v1.49.131 (beta)
 /*
 	This is a javascript file that is in charge of interacting with canvas elements and such. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
@@ -50,29 +50,25 @@ window.p=window.pixelManipulator=(function () {
 			value:function(canvasSizes) {
 				//console.log("setCanvasSizes");
 				window.pixelManipulator.canvas.width=canvasSizes.canvasW||100;
-				//console.info("cw");
 				window.pixelManipulator.canvas.height=canvasSizes.canvasH||100;
-				//console.info("ch");
 				window.pixelManipulator.zoomelm.width=(canvasSizes.zoomW||20)*window.pixelManipulator.zoomScaleFactor;
-				//console.info("zw");
 				window.pixelManipulator.zoomelm.height=(canvasSizes.zoomH||20)*window.pixelManipulator.zoomScaleFactor;
-				//console.info("zh");
 				window.pixelManipulator.updateCanvasData();
-				//console.info("updated");
 			},
 		},
 		zoomClick:{
 			value:function(e) {
-				var old=[];
+				//console.log("zoomClick",e);
+				var zoomXPos=Math.floor(e.offsetX/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.mouseX-(window.pixelManipulator.zoomScaleFactor/2)),
+					zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.mouseY-(window.pixelManipulator.zoomScaleFactor/2)),
+					old=[];
+				//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.mouseX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
 				for (var i=0;i<window.pixelManipulator.data.length;i++) {
 					old[i]=window.pixelManipulator.data[i]-0;
 				}
-				var getOldPixel=window.pixelManipulator.createGetPixel(old);
-				var zoomXPos=Math.floor(e.layerX/window.pixelManipulator.zoomScaleFactor)+(window.pixelManipulator.mouseX-10),
-					zoomYPos=Math.floor(e.layerY/window.pixelManipulator.zoomScaleFactor)+(window.pixelManipulator.mouseY-10),
-					active=window.pixelManipulator.onZoomClick(e);
-				if (window.pixelManipulator.makeConfirmColor(zoomXPos,zoomYPos,getOldPixel)(active)) active="blank";
-				window.pixelManipulator.setPixel(zoomXPos,zoomYPos,active);
+				window.pixelManipulator.setPixel(zoomXPos,zoomYPos,//Where to set the pixel
+					window.pixelManipulator.onZoomClick(e,//pass in the click event
+						p.makeConfirmColor(zoomXPos,zoomYPos,window.pixelManipulator.createGetPixel(old))));//as well as a confirmColor instance
 				window.pixelManipulator.apply();
 				window.pixelManipulator.zoom({
 					layerX:window.pixelManipulator.mouseX,
@@ -104,9 +100,11 @@ window.p=window.pixelManipulator=(function () {
 		},
 		zoom:{
 			value:function(event) {
-				//console.log("zoom");
-				window.pixelManipulator.mouseX = event.layerX;
-				window.pixelManipulator.mouseY = event.layerY;
+				//console.log("zoom",event);
+				if (event.layerX>=0&&event.layerY>=0) {
+					window.pixelManipulator.mouseX = event.layerX;
+					window.pixelManipulator.mouseY = event.layerY;
+				}
 				if (window.pixelManipulator.canvas.height<2) window.pixelManipulator.canvas.height=400;
 				if (window.pixelManipulator.canvas.width<2) window.pixelManipulator.canvas.width=400;
 				window.pixelManipulator.zoomctx.clearRect(0,0,window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);
@@ -133,7 +131,8 @@ window.p=window.pixelManipulator=(function () {
 			value:function(d) {
 				//console.log("createGetPixel");
 				return (function (x,y,loop) {
-				//               (#,#)
+					//           (#,#)
+					//console.log("get(old?)Pixel");
 					loop=typeof loop!=="undefined"?loop:true;
 					if (loop) {
 						while (x<0) {
@@ -204,7 +203,9 @@ window.p=window.pixelManipulator=(function () {
 		},
 		setPixel:{
 			value:function(x,y,name,loop) {
-				//console.log("setPixel");
+				//console.log("setPixel",x,y,name,loop);
+				x=Math.floor(x);//Fix any bad math done further up the line.
+				y=Math.floor(x);//...
 				var arry=window.pixelManipulator.elementTypeMap[name];
 				loop=typeof loop!=="undefined"?loop:true;
 				if (loop) {
@@ -273,7 +274,7 @@ window.p=window.pixelManipulator=(function () {
 							if(mooreNearbyCounter("No-loop Conway's Game Of Life",false)===3) window.pixelManipulator.setPixel(x,y,"No-loop Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
 							if(mooreNearbyCounter("Conway's Game Of Life")===3) window.pixelManipulator.setPixel(x,y,"Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
 							if(mooreNearbyCounter("Highlife")===3||mooreNearbyCounter("Highlife")===6) window.pixelManipulator.setPixel(x,y,"Highlife");//a cell is born if it has 3 or 6 neighbors
-						}else console.log("Nothing happened with", getOldPixel(x,y));
+						}else console.log("Nothing happened with", getOldPixel(x,y), "at (",x,",",y,")");
 					}
 				}
 				window.pixelManipulator.row++;
