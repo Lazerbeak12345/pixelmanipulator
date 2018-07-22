@@ -1,4 +1,4 @@
-//pixelmanipulator.js v1.49.131 (beta)
+//pixelmanipulator.js v1.50.132 (beta)
 /*
 	This is a javascript file that is in charge of interacting with canvas elements and such. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
@@ -40,6 +40,8 @@ window.p=window.pixelManipulator=(function () {
 		canvas:{},
 		zoomelm:{},
 		zoomctx:{},
+		ready:false,
+		onReady:function() {},
 		zoomctxStrokeStyle:"gray",
 		onZoomClick:function() {return "blank";},
 	},{
@@ -63,6 +65,7 @@ window.p=window.pixelManipulator=(function () {
 					zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.mouseY-(window.pixelManipulator.zoomScaleFactor/2)),
 					old=[];
 				//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.mouseX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
+				//console.log(zoomYPos,"=Math.floor(",e.offsetY,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.mouseY,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
 				for (var i=0;i<window.pixelManipulator.data.length;i++) {
 					old[i]=window.pixelManipulator.data[i]-0;
 				}
@@ -80,20 +83,14 @@ window.p=window.pixelManipulator=(function () {
 			value:function(canvasSizes) {
 				//console.log("play");
 				if (window.pixelManipulator.mode=="paused") {
-					//console.info("paused");
 					clearInterval(window.pixelManipulator.loopint);
-					//console.info("cleared");
 					window.pixelManipulator.setCanvasSizes(canvasSizes);
-					//console.info("canvasSizes");
 					for (var i=0; i < window.pixelManipulator.data.length; i+=4) {
 						for (var ii=0; ii <=2; ii++) window.pixelManipulator.data[i+ii]=0;
 						window.pixelManipulator.data[i+3]=255;
 					}
-					//console.info("after loop");
 					window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
-					//console.info("image data");
 				}
-				//console.info("playing");
 				window.pixelManipulator.mode="playing";
 				window.pixelManipulator.loopint=setInterval(window.pixelManipulator.loop,1);
 			},
@@ -125,6 +122,15 @@ window.p=window.pixelManipulator=(function () {
 					window.pixelManipulator.zoomctx.lineTo(window.pixelManipulator.zoomelm.width,i*window.pixelManipulator.zoomScaleFactor);
 				}
 				window.pixelManipulator.zoomctx.stroke();
+				//console.log("before ready query");
+				if (!window.pixelManipulator.ready) {
+					//console.log("after ready query");
+					window.pixelManipulator.ready=true;
+					//console.log("after boolean change");
+					window.pixelManipulator.onReady();
+					//console.log("after function");
+				}
+				//console.log("after if statement");
 			}
 		},
 		createGetPixel:{
@@ -205,7 +211,7 @@ window.p=window.pixelManipulator=(function () {
 			value:function(x,y,name,loop) {
 				//console.log("setPixel",x,y,name,loop);
 				x=Math.floor(x);//Fix any bad math done further up the line.
-				y=Math.floor(x);//...
+				y=Math.floor(y);//...
 				var arry=window.pixelManipulator.elementTypeMap[name];
 				loop=typeof loop!=="undefined"?loop:true;
 				if (loop) {

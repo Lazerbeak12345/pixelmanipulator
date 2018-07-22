@@ -48,8 +48,8 @@
 			<canvas id="zoom" width="400" height="400"></canvas><br/><!--This is the zoomed-in box that the user can interact with-->
 			<input id="file" type="file" /><!--This is where the user can upload an image that will then applied to the canvas,and will allow for coming back from saving-->
 			<button id="play" alt="Play/Resume/Rewind" title="Play/Resume">►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
-			<button id="pause" alt="Pause" title="Pause">▌▌</button><!--This pauses everything in #canvas-->
-			<button id="oneFrameAtATime" onclick="p.loop();" alt="Next frame" title="Next frame">►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+			<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
+			<button id="oneFrameAtATime" onclick="p.loop();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
 			<br/>
 			Width: <input id="width"/><br/>
 			Height: <input id="height" /><br/>
@@ -105,7 +105,7 @@
 				<option>Rule 184</option>
 				<option selected="selected">Water</option>
 			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.49.131 (beta)</span><!-- -->
+			<span style="position:absolute; right:0px; bottom:0px">v1.50.132 (beta)</span><!-- -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -124,6 +124,11 @@
 					normalClick="Conway's Game Of Life",
 					ctrlClick="Blocks",
 					altClick="Water";
+				p.onReady=function() {//called once the user can interact with the page
+					//console.log("onReady");
+					document.getElementById('pause').disabled = false;
+					document.getElementById('oneFrameAtATime').disabled = false;
+				};
 				canvas = p.setCanvas(document.getElementById('canvas'));
 				zoomelm = p.setZoomelm(document.getElementById('zoom'));
 				p.elementTypeMap={
@@ -165,7 +170,6 @@
 						zoomW:document.getElementById("zoomWidthElm").value||20,
 						zoomH:document.getElementById("zoomHeightElm").value||20,
 					});//pass a function in that you want called if it is becoming unpaused. Reccomended to have a function here that sets the canvas size here, due to how startup works.
-					document.getElementById('pause').disabled = false;
 					document.getElementById('play').innerHTML = "◄";
 				});
 				document.getElementById("pause").addEventListener('click',function() {
@@ -175,7 +179,7 @@
 					clearInterval(p.loopint);
 				});
 				p.onZoomClick=function(e,theVictomPixelsNameIsTheValueOf) {
-					console.log("onZoomClick");
+					//console.log("onZoomClick");
 					var active=normalClick//The default is normalClick.
 					if (e.ctrlKey) active=ctrlClick;
 					else if(e.altKey) active=altClick;
