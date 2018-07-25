@@ -1,4 +1,4 @@
-//pixelmanipulator.js v1.50.132 (beta)
+//pixelmanipulator.js v1.50.133 (beta)
 /*
 	This is a javascript file that is in charge of interacting with canvas elements and such. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
@@ -82,17 +82,21 @@ window.p=window.pixelManipulator=(function () {
 		play:{
 			value:function(canvasSizes) {
 				//console.log("play");
-				if (window.pixelManipulator.mode=="paused") {
-					clearInterval(window.pixelManipulator.loopint);
-					window.pixelManipulator.setCanvasSizes(canvasSizes);
-					for (var i=0; i < window.pixelManipulator.data.length; i+=4) {
-						for (var ii=0; ii <=2; ii++) window.pixelManipulator.data[i+ii]=0;
-						window.pixelManipulator.data[i+3]=255;
-					}
-					window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
-				}
 				window.pixelManipulator.mode="playing";
 				window.pixelManipulator.loopint=setInterval(window.pixelManipulator.loop,1);
+			},
+		},
+		rewind:{
+			value:function(canvasSizes) {
+				//console.log("rewind");
+				clearInterval(window.pixelManipulator.loopint);
+				window.pixelManipulator.setCanvasSizes(canvasSizes);
+				for (var i=0; i < window.pixelManipulator.data.length; i+=4) {
+					for (var ii=0; ii <=2; ii++) window.pixelManipulator.data[i+ii]=0;
+					window.pixelManipulator.data[i+3]=255;
+				}
+				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
+				window.pixelManipulator.play();
 			},
 		},
 		zoom:{
@@ -102,16 +106,16 @@ window.p=window.pixelManipulator=(function () {
 					window.pixelManipulator.mouseX = event.layerX;
 					window.pixelManipulator.mouseY = event.layerY;
 				}
-				if (window.pixelManipulator.canvas.height<2) window.pixelManipulator.canvas.height=400;
+				if (window.pixelManipulator.canvas.height<2) window.pixelManipulator.canvas.height=400;//it would be pointless to have a canvas this small
 				if (window.pixelManipulator.canvas.width<2) window.pixelManipulator.canvas.width=400;
-				window.pixelManipulator.zoomctx.clearRect(0,0,window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);
-				window.pixelManipulator.zoomctx.drawImage(window.pixelManipulator.canvas,
+				window.pixelManipulator.zoomctx.clearRect(0,0,window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);//clear the screen
+				window.pixelManipulator.zoomctx.drawImage(window.pixelManipulator.canvas,//draw the selected section of the canvas onto the zoom canvas
 								  (window.pixelManipulator.mouseX - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
 								  (window.pixelManipulator.mouseY - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
 								  Math.floor(window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor),Math.floor(window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor),
 								  0,0,
 								  window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);
-				window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;
+				window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;//draw the grid
 				window.pixelManipulator.zoomctx.beginPath();
 				for (var i=1; i<(window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor); i++) {
 					window.pixelManipulator.zoomctx.moveTo(i*window.pixelManipulator.zoomScaleFactor,0);

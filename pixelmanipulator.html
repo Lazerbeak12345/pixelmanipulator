@@ -46,8 +46,8 @@
 		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
 		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
 			<canvas id="zoom" width="400" height="400"></canvas><br/><!--This is the zoomed-in box that the user can interact with-->
-			<input id="file" type="file" /><!--This is where the user can upload an image that will then applied to the canvas,and will allow for coming back from saving-->
-			<button id="play" alt="Play/Resume/Rewind" title="Play/Resume">►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
+			<button id="rewind" alt="Rewind" title="Rewind">◄</button>
+			<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
 			<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
 			<button id="oneFrameAtATime" onclick="p.loop();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
 			<br/>
@@ -105,7 +105,7 @@
 				<option>Rule 184</option>
 				<option selected="selected">Water</option>
 			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.50.132 (beta)</span><!-- -->
+			<span style="position:absolute; right:0px; bottom:0px">v1.50.133 (beta)</span><!-- -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -124,11 +124,6 @@
 					normalClick="Conway's Game Of Life",
 					ctrlClick="Blocks",
 					altClick="Water";
-				p.onReady=function() {//called once the user can interact with the page
-					//console.log("onReady");
-					document.getElementById('pause').disabled = false;
-					document.getElementById('oneFrameAtATime').disabled = false;
-				};
 				canvas = p.setCanvas(document.getElementById('canvas'));
 				zoomelm = p.setZoomelm(document.getElementById('zoom'));
 				p.elementTypeMap={
@@ -147,22 +142,6 @@
 					"Water":[23,103,167,255],
 					"blank":[0,0,0,255]
 				};
-				file.addEventListener('change',function(e) {
-					var img = new Image;
-					img.src = URL.createObjectURL(e.target.files[0]);
-					img.onload = function() {
-						this.style.display = 'none';
-						p.setCanvasSizes({
-							canvasW:document.getElementById("width").value||100,
-							canvasH:document.getElementById("height").value||100,
-							zoomW:document.getElementById("zoomWidthElm").value||20,
-							zoomH:document.getElementById("zoomHeightElm").value||20,
-						});
-						p.ctx.drawImage(this,0,0);
-						document.getElementById('pause').disabled=true;
-						p.mode="paused";
-					}
-				});
 				document.getElementById("play").addEventListener('click',function() {
 					p.play({
 						canvasW:document.getElementById("width").value||100,
@@ -170,11 +149,24 @@
 						zoomW:document.getElementById("zoomWidthElm").value||20,
 						zoomH:document.getElementById("zoomHeightElm").value||20,
 					});//pass a function in that you want called if it is becoming unpaused. Reccomended to have a function here that sets the canvas size here, due to how startup works.
-					document.getElementById('play').innerHTML = "◄";
+					document.getElementById('play').disabled = true;
+					document.getElementById('pause').disabled = false;
+				});
+				document.getElementById("rewind").addEventListener('click',function() {
+					p.rewind({
+						canvasW:document.getElementById("width").value||100,
+						canvasH:document.getElementById("height").value||100,
+						zoomW:document.getElementById("zoomWidthElm").value||20,
+						zoomH:document.getElementById("zoomHeightElm").value||20,
+					});//pass a function in that you want called if it is becoming rewinded. Reccomended to have a function here that sets the canvas size here, due to how startup works.
+					document.getElementById('play').disabled = true;
+					document.getElementById('oneFrameAtATime').disabled = false;
+					document.getElementById('rewind').disabled = false;
+					document.getElementById('pause').disabled = false;
 				});
 				document.getElementById("pause").addEventListener('click',function() {
 					document.getElementById('pause').disabled = true;
-					document.getElementById('play').innerHTML = "►";
+					document.getElementById('play').disabled = false;
 					p.mode="paused";
 					clearInterval(p.loopint);
 				});
