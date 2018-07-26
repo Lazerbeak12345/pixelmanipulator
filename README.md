@@ -5,10 +5,10 @@ A super powerfull library for cellular automation on html5 canvas elements
 
 ## Browser Support
 
-version          | Chrome  | Edge    | Firefox | IE      | Opera   | Safari  
+version          | Chrome  | Edge    | IE      | Firefox | Opera   | Safari  
 -----------------|---------|---------|---------|---------|---------|---------
-current release  | yes     | poor    | yes     | unknown | unknown | unknown 
-last supported   | N/A     | unknown | N/A     | unknown | unknown | unknown 
+current release  | yes     | poor    | no      | yes     | unknown | unknown 
+last supported   | N/A     | unknown | unknown | N/A     | unknown | unknown 
 oldest supported | unknown | unknown | unknown | unknown | unknown | unknown 
 
 > I can't test Browser support as well as I want to, so feel free to update this table! (this includes adding other browsers)
