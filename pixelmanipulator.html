@@ -39,17 +39,45 @@
 			height:100%
 			overflow: scroll;
 		}
+		#selectorBox,
+		#smallxline,
+		#smallyline,
+		#largexline,
+		#largeyline,
+		#largexline1,
+		#largeyline1{
+			position:absolute;
+			background:rgba(128,128,128,.5);
+			border:none;
+		}
+		#selectorBox:hover{
+			border:solid rgba(255,255,255,.5) 1px;
+		}
+		#workingLine{
+			width:4px;
+			height:1px;
+			background:red;
+			position:absolute;
+		}
 		</style>
 	</head>
 	<body>
 		<!--Content-->
 		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
+		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
+		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
+		<div id="selectorBox"></div>
+		<div id="workingLine"></div>
 		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
 			<canvas id="zoom" width="400" height="400"></canvas><br/><!--This is the zoomed-in box that the user can interact with-->
+			<div id="largexline" style="top:0px;"></div>
+			<div id="largeyline" style="right:0px;"></div>
+			<div id="largexline1" style="top:0px;"></div>
+			<div id="largeyline1" style="right:0px;"></div>
 			<button id="rewind" alt="Rewind" title="Rewind">◄</button>
 			<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
 			<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
-			<button id="oneFrameAtATime" onclick="p.loop();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+			<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
 			<br/>
 			Width: <input id="width"/><br/>
 			Height: <input id="height" /><br/>
@@ -73,6 +101,10 @@
 				<option>Water</option>
 			</select>
 			<br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="normalFill">Randomly fill</button>
+			<input id="normalFillP"/>%			
+			<br/>
 			Ctrl click: 
 			<select class="elmDrop" onchange="ctrlClick=this.value;">
 				<option>Acid</option>
@@ -88,9 +120,15 @@
 				<option>Rule 110</option>
 				<option>Rule 184</option>
 				<option>Water</option>
-			</select><br/>
+			</select>
+			<br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="ctrlFill">Randomly fill</button>
+			<input id="ctrlFillP"/>%			
+			<br/>
+
 			Alt click: 
-			<select class="elmDrop" onchange="altClick=this.value;">
+			<select class="elmDrop" onchange="altClick=this.value">
 				<option>Acid</option>
 				<option>Blocks</option>
 				<option>Conductor</option>
@@ -104,8 +142,14 @@
 				<option>Rule 110</option>
 				<option>Rule 184</option>
 				<option selected="selected">Water</option>
-			</select><br/>
-			<span style="position:absolute; right:0px; bottom:0px">v1.50.133 (beta)</span><!-- -->
+			</select>
+			<br/>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="altFill">Randomly fill</button>
+			<input id="altFillP"/>%			
+			<br/>
+			<br/>
+			<span style="position:absolute; right:0px;">v1.52.135 (beta)</span><!-- -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -119,13 +163,107 @@
 					if (document.readyState=='complete') callback();
 				});
 			}
-			ready(function() {
-				var file = document.getElementById('file'),
+			var file = document.getElementById('file'),
 					normalClick="Conway's Game Of Life",
 					ctrlClick="Blocks",
 					altClick="Water";
+			function updateBox() {
+				document.getElementById('selectorBox').style.width=(p.zoomelm.width/p.zoomScaleFactor)+"px";
+				document.getElementById('selectorBox').style.height=(p.zoomelm.height/p.zoomScaleFactor)+"px";
+				document.getElementById('selectorBox').style.left=(p.zoomX-(p.zoomelm.width/(2*p.zoomScaleFactor)))+"px";
+				document.getElementById('selectorBox').style.top=(p.zoomY-(p.zoomelm.height/(2*p.zoomScaleFactor)))+"px";
+			}
+			function updateSmallLines(e) {
+				document.getElementById('smallxline').style.left=(e.pageX)+"px";
+				document.getElementById('smallyline').style.top=(e.pageY)+"px";
+				var x=e.pageX-p.zoomX+(p.zoomScaleFactor/2),
+					y=e.pageY-p.zoomY+(p.zoomScaleFactor/2);
+				if ((e.pageX<((p.zoomelm.width/ (2*p.zoomScaleFactor))+p.zoomX)&&e.pageX>((p.zoomelm.width/ (-2*p.zoomScaleFactor))+p.zoomX))) {
+				  	//for when the line is inside the box, but the cursor isn't.
+				  	updateLargeLinesX(x,y);
+				}else updateLargeLinesX(-1,y)
+				if ((e.pageY<((p.zoomelm.height/(2*p.zoomScaleFactor))+p.zoomY)&&e.pageY>((p.zoomelm.height/(-2*p.zoomScaleFactor))+p.zoomY))) {
+					updateLargeLinesY(x,y);
+				}else updateLargeLinesY(x,-1)
+			}
+			function updateLargeLinesX(x,y) {
+				var h=(p.zoomelm.height-((1+y)*p.zoomScaleFactor)),
+					t=p.zoomScaleFactor*(y+1),
+					h2=(y*p.zoomScaleFactor);
+				if (y<0||y>(p.zoomelm.height/p.zoomScaleFactor)) {
+					h=p.zoomelm.height;
+					t=0;
+					h2=0;
+				}
+				document.getElementById("largexline").style.width=p.zoomScaleFactor+"px";
+				document.getElementById("largexline").style.height=h+"px";
+				document.getElementById("largexline").style.left=p.zoomScaleFactor*x+"px";
+				document.getElementById("largexline").style.top=t+"px";
+				
+				document.getElementById("largexline1").style.width=p.zoomScaleFactor+"px";
+				document.getElementById("largexline1").style.height=h2+"px";
+				document.getElementById("largexline1").style.left=p.zoomScaleFactor*x+"px";
+			}
+			function updateLargeLinesY(x,y) {
+				var w=(p.zoomelm.width-((1+x)*p.zoomScaleFactor)),
+					l=p.zoomScaleFactor*(x+1),
+					w2=(x*p.zoomScaleFactor);
+				if (x<0||x>(p.zoomelm.width/p.zoomScaleFactor)) {
+					w=p.zoomelm.width;
+					l=0;
+					w2=0;
+				}
+				document.getElementById("largeyline").style.height=p.zoomScaleFactor+"px";
+				document.getElementById("largeyline").style.width=w+"px";
+				document.getElementById("largeyline").style.top=p.zoomScaleFactor*y+"px";
+				document.getElementById("largeyline").style.left=l+"px";
+				
+				document.getElementById("largeyline1").style.height=p.zoomScaleFactor+"px";
+				document.getElementById("largeyline1").style.width=w2+"px";
+				document.getElementById("largeyline1").style.top=p.zoomScaleFactor*y+"px";
+				document.getElementById("largeyline1").style.left="0px";
+			}
+			function selectorClicked(e) {
+				p.zoom({
+					x:e.pageX,
+					y:e.pageY,	
+				});
+				updateBox();
+			}
+			function updateBothLargeLines(e) {
+				var x=Math.floor(e.offsetX/p.zoomScaleFactor),
+					y=Math.floor(e.offsetY/p.zoomScaleFactor);
+				updateSmallLines({
+					pageX:x+p.zoomX-(p.zoomelm.width/(2*p.zoomScaleFactor)),
+					pageY:y+p.zoomY-(p.zoomelm.width/(2*p.zoomScaleFactor)),
+				});
+			};
+			function bigLineGotHovered(e) {
+				e.srcElement.style.height="0px";//get the element out of the way so the canvas below will A: still be clickable and B: move this elm to the correct place
+			}
+			function boxHoverOrClick(e) {
+				updateSmallLines(e);
+				updateLargeLinesX(e.offsetX,e.offsetY);
+				updateLargeLinesY(e.offsetX,e.offsetY);
+			}; 
+			ready(function() {
 				canvas = p.setCanvas(document.getElementById('canvas'));
 				zoomelm = p.setZoomelm(document.getElementById('zoom'));
+				p.canvas.addEventListener('click', updateBox);
+				document.getElementById('selectorBox').addEventListener('click',selectorClicked);
+				p.canvas.addEventListener('mousemove', updateSmallLines);
+				document.getElementById('selectorBox').addEventListener('mousemove', boxHoverOrClick);
+				document.getElementById('selectorBox').addEventListener('click', boxHoverOrClick);
+				document.getElementById('smallxline').addEventListener('mousemove', updateSmallLines);
+				document.getElementById('smallyline').addEventListener('mousemove', updateSmallLines);
+				document.getElementById('smallxline').addEventListener('click',selectorClicked);
+				document.getElementById('smallyline').addEventListener('click',selectorClicked);
+				p.zoomelm.addEventListener('mousemove',updateBothLargeLines);
+				//*
+				document.getElementById('largexline').addEventListener('mousemove',bigLineGotHovered);
+				document.getElementById('largexline1').addEventListener('mousemove',bigLineGotHovered);
+				document.getElementById('largeyline').addEventListener('mousemove',bigLineGotHovered);
+				document.getElementById('largeyline1').addEventListener('mousemove',bigLineGotHovered);//*/
 				p.elementTypeMap={
 					"Acid":[110,162,10,255],
 					"Blocks":[127,127,127,255],
@@ -142,6 +280,10 @@
 					"Water":[23,103,167,255],
 					"blank":[0,0,0,255]
 				};
+				p.onIterate=function() {
+					document.getElementById("workingLine").style.top=p.row+"px";
+					document.getElementById("workingLine").style.left=(p.canvas.width+1)+"px";
+				}
 				document.getElementById("play").addEventListener('click',function() {
 					p.play({
 						canvasW:document.getElementById("width").value||100,
@@ -159,6 +301,7 @@
 						zoomW:document.getElementById("zoomWidthElm").value||20,
 						zoomH:document.getElementById("zoomHeightElm").value||20,
 					});//pass a function in that you want called if it is becoming rewinded. Reccomended to have a function here that sets the canvas size here, due to how startup works.
+					updateBox();
 					document.getElementById('play').disabled = true;
 					document.getElementById('oneFrameAtATime').disabled = false;
 					document.getElementById('rewind').disabled = false;
@@ -170,13 +313,48 @@
 					p.mode="paused";
 					clearInterval(p.loopint);
 				});
+				document.getElementById("normalFill").addEventListener('click',function() {
+					var pr=document.getElementById("normalFillP").value||15;
+					for (var i=0;i<p.data.length;i+=4) {
+						if (Math.random()*100<pr) {
+							p.data[i]=p.elementTypeMap[normalClick][0];
+							p.data[i+1]=p.elementTypeMap[normalClick][1];
+							p.data[i+2]=p.elementTypeMap[normalClick][2];
+							p.data[i+3]=p.elementTypeMap[normalClick][3];
+						}
+					}
+					p.update();
+				});
+				document.getElementById("ctrlFill").addEventListener('click',function() {
+					var pr=document.getElementById("ctrlFillP").value||15;
+					for (var i=0;i<p.data.length;i+=4) {
+						if (Math.random()*100<pr) {
+							p.data[i]=p.elementTypeMap[ctrlClick][0];
+							p.data[i+1]=p.elementTypeMap[ctrlClick][1];
+							p.data[i+2]=p.elementTypeMap[ctrlClick][2];
+							p.data[i+3]=p.elementTypeMap[ctrlClick][3];
+						}
+					}
+					p.update();
+				});
+				document.getElementById("altFill").addEventListener('click',function() {
+					var pr=document.getElementById("altFillP").value||15;
+					for (var i=0;i<p.data.length;i+=4) {
+						if (Math.random()*100<pr) {
+							p.data[i]=p.elementTypeMap[altClick][0];
+							p.data[i+1]=p.elementTypeMap[altClick][1];
+							p.data[i+2]=p.elementTypeMap[altClick][2];
+							p.data[i+3]=p.elementTypeMap[altClick][3];
+						}
+					}
+					p.update();
+				});
 				p.onZoomClick=function(e,theVictomPixelsNameIsTheValueOf) {
-					//console.log("onZoomClick");
+					//console.log("onZoomClick",arguments);
 					var active=normalClick//The default is normalClick.
 					if (e.ctrlKey) active=ctrlClick;
 					else if(e.altKey) active=altClick;
 					if (theVictomPixelsNameIsTheValueOf(active)) active="blank";
-					console.log("zoom",active)
 					return active;
 				};
 			});

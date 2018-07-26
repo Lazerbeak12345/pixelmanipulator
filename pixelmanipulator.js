@@ -1,4 +1,3 @@
-//pixelmanipulator.js v1.50.133 (beta)
 /*
 	This is a javascript file that is in charge of interacting with canvas elements and such. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
@@ -17,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.52.135 (beta) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -28,8 +27,8 @@ window.p=window.pixelManipulator=(function () {
 		loopint:0,
 		imageData:{},
 		data:[],
-		mouseX:0,
-		mouseY:0,
+		zoomX:0,
+		zoomY:0,
 		row:0,
 		elementTypeMap:{
 			"Test Elm":[122,122,122,122],
@@ -40,10 +39,9 @@ window.p=window.pixelManipulator=(function () {
 		canvas:{},
 		zoomelm:{},
 		zoomctx:{},
-		ready:false,
-		onReady:function() {},
 		zoomctxStrokeStyle:"gray",
-		onZoomClick:function() {return "blank";},
+		onZoomClick:function(clickEvent,confirmColorInstance) {return "blank";},
+		onIterate:function() {},
 	},{
 		licence:{
 			value:licence,
@@ -61,21 +59,21 @@ window.p=window.pixelManipulator=(function () {
 		zoomClick:{
 			value:function(e) {
 				//console.log("zoomClick",e);
-				var zoomXPos=Math.floor(e.offsetX/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.mouseX-(window.pixelManipulator.zoomScaleFactor/2)),
-					zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.mouseY-(window.pixelManipulator.zoomScaleFactor/2)),
+				var zoomXPos=Math.floor(e.offsetX/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomX-(window.pixelManipulator.zoomScaleFactor/2)),
+					zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomY-(window.pixelManipulator.zoomScaleFactor/2)),
 					old=[];
-				//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.mouseX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
-				//console.log(zoomYPos,"=Math.floor(",e.offsetY,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.mouseY,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
+				//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
+				//console.log(zoomYPos,"=Math.floor(",e.offsetY,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomY,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
 				for (var i=0;i<window.pixelManipulator.data.length;i++) {
 					old[i]=window.pixelManipulator.data[i]-0;
 				}
 				window.pixelManipulator.setPixel(zoomXPos,zoomYPos,//Where to set the pixel
 					window.pixelManipulator.onZoomClick(e,//pass in the click event
 						p.makeConfirmColor(zoomXPos,zoomYPos,window.pixelManipulator.createGetPixel(old))));//as well as a confirmColor instance
-				window.pixelManipulator.apply();
+				window.pixelManipulator.update();
 				window.pixelManipulator.zoom({
-					layerX:window.pixelManipulator.mouseX,
-					layerY:window.pixelManipulator.mouseY,
+					x:window.pixelManipulator.zoomX,
+					y:window.pixelManipulator.zoomY,
 				});
 			},
 		},
@@ -83,7 +81,7 @@ window.p=window.pixelManipulator=(function () {
 			value:function(canvasSizes) {
 				//console.log("play");
 				window.pixelManipulator.mode="playing";
-				window.pixelManipulator.loopint=setInterval(window.pixelManipulator.loop,1);
+				window.pixelManipulator.loopint=setInterval(window.pixelManipulator.iterate,1);
 			},
 		},
 		rewind:{
@@ -100,18 +98,18 @@ window.p=window.pixelManipulator=(function () {
 			},
 		},
 		zoom:{
-			value:function(event) {
-				//console.log("zoom",event);
-				if (event.layerX>=0&&event.layerY>=0) {
-					window.pixelManipulator.mouseX = event.layerX;
-					window.pixelManipulator.mouseY = event.layerY;
+			value:function(e) {
+				//console.log("zoom",e);
+				if (e.x>=0&&e.y>=0) {
+					window.pixelManipulator.zoomX=e.x;
+					window.pixelManipulator.zoomY=e.y;
 				}
 				if (window.pixelManipulator.canvas.height<2) window.pixelManipulator.canvas.height=400;//it would be pointless to have a canvas this small
 				if (window.pixelManipulator.canvas.width<2) window.pixelManipulator.canvas.width=400;
 				window.pixelManipulator.zoomctx.clearRect(0,0,window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);//clear the screen
 				window.pixelManipulator.zoomctx.drawImage(window.pixelManipulator.canvas,//draw the selected section of the canvas onto the zoom canvas
-								  (window.pixelManipulator.mouseX - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
-								  (window.pixelManipulator.mouseY - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
+								  (window.pixelManipulator.zoomX - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
+								  (window.pixelManipulator.zoomY - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
 								  Math.floor(window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor),Math.floor(window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor),
 								  0,0,
 								  window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);
@@ -126,15 +124,6 @@ window.p=window.pixelManipulator=(function () {
 					window.pixelManipulator.zoomctx.lineTo(window.pixelManipulator.zoomelm.width,i*window.pixelManipulator.zoomScaleFactor);
 				}
 				window.pixelManipulator.zoomctx.stroke();
-				//console.log("before ready query");
-				if (!window.pixelManipulator.ready) {
-					//console.log("after ready query");
-					window.pixelManipulator.ready=true;
-					//console.log("after boolean change");
-					window.pixelManipulator.onReady();
-					//console.log("after function");
-				}
-				//console.log("after if statement");
 			}
 		},
 		createGetPixel:{
@@ -166,9 +155,9 @@ window.p=window.pixelManipulator=(function () {
 				});
 			},
 		},
-		apply:{
+		update:{
 			value:function() {
-				//console.log("apply");
+				//console.log("update");
 				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
 			},
 		},
@@ -227,14 +216,15 @@ window.p=window.pixelManipulator=(function () {
 				for (var i=0; i<arry.length; i++) window.pixelManipulator.data[(((window.pixelManipulator.canvas.width*y)+x)*4)+i]=arry[i];
 			},
 		},
-		loop:{
+		iterate:{
 			value:function() {
-				//console.log("loop");
+				//console.log("iterate");
 				var old=[];
 				for (var i=0;i<window.pixelManipulator.data.length;i++) {
 					old[i]=window.pixelManipulator.data[i]-0;
 				}
 				//throw old
+				window.pixelManipulator.onIterate();
 				var getOldPixel=window.pixelManipulator.createGetPixel(old);
 				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
 					for (var y=0; y<window.pixelManipulator.canvas.height; y++) {
@@ -289,10 +279,10 @@ window.p=window.pixelManipulator=(function () {
 				}
 				window.pixelManipulator.row++;
 				if (window.pixelManipulator.row>window.pixelManipulator.canvas.height) window.pixelManipulator.row=0;
-				window.pixelManipulator.apply();
+				window.pixelManipulator.update();
 				window.pixelManipulator.zoom({
-					layerX:window.pixelManipulator.mouseX,
-					layerY:window.pixelManipulator.mouseY,
+					x:window.pixelManipulator.zoomX,
+					y:window.pixelManipulator.zoomY,
 				});
 			},
 		},
@@ -317,7 +307,12 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("setCanvas");
 				window.pixelManipulator.canvas=v;
 				window.pixelManipulator.ctx=window.pixelManipulator.canvas.getContext('2d');
-				window.pixelManipulator.canvas.addEventListener('click',window.pixelManipulator.zoom);
+				window.pixelManipulator.canvas.addEventListener('click',function(event) {
+					window.pixelManipulator.zoom({
+						x:event.offsetX,
+						y:event.offsetY,
+					})
+				});
 				return window.pixelManipulator.canvas;
 			},
 		},
@@ -330,8 +325,8 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.zoomelm.addEventListener('drag',window.pixelManipulator.zoomClick);
 				window.pixelManipulator.updateCanvasData();
 				window.pixelManipulator.zoom({
-					layerX:Math.floor(window.pixelManipulator.canvas.width/2)-(Math.floor(window.pixelManipulator.zoomelm.width/2)*window.pixelManipulator.zoomScaleFactor),
-					layerY:Math.floor(window.pixelManipulator.zoomelm.height/2)-(Math.floor(window.pixelManipulator.zoomelm.height/2)*window.pixelManipulator.zoomScaleFactor),
+					x:Math.floor(window.pixelManipulator.canvas.width/2)-(Math.floor(window.pixelManipulator.zoomelm.width/2)*window.pixelManipulator.zoomScaleFactor),
+					y:Math.floor(window.pixelManipulator.zoomelm.height/2)-(Math.floor(window.pixelManipulator.zoomelm.height/2)*window.pixelManipulator.zoomScaleFactor),
 				});
 				return window.pixelManipulator.zoomelm;
 			},
