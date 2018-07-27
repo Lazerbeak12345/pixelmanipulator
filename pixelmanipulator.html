@@ -36,8 +36,8 @@
 			top:0;
 			right:0;
 			z-index:999;
-			height:100%
-			overflow: scroll;
+			height:100%;
+			overflow-y:scroll;
 		}
 		#selectorBox,
 		#smallxline,
@@ -149,7 +149,7 @@
 			<input id="altFillP"/>%			
 			<br/>
 			<br/>
-			<span style="position:absolute; right:0px;">v1.52.136 (beta)</span><!-- -->
+			<span style="position:absolute; right:0px;">v1.52.137 (beta)</span><!-- -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -239,7 +239,7 @@
 				});
 			};
 			function bigLineGotHovered(e) {
-				e.srcElement.style.height="0px";//get the element out of the way so the canvas below will A: still be clickable and B: move this elm to the correct place
+				e.target.style.height="0px";//get the element out of the way so the canvas below will A: still be clickable and B: move this elm to the correct place
 			}
 			function boxHoverOrClick(e) {
 				updateSmallLines(e);
