@@ -148,8 +148,10 @@
 			<button id="altFill">Randomly fill</button>
 			<input id="altFillP"/>%			
 			<br/>
+			<label><input id="shtargeter" type="checkbox" >Show targeter lines</label>
+			<label><input id="shfocusbox" type="checkbox" >Show focus box</label>
 			<br/>
-			<span style="position:absolute; right:0px;">v1.52.137 (beta)</span><!-- -->
+			<span style="position:absolute; right:0px;">v1.52.137 (beta), Frontend (v1.0.0)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -264,6 +266,19 @@
 				document.getElementById('largexline1').addEventListener('mousemove',bigLineGotHovered);
 				document.getElementById('largeyline').addEventListener('mousemove',bigLineGotHovered);
 				document.getElementById('largeyline1').addEventListener('mousemove',bigLineGotHovered);//*/
+				document.getElementById('shtargeter').addEventListener('click',function() {
+					var state=document.getElementById('shtargeter').checked?"hidden":"visible";
+					document.getElementById('smallxline').style.visibility=state;
+					document.getElementById('smallyline').style.visibility=state;
+					document.getElementById('largexline').style.visibility=state;
+					document.getElementById('largexline1').style.visibility=state;
+					document.getElementById('largeyline').style.visibility=state;
+					document.getElementById('largeyline1').style.visibility=state;
+				});
+				document.getElementById('shfocusbox').addEventListener('click',function() {
+					var state=document.getElementById('shfocusbox').checked?"hidden":"visible";
+					document.getElementById('selectorBoxe').style.visibility=state;
+				});
 				p.elementTypeMap={
 					"Acid":[110,162,10,255],
 					"Blocks":[127,127,127,255],
