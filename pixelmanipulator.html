@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCUMENT html>
 <!--
 	This is the test html file intended to show what this library can do.
     Copyright (C) 2018  Nathan Fritzler
@@ -87,6 +87,7 @@
 			Normal click: 
 			<select class="elmDrop" onchange="normalClick=this.value;">
 				<option>Acid</option>
+				<option>blank</option>
 				<option>Blocks</option>
 				<option>Conductor</option>
 				<option selected="selected">Conway's Game Of Life</option>
@@ -108,6 +109,7 @@
 			Ctrl click: 
 			<select class="elmDrop" onchange="ctrlClick=this.value;">
 				<option>Acid</option>
+				<option>blank</option>
 				<option selected="selected">Blocks</option>
 				<option>Conductor</option>
 				<option>Conway's Game Of Life</option>
@@ -130,6 +132,7 @@
 			Alt click: 
 			<select class="elmDrop" onchange="altClick=this.value">
 				<option>Acid</option>
+				<option>blank</option>
 				<option>Blocks</option>
 				<option>Conductor</option>
 				<option>Conway's Game Of Life</option>
@@ -148,10 +151,11 @@
 			<button id="altFill">Randomly fill</button>
 			<input id="altFillP"/>%			
 			<br/>
-			<label><input id="shtargeter" type="checkbox" >Show targeter lines</label>
-			<label><input id="shfocusbox" type="checkbox" >Show focus box</label>
+			<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
+			<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
 			<br/>
-			<span style="position:absolute; right:0px;">v1.52.137 (beta), Frontend (v1.0.0)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">Fork Pixelmanipulator On Github!</a><br/>
+				v1.54.138 (beta), Frontend (v1.4.6)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -186,7 +190,8 @@
 				}else updateLargeLinesX(-1,y)
 				if ((e.pageY<((p.zoomelm.height/(2*p.zoomScaleFactor))+p.zoomY)&&e.pageY>((p.zoomelm.height/(-2*p.zoomScaleFactor))+p.zoomY))) {
 					updateLargeLinesY(x,y);
-				}else updateLargeLinesY(x,-1)
+				}else updateLargeLinesY(x,-1);
+     
 			}
 			function updateLargeLinesX(x,y) {
 				var h=(p.zoomelm.height-((1+y)*p.zoomScaleFactor)),
@@ -217,6 +222,7 @@
 				}
 				document.getElementById("largeyline").style.height=p.zoomScaleFactor+"px";
 				document.getElementById("largeyline").style.width=w+"px";
+     
 				document.getElementById("largeyline").style.top=p.zoomScaleFactor*y+"px";
 				document.getElementById("largeyline").style.left=l+"px";
 				
@@ -277,23 +283,96 @@
 				});
 				document.getElementById('shfocusbox').addEventListener('click',function() {
 					var state=document.getElementById('shfocusbox').checked?"hidden":"visible";
-					document.getElementById('selectorBoxe').style.visibility=state;
+					document.getElementById('selectorBox').style.visibility=state;
 				});
 				p.elementTypeMap={
-					"Acid":[110,162,10,255],
-					"Blocks":[127,127,127,255],
-					"Conductor":[67,75,77,255],
-					"Conway's Game Of Life":[0,255,0,255],
-					"Electricity":[148,133,0,255],
-					"FadingElectricity":[148,133,0,254],
-					"Highlife":[0,255,128],
-					"No-loop Conway's Game Of Life":[0,150,0,255],
-					"Rule 30":[255,0,255,255],
-					"Rule 90":[147,112,219,255],
-					"Rule 110":[128,0,128,255],
-					"Rule 184":[255,51,153,255],
-					"Water":[23,103,167,255],
-					"blank":[0,0,0,255]
+					"Acid":{
+						color:[110,162,10,255],
+						pattern:[function(rel) {//current Pixel Matches
+							var rand=Math.round(Math.random()*2)-1;factor=0;
+							while ((!p.makeConfirmColor(rel.x+rand,rel.y+factor,rel.getOldPixel,false)("blank")||Math.random()<=0.3)&&factor<3) factor++;
+							if (factor<=3){
+								if (Math.random()>0.3) p.setPixel(rel.x,rel.y,"blank",false);
+								p.setPixel(rel.x+rand,rel.y+factor,"Acid",false);
+							}
+						}],
+					},
+					"Blocks":{
+						color:[127,127,127,255],
+					},
+					"Conductor":{
+						color:[67,75,77,255],
+						pattern:[function(rel) {
+							var conductorNearbyTotal=rel.mooreNearbyCounter("Electricity",false);
+							if(conductorNearbyTotal===1||conductorNearbyTotal===2) p.setPixel(rel.x,rel.y,"Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
+						}],
+					},
+					"Conway's Game Of Life":{
+						color:[0,255,0,255],
+						pattern:[function(rel) {
+							nearbyTotalG=rel.mooreNearbyCounter("Conway's Game Of Life");
+							if(nearbyTotalG<2||nearbyTotalG>=4) p.setPixel(rel.x,rel.y,"blank");//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
+						},function(rel) {
+							if(rel.mooreNearbyCounter("Conway's Game Of Life")===3) p.setPixel(rel.x,rel.y,"Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
+						}],
+					},
+					"Electricity":{
+						color:[148,133,0,255],
+						pattern:[function(rel) {
+							p.setPixel(x,y,"FadingElectricity",false);
+						}],
+					},
+					"FadingElectricity":{
+						color:[148,133,0,254],
+						pattern:[function(rel) {
+							p.setPixel(rel.x,rel.y,"Conductor",false);
+						}],
+					},
+					"Highlife":{
+						color:[0,255,128,255],
+						pattern:[function(rel) {
+							if(!(rel.mooreNearbyCounter("Highlife",false)===2||rel.mooreNearbyCounter("Highlife",false)===3)) p.setPixel(rel.x,rel.y,"blank",false);
+						},function(rel) {
+							if(rel.mooreNearbyCounter("Highlife")===3||rel.mooreNearbyCounter("Highlife")===6) p.setPixel(rel.x,rel.y,"Highlife");//a cell is born if it has 3 or 6 neighbors
+						}],
+					},
+					"No-loop Conway's Game Of Life":{
+						color:[0,150,0,255],
+						pattern:[function(rel) {//pixel matches
+							//console.log('no-loop');
+							var nearbyTotalG=rel.mooreNearbyCounter("No-loop Conway's Game Of Life",false);
+							if(nearbyTotalG<2||nearbyTotalG>=4) p.setPixel(rel.x,rel.y,"blank",false);//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
+						},function(rel) {//pixel doesn't match
+							//console.log('no-loop-dead');
+							if(rel.mooreNearbyCounter("No-loop Conway's Game Of Life",false)===3) p.setPixel(rel.x,rel.y,"No-loop Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
+						}],
+					},
+					"Rule 30":{
+						color:[255,0,255,255],
+					},
+					"Rule 90":{
+						color:[147,112,219,255],
+					},
+					"Rule 110":{
+						color:[128,0,128,255],
+					},
+					"Rule 184":{
+						color:[255,51,153,255],
+					},
+					"Water":{
+						color:[23,103,167,255],
+						pattern:[function(rel) {
+							var rand=Math.round(Math.random()*2)-1;factor=0;
+							while ((!p.makeConfirmColor(rel.x+rand,rel.y+factor,rel.getOldPixel,false)("blank"))&&factor<2) factor++;
+							if (factor<=2&&(p.makeConfirmColor(rel.x+rand,rel.y+factor,p.getPixel,false)("blank"))){
+								p.setPixel(rel.x,rel.y,"blank",false);
+								p.setPixel(rel.x+rand,rel.y+factor,"Water",false);
+							}
+						}],
+					},
+					"blank":{//does nothing
+						color:[0,0,0,255],
+					},
 				};
 				p.onIterate=function() {
 					document.getElementById("workingLine").style.top=p.row+"px";
@@ -332,10 +411,10 @@
 					var pr=document.getElementById("normalFillP").value||15;
 					for (var i=0;i<p.data.length;i+=4) {
 						if (Math.random()*100<pr) {
-							p.data[i]=p.elementTypeMap[normalClick][0];
-							p.data[i+1]=p.elementTypeMap[normalClick][1];
-							p.data[i+2]=p.elementTypeMap[normalClick][2];
-							p.data[i+3]=p.elementTypeMap[normalClick][3];
+							p.data[i]=p.elementTypeMap[normalClick].color[0];
+							p.data[i+1]=p.elementTypeMap[normalClick].color[1];
+							p.data[i+2]=p.elementTypeMap[normalClick].color[2];
+							p.data[i+3]=p.elementTypeMap[normalClick].color[3];
 						}
 					}
 					p.update();
@@ -344,10 +423,10 @@
 					var pr=document.getElementById("ctrlFillP").value||15;
 					for (var i=0;i<p.data.length;i+=4) {
 						if (Math.random()*100<pr) {
-							p.data[i]=p.elementTypeMap[ctrlClick][0];
-							p.data[i+1]=p.elementTypeMap[ctrlClick][1];
-							p.data[i+2]=p.elementTypeMap[ctrlClick][2];
-							p.data[i+3]=p.elementTypeMap[ctrlClick][3];
+							p.data[i]=p.elementTypeMap[ctrlClick].color[0];
+							p.data[i+1]=p.elementTypeMap[ctrlClick].color[1];
+							p.data[i+2]=p.elementTypeMap[ctrlClick].color[2];
+							p.data[i+3]=p.elementTypeMap[ctrlClick].color[3];
 						}
 					}
 					p.update();
@@ -356,10 +435,10 @@
 					var pr=document.getElementById("altFillP").value||15;
 					for (var i=0;i<p.data.length;i+=4) {
 						if (Math.random()*100<pr) {
-							p.data[i]=p.elementTypeMap[altClick][0];
-							p.data[i+1]=p.elementTypeMap[altClick][1];
-							p.data[i+2]=p.elementTypeMap[altClick][2];
-							p.data[i+3]=p.elementTypeMap[altClick][3];
+							p.data[i]=p.elementTypeMap[altClick].color[0];
+							p.data[i+1]=p.elementTypeMap[altClick].color[1];
+							p.data[i+2]=p.elementTypeMap[altClick].color[2];
+							p.data[i+3]=p.elementTypeMap[altClick].color[3];
 						}
 					}
 					p.update();

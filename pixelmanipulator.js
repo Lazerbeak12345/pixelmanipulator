@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.52.137 (beta) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.54.138 (beta) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -31,7 +31,7 @@ window.p=window.pixelManipulator=(function () {
 		zoomY:0,
 		row:0,
 		elementTypeMap:{
-			"Test Elm":[122,122,122,122],
+			"blank":[0,0,0,255],
 		},
 		mode:"paused",
 		zoomScaleFactor:20,
@@ -40,11 +40,19 @@ window.p=window.pixelManipulator=(function () {
 		zoomelm:{},
 		zoomctx:{},
 		zoomctxStrokeStyle:"gray",
-		onZoomClick:function(clickEvent,confirmColorInstance) {return "blank";},
+		defaultElm:'blank',
+		onZoomClick:function(clickEvent,confirmColorInstance) {return window.pixelManipulator.defaultElm;},
 		onIterate:function() {},
 	},{
 		licence:{
 			value:licence,
+		},
+		whatIs:{
+			value:function(x,y,loop) {
+				for (var i in window.pixelManipulator.elementTypeMap) {
+					if (p.makeConfirmColor(x,y,p.getPixel)(i)) return i;
+				}
+			},
 		},
 		setCanvasSizes:{
 			value:function(canvasSizes) {
@@ -168,7 +176,7 @@ window.p=window.pixelManipulator=(function () {
 				var colors=f(x,y,loop);
 				return function(name) {
 					//console.log("ConfirmColor");
-					var arry=window.pixelManipulator.elementTypeMap[name];
+					var arry=window.pixelManipulator.elementTypeMap[name].color;
 					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
 				};
 			},
@@ -205,7 +213,7 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("setPixel",x,y,name,loop);
 				x=Math.floor(x);//Fix any bad math done further up the line.
 				y=Math.floor(y);//...
-				var arry=window.pixelManipulator.elementTypeMap[name];
+				var arry=window.pixelManipulator.elementTypeMap[name].color;
 				loop=typeof loop!=="undefined"?loop:true;
 				if (loop) {
 					while (x<0) x=window.pixelManipulator.canvas.width+x;
@@ -223,59 +231,36 @@ window.p=window.pixelManipulator=(function () {
 				for (var i=0;i<window.pixelManipulator.data.length;i++) {
 					old[i]=window.pixelManipulator.data[i]-0;
 				}
-				//throw old
 				window.pixelManipulator.onIterate();
 				var getOldPixel=window.pixelManipulator.createGetPixel(old);
-				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
-					for (var y=0; y<window.pixelManipulator.canvas.height; y++) {
-						var confirmElement=window.pixelManipulator.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
-							mooreNearbyCounter=window.pixelManipulator.makeMooreNearbyCounter(x,y,getOldPixel),
-							wolframNearby=window.pixelManipulator.makeWolframNearby(x,y,getOldPixel),
-							nearbyTotalG,
-							rand,
-							factor;
-						if (confirmElement("No-loop Conway's Game Of Life")) {
-							nearbyTotalG=mooreNearbyCounter("No-loop Conway's Game Of Life",false);
-							if(nearbyTotalG<2||nearbyTotalG>=4) window.pixelManipulator.setPixel(x,y,"blank",false);//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
-						}else if (confirmElement("Conway's Game Of Life")) {
-							nearbyTotalG=mooreNearbyCounter("Conway's Game Of Life");
-							if(nearbyTotalG<2||nearbyTotalG>=4) window.pixelManipulator.setPixel(x,y,"blank");//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
-						}else if (confirmElement("Water")) {
-							rand=Math.round(Math.random()*2)-1;factor=0;
-							while ((!window.pixelManipulator.makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank"))&&factor<2) factor++;
-							if (factor<=2&&(window.pixelManipulator.makeConfirmColor(x+rand,y+factor,window.pixelManipulator.getPixel,false)("blank"))){
-								window.pixelManipulator.setPixel(x,y,"blank",false);
-								window.pixelManipulator.setPixel(x+rand,y+factor,"Water",false);
-							}
-						}else if (confirmElement("Acid")) {
-							rand=Math.round(Math.random()*2)-1;factor=0;
-							while ((!window.pixelManipulator.makeConfirmColor(x+rand,y+factor,getOldPixel,false)("blank")||Math.random()<=0.3)&&factor<3) factor++;
-							if (factor<=3){
-								if (Math.random()>0.3) window.pixelManipulator.setPixel(x,y,"blank",false);
-								window.pixelManipulator.setPixel(x+rand,y+factor,"Acid",false);
-							}
-						}else if (confirmElement("FadingElectricity")) {//fadingelectricity
-							window.pixelManipulator.setPixel(x,y,"Conductor",false);
-						}else if (confirmElement("Electricity")) {//electricity
-							window.pixelManipulator.setPixel(x,y,"FadingElectricity",false);
-						}else if (confirmElement("Conductor")) {//conductor
-							var conductorNearbyTotal=mooreNearbyCounter("Electricity",false);
-							if(conductorNearbyTotal===1||conductorNearbyTotal===2) window.pixelManipulator.setPixel(x,y,"Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
-						}else if (confirmElement("Highlife")){
-							if(!(mooreNearbyCounter("Highlife",false)===2||mooreNearbyCounter("Highlife",false)===3)) window.pixelManipulator.setPixel(x,y,"blank",false);
-						}else if (confirmElement("Blocks")) {
-						}else if (confirmElement("blank")||confirmElement("Rule 110")||confirmElement("Rule 30")||confirmElement("Rule 90")||confirmElement("Rule 184")) {
-							if (y==window.pixelManipulator.row) {
-								if (wolframNearby("Rule 110",[1,1,0])||wolframNearby("Rule 110",[1,0,1])||wolframNearby("Rule 110",[0,1,1])||wolframNearby("Rule 110",[0,1,0])||wolframNearby("Rule 110",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 110",false);
-								if (wolframNearby("Rule 30",[1,0,0])||wolframNearby("Rule 30",[0,1,1])||wolframNearby("Rule 30",[0,1,0])||wolframNearby("Rule 30",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 30",false);
-								if (wolframNearby("Rule 90",[1,1,0])||wolframNearby("Rule 90",[1,0,0])||wolframNearby("Rule 90",[0,1,1])||wolframNearby("Rule 90",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 90",false);
-								if (wolframNearby("Rule 184",[1,1,1])||wolframNearby("Rule 184",[1,0,1])||wolframNearby("Rule 184",[1,0,0])||wolframNearby("Rule 184",[0,1,1])) window.pixelManipulator.setPixel(x,y,"Rule 184",false);
-							}
-							if(mooreNearbyCounter("No-loop Conway's Game Of Life",false)===3) window.pixelManipulator.setPixel(x,y,"No-loop Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
-							if(mooreNearbyCounter("Conway's Game Of Life")===3) window.pixelManipulator.setPixel(x,y,"Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
-							if(mooreNearbyCounter("Highlife")===3||mooreNearbyCounter("Highlife")===6) window.pixelManipulator.setPixel(x,y,"Highlife");//a cell is born if it has 3 or 6 neighbors
-						}else console.log("Nothing happened with", getOldPixel(x,y), "at (",x,",",y,")");
+				for (var x=0; x<window.pixelManipulator.canvas.width; x++) for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
+					var confirmElement=window.pixelManipulator.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
+						mooreNearbyCounter=window.pixelManipulator.makeMooreNearbyCounter(x,y,getOldPixel),
+						wolframNearby=window.pixelManipulator.makeWolframNearby(x,y,getOldPixel),
+						nearbyTotalG,
+						rand,
+						factor,
+						currentPix=window.pixelManipulator.whatIs(x,y),
+						rel={
+							x:x,
+							y:y,
+							getOldPixel:getOldPixel,
+							confirmElement:confirmElement,
+							mooreNearbyCounter:mooreNearbyCounter,
+							wolframNearby:wolframNearby,
+							currentPix:currentPix,
+						};
+					if (typeof window.pixelManipulator.elementTypeMap[currentPix].pattern==="object"&&typeof window.pixelManipulator.elementTypeMap[currentPix].pattern[0]==="function") window.pixelManipulator.elementTypeMap[currentPix].pattern[0](rel);//execute function-based externals (live)
+					if (confirmElement("blank")||confirmElement("Rule 110")||confirmElement("Rule 30")||confirmElement("Rule 90")||confirmElement("Rule 184")) {
+						if (y==window.pixelManipulator.row) {
+							if (wolframNearby("Rule 110",[1,1,0])||wolframNearby("Rule 110",[1,0,1])||wolframNearby("Rule 110",[0,1,1])||wolframNearby("Rule 110",[0,1,0])||wolframNearby("Rule 110",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 110",false);
+							if (wolframNearby("Rule 30",[1,0,0])||wolframNearby("Rule 30",[0,1,1])||wolframNearby("Rule 30",[0,1,0])||wolframNearby("Rule 30",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 30",false);
+							if (wolframNearby("Rule 90",[1,1,0])||wolframNearby("Rule 90",[1,0,0])||wolframNearby("Rule 90",[0,1,1])||wolframNearby("Rule 90",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 90",false);
+							if (wolframNearby("Rule 184",[1,1,1])||wolframNearby("Rule 184",[1,0,1])||wolframNearby("Rule 184",[1,0,0])||wolframNearby("Rule 184",[0,1,1])) window.pixelManipulator.setPixel(x,y,"Rule 184",false);
+						}
+						for (var elm in window.pixelManipulator.elementTypeMap) if (typeof window.pixelManipulator.elementTypeMap[elm].pattern==="object"&&typeof window.pixelManipulator.elementTypeMap[elm].pattern[1]==="function") window.pixelManipulator.elementTypeMap[elm].pattern[1](rel);//execute function-based externals (dead)
 					}
+					
 				}
 				window.pixelManipulator.row++;
 				if (window.pixelManipulator.row>window.pixelManipulator.canvas.height) window.pixelManipulator.row=0;
