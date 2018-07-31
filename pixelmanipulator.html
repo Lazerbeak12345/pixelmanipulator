@@ -1,4 +1,4 @@
-<!DOCUMENT html>
+<!doctype html>
 <!--
 	This is the test html file intended to show what this library can do.
     Copyright (C) 2018  Nathan Fritzler
@@ -74,7 +74,7 @@
 			<div id="largeyline" style="right:0px;"></div>
 			<div id="largexline1" style="top:0px;"></div>
 			<div id="largeyline1" style="right:0px;"></div>
-			<button id="rewind" alt="Rewind" title="Rewind">◄</button>
+			<button id="reset" alt="Reset" title="Reset">◄</button>
 			<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
 			<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
 			<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
@@ -89,10 +89,10 @@
 				<option>Acid</option>
 				<option>blank</option>
 				<option>Blocks</option>
-				<option>Conductor</option>
+				<option>Wireworld Conductor</option>
 				<option selected="selected">Conway's Game Of Life</option>
-				<option>Electricity</option>
-				<option>FadingElectricity</option>
+				<option>Wireworld Electricity</option>
+				<option>Wireworld FadingElectricity</option>
 				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
 				<option>Rule 30</option>
@@ -111,10 +111,10 @@
 				<option>Acid</option>
 				<option>blank</option>
 				<option selected="selected">Blocks</option>
-				<option>Conductor</option>
+				<option>Wireworld Conductor</option>
 				<option>Conway's Game Of Life</option>
-				<option>Electricity</option>
-				<option>FadingElectricity</option>
+				<option>Wireworld Electricity</option>
+				<option>Wireworld FadingElectricity</option>
 				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
 				<option>Rule 30</option>
@@ -134,10 +134,10 @@
 				<option>Acid</option>
 				<option>blank</option>
 				<option>Blocks</option>
-				<option>Conductor</option>
+				<option>Wireworld Conductor</option>
 				<option>Conway's Game Of Life</option>
-				<option>Electricity</option>
-				<option>FadingElectricity</option>
+				<option>Wireworld Electricity</option>
+				<option>Wireworld FadingElectricity</option>
 				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
 				<option>Rule 30</option>
@@ -155,7 +155,7 @@
 			<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">Fork Pixelmanipulator On Github!</a><br/>
-				v1.54.138 (beta), Frontend (v1.4.6)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				v1.57.141 (beta-proposed), Frontend (v1.9.10)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
@@ -285,95 +285,84 @@
 					var state=document.getElementById('shfocusbox').checked?"hidden":"visible";
 					document.getElementById('selectorBox').style.visibility=state;
 				});
-				p.elementTypeMap={
+				p.setElements({
 					"Acid":{
 						color:[110,162,10,255],
-						pattern:[function(rel) {//current Pixel Matches
+						liveCell:function(rel) {//current Pixel Matches
 							var rand=Math.round(Math.random()*2)-1;factor=0;
 							while ((!p.makeConfirmColor(rel.x+rand,rel.y+factor,rel.getOldPixel,false)("blank")||Math.random()<=0.3)&&factor<3) factor++;
 							if (factor<=3){
 								if (Math.random()>0.3) p.setPixel(rel.x,rel.y,"blank",false);
 								p.setPixel(rel.x+rand,rel.y+factor,"Acid",false);
 							}
-						}],
+						},
 					},
-					"Blocks":{
+					"Blocks":{//does nothing
 						color:[127,127,127,255],
 					},
-					"Conductor":{
+					"Wireworld Conductor":{
 						color:[67,75,77,255],
-						pattern:[function(rel) {
-							var conductorNearbyTotal=rel.mooreNearbyCounter("Electricity",false);
-							if(conductorNearbyTotal===1||conductorNearbyTotal===2) p.setPixel(rel.x,rel.y,"Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
-						}],
+						liveCell:function(rel) {
+							var conductorNearbyTotal=rel.mooreNearbyCounter("Wireworld Electricity",false);
+							if(conductorNearbyTotal===1||conductorNearbyTotal===2) p.setPixel(rel.x,rel.y,"Wireworld Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
+						},
 					},
 					"Conway's Game Of Life":{
 						color:[0,255,0,255],
-						pattern:[function(rel) {
-							nearbyTotalG=rel.mooreNearbyCounter("Conway's Game Of Life");
-							if(nearbyTotalG<2||nearbyTotalG>=4) p.setPixel(rel.x,rel.y,"blank");//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
-						},function(rel) {
-							if(rel.mooreNearbyCounter("Conway's Game Of Life")===3) p.setPixel(rel.x,rel.y,"Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
-						}],
+						pattern:"B3/S23",//born on 3, survives on 2 or 3
 					},
-					"Electricity":{
+					"Wireworld Electricity":{
 						color:[148,133,0,255],
-						pattern:[function(rel) {
-							p.setPixel(x,y,"FadingElectricity",false);
-						}],
+						liveCell:function(rel) {
+							p.setPixel(rel.x,rel.y,"Wireworld FadingElectricity",false);
+						},
 					},
-					"FadingElectricity":{
+					"Wireworld FadingElectricity":{
 						color:[148,133,0,254],
-						pattern:[function(rel) {
-							p.setPixel(rel.x,rel.y,"Conductor",false);
-						}],
+						liveCell:function(rel) {
+							p.setPixel(rel.x,rel.y,"Wireworld Conductor",false);
+						},
 					},
 					"Highlife":{
 						color:[0,255,128,255],
-						pattern:[function(rel) {
-							if(!(rel.mooreNearbyCounter("Highlife",false)===2||rel.mooreNearbyCounter("Highlife",false)===3)) p.setPixel(rel.x,rel.y,"blank",false);
-						},function(rel) {
-							if(rel.mooreNearbyCounter("Highlife")===3||rel.mooreNearbyCounter("Highlife")===6) p.setPixel(rel.x,rel.y,"Highlife");//a cell is born if it has 3 or 6 neighbors
-						}],
+						pattern:"B36/S23"//born on 3 or 6, survives on 2 or 3
 					},
 					"No-loop Conway's Game Of Life":{
 						color:[0,150,0,255],
-						pattern:[function(rel) {//pixel matches
-							//console.log('no-loop');
-							var nearbyTotalG=rel.mooreNearbyCounter("No-loop Conway's Game Of Life",false);
-							if(nearbyTotalG<2||nearbyTotalG>=4) p.setPixel(rel.x,rel.y,"blank",false);//Any alive cell that is touching less than two alive neighbours dies. Any alive cell touching four or more alive neighbours dies.
-						},function(rel) {//pixel doesn't match
-							//console.log('no-loop-dead');
-							if(rel.mooreNearbyCounter("No-loop Conway's Game Of Life",false)===3) p.setPixel(rel.x,rel.y,"No-loop Conway's Game Of Life");//Any dead cell touching exactly three alive neighbours becomes alive.
-						}],
+						pattern:"B3/S23",//same as Conway's Game Of Life, but with a no-loop boolean
+						loop:false
 					},
 					"Rule 30":{
 						color:[255,0,255,255],
+						pattern:"Rule 30",
 					},
 					"Rule 90":{
 						color:[147,112,219,255],
+						pattern:"Rule 90",
 					},
 					"Rule 110":{
 						color:[128,0,128,255],
+						pattern:"Rule 110",
 					},
 					"Rule 184":{
 						color:[255,51,153,255],
+						pattern:"Rule 184",
 					},
 					"Water":{
 						color:[23,103,167,255],
-						pattern:[function(rel) {
+						liveCell:function(rel) {
 							var rand=Math.round(Math.random()*2)-1;factor=0;
 							while ((!p.makeConfirmColor(rel.x+rand,rel.y+factor,rel.getOldPixel,false)("blank"))&&factor<2) factor++;
 							if (factor<=2&&(p.makeConfirmColor(rel.x+rand,rel.y+factor,p.getPixel,false)("blank"))){
 								p.setPixel(rel.x,rel.y,"blank",false);
 								p.setPixel(rel.x+rand,rel.y+factor,"Water",false);
 							}
-						}],
+						},
 					},
-					"blank":{//does nothing
+					"blank":{//does nothing and is default element
 						color:[0,0,0,255],
 					},
-				};
+				});
 				p.onIterate=function() {
 					document.getElementById("workingLine").style.top=p.row+"px";
 					document.getElementById("workingLine").style.left=(p.canvas.width+1)+"px";
@@ -388,19 +377,21 @@
 					document.getElementById('play').disabled = true;
 					document.getElementById('pause').disabled = false;
 				});
-				document.getElementById("rewind").addEventListener('click',function() {
-					p.rewind({
+				document.getElementById("reset").addEventListener('click',function() {
+					p.reset({
 						canvasW:document.getElementById("width").value||100,
 						canvasH:document.getElementById("height").value||100,
 						zoomW:document.getElementById("zoomWidthElm").value||20,
 						zoomH:document.getElementById("zoomHeightElm").value||20,
-					});//pass a function in that you want called if it is becoming rewinded. Reccomended to have a function here that sets the canvas size here, due to how startup works.
+					});//pass a function in that you want called if it is becoming reseted. Reccomended to have a function here that sets the canvas size here, due to how startup works.
 					updateBox();
-					document.getElementById('play').disabled = true;
+					document.getElementById('play').disabled = false;
 					document.getElementById('oneFrameAtATime').disabled = false;
-					document.getElementById('rewind').disabled = false;
-					document.getElementById('pause').disabled = false;
+					document.getElementById('reset').disabled = false;
+					document.getElementById('pause').disabled = true;
+					p.iterate();//this will prevent new user confusion by showing the zoom box
 				});
+				document.getElementById('reset').click();
 				document.getElementById("pause").addEventListener('click',function() {
 					document.getElementById('pause').disabled = true;
 					document.getElementById('play').disabled = false;

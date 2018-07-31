@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.54.138 (beta) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.57.141 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -47,10 +47,59 @@ window.p=window.pixelManipulator=(function () {
 		licence:{
 			value:licence,
 		},
+		__LIFE_TEMPLATES__:{
+			value:{
+				__LIVE__:function(numtodie,loop,elm) {
+					return (function(rel) {
+						var nearbyTotal=rel.mooreNearbyCounter(elm,loop),willLive=true;//count how many are nearby (moore style)
+						for (var i=0; i<numtodie.length; i++) if (numtodie[i]-0==nearbyTotal) willLive=false; // if any match is found, it dies
+						if(willLive) window.pixelManipulator.setPixel(rel.x,rel.y,window.pixelManipulator.defaultElm);
+					});
+				},
+				__DEAD__:function(numtolive,loop,elm) {
+					return (function(rel) {
+						var nearbyTotal=rel.mooreNearbyCounter(elm,loop),willLive=false;//count how many are nearby
+						for (var i=0; i<numtolive.length; i++) if (numtolive[i]-0==nearbyTotal) willLive=true; // if any match is found, it lives
+						if(willLive) p.setPixel(rel.x,rel.y,elm);
+					});
+				},
+			}
+		},
+		__WOLFRAM_TEMPLATE__:{
+			value:function(elm,binStates) {
+				return (function(rel) {
+					var lives=false;
+					if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit
+					for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(elm,(7-i).toString(2).padStart(3,"0"))) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
+					if (lives) window.pixelManipulator.setPixel(rel.x,rel.y,elm);
+				});
+			},
+		},
+		setElements:{
+			value:function(map) {
+				for (var elm in map) {
+					if (typeof map[elm].pattern==="string") {
+						if (map[elm].pattern.search(/B\d{0,9}\/S\d{0,9}/gi)>-1) {
+							var numbers=map[elm].pattern.split(/\/*[a-z]/gi),
+								born=numbers[1],die=numbers[2];
+							map[elm].liveCell=window.pixelManipulator.__LIFE_TEMPLATES__.__LIVE__(die,map[elm].loop,elm);
+							map[elm].deadCell=window.pixelManipulator.__LIFE_TEMPLATES__.__DEAD__(born,map[elm].loop,elm);
+							console.log("life pattern found: ",elm,map[elm]);
+						}else if (map[elm].pattern.search(/Rule \d*/gi)>-1) {
+							var number=map[elm].pattern.split(/Rule /gi)[1]-0,
+								binStates=number.toString(2).padStart(8,"0");
+							map[elm].deadCell=window.pixelManipulator.__WOLFRAM_TEMPLATE__(elm,binStates);
+							console.log("wolfram pattern found: ",elm,map[elm]);
+						}
+					}
+				}
+				window.pixelManipulator.elementTypeMap=map;
+			},
+		},
 		whatIs:{
 			value:function(x,y,loop) {
 				for (var i in window.pixelManipulator.elementTypeMap) {
-					if (p.makeConfirmColor(x,y,p.getPixel)(i)) return i;
+					if (window.pixelManipulator.makeConfirmColor(x,y,p.getPixel)(i)) return i;
 				}
 			},
 		},
@@ -92,9 +141,9 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.loopint=setInterval(window.pixelManipulator.iterate,1);
 			},
 		},
-		rewind:{
+		reset:{
 			value:function(canvasSizes) {
-				//console.log("rewind");
+				//console.log("reset");
 				clearInterval(window.pixelManipulator.loopint);
 				window.pixelManipulator.setCanvasSizes(canvasSizes);
 				for (var i=0; i < window.pixelManipulator.data.length; i+=4) {
@@ -102,7 +151,8 @@ window.p=window.pixelManipulator=(function () {
 					window.pixelManipulator.data[i+3]=255;
 				}
 				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
-				window.pixelManipulator.play();
+				p.row=0;
+				//window.pixelManipulator.play();
 			},
 		},
 		zoom:{
@@ -172,7 +222,7 @@ window.p=window.pixelManipulator=(function () {
 		makeConfirmColor:{
 			value:function(x,y,f,loop) {
 				//console.log("makeConfirmColor");
-				loop=typeof loop!=="undefined"?loop:true;
+				//loop=typeof loop!=="undefined"?loop:true;
 				var colors=f(x,y,loop);
 				return function(name) {
 					//console.log("ConfirmColor");
@@ -186,14 +236,14 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("makeMooreNearbyCounter");
 				return (function (name,loop) {
 					//console.log("mooreNearbyCounter");
-					return (window.pixelManipulator.makeConfirmColor(x-1,y-1,f,loop)(name))+
-					(window.pixelManipulator.makeConfirmColor(x-1,y,f,loop)(name))+
-					(window.pixelManipulator.makeConfirmColor(x-1,y+1,f,loop)(name))+
-					(window.pixelManipulator.makeConfirmColor(x,y-1,f,loop)(name))+
-					(window.pixelManipulator.makeConfirmColor(x,y+1,f,loop)(name))+
-					(window.pixelManipulator.makeConfirmColor(x+1,y-1,f,loop)(name))+
-					(window.pixelManipulator.makeConfirmColor(x+1,y,f,loop)(name))+
-					(window.pixelManipulator.makeConfirmColor(x+1,y+1,f,loop)(name));
+					return (window.pixelManipulator.makeConfirmColor(x-1,y-1,f,loop)(name))+//nw
+					(window.pixelManipulator.makeConfirmColor(x-1,y,f,loop)(name))+         //w
+					(window.pixelManipulator.makeConfirmColor(x-1,y+1,f,loop)(name))+       //sw
+					(window.pixelManipulator.makeConfirmColor(x,y-1,f,loop)(name))+         //n
+					(window.pixelManipulator.makeConfirmColor(x,y+1,f,loop)(name))+         //s
+					(window.pixelManipulator.makeConfirmColor(x+1,y-1,f,loop)(name))+       //ne
+					(window.pixelManipulator.makeConfirmColor(x+1,y,f,loop)(name))+         //e
+					(window.pixelManipulator.makeConfirmColor(x+1,y+1,f,loop)(name));       //se
 				});
 			},
 		},
@@ -203,7 +253,9 @@ window.p=window.pixelManipulator=(function () {
 				return (function (name,a,loop) {
 					//console.log("wolframNearby");
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
-					var near=[window.pixelManipulator.makeConfirmColor(x-1,y-1,f,loop)(name),window.pixelManipulator.makeConfirmColor(x,y-1,f,loop)(name),window.pixelManipulator.makeConfirmColor(x+1,y-1,f,loop)(name)];
+					var near=[window.pixelManipulator.makeConfirmColor(x-1,y-1,f,loop)(name),//the three spots above
+					          window.pixelManipulator.makeConfirmColor(x,y-1,f,loop)(name),
+					          window.pixelManipulator.makeConfirmColor(x+1,y-1,f,loop)(name)];
 					return (near[0]==a[0]&&near[1]==a[1]&&near[2]==a[2]);
 				});
 			},
@@ -220,47 +272,45 @@ window.p=window.pixelManipulator=(function () {
 					while (y<0) y=window.pixelManipulator.canvas.height+y;
 					while (x>=window.pixelManipulator.canvas.width) x=x-window.pixelManipulator.canvas.width;
 					while (y>=window.pixelManipulator.canvas.height) y=y-window.pixelManipulator.canvas.height;
-				}else if (x<0||x>=window.pixelManipulator.canvas.width||y<0||x>=window.pixelManipulator.canvas.height) return;
+				}else if (x<0||x>=window.pixelManipulator.canvas.width||y<0||x>=window.pixelManipulator.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
 				for (var i=0; i<arry.length; i++) window.pixelManipulator.data[(((window.pixelManipulator.canvas.width*y)+x)*4)+i]=arry[i];
 			},
 		},
 		iterate:{
 			value:function() {
 				//console.log("iterate");
+				window.pixelManipulator.onIterate();
 				var old=[];
 				for (var i=0;i<window.pixelManipulator.data.length;i++) {
 					old[i]=window.pixelManipulator.data[i]-0;
 				}
-				window.pixelManipulator.onIterate();
 				var getOldPixel=window.pixelManipulator.createGetPixel(old);
-				for (var x=0; x<window.pixelManipulator.canvas.width; x++) for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
-					var confirmElement=window.pixelManipulator.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
-						mooreNearbyCounter=window.pixelManipulator.makeMooreNearbyCounter(x,y,getOldPixel),
-						wolframNearby=window.pixelManipulator.makeWolframNearby(x,y,getOldPixel),
-						nearbyTotalG,
-						rand,
-						factor,
-						currentPix=window.pixelManipulator.whatIs(x,y),
-						rel={
-							x:x,
-							y:y,
-							getOldPixel:getOldPixel,
-							confirmElement:confirmElement,
-							mooreNearbyCounter:mooreNearbyCounter,
-							wolframNearby:wolframNearby,
-							currentPix:currentPix,
-						};
-					if (typeof window.pixelManipulator.elementTypeMap[currentPix].pattern==="object"&&typeof window.pixelManipulator.elementTypeMap[currentPix].pattern[0]==="function") window.pixelManipulator.elementTypeMap[currentPix].pattern[0](rel);//execute function-based externals (live)
-					if (confirmElement("blank")||confirmElement("Rule 110")||confirmElement("Rule 30")||confirmElement("Rule 90")||confirmElement("Rule 184")) {
-						if (y==window.pixelManipulator.row) {
-							if (wolframNearby("Rule 110",[1,1,0])||wolframNearby("Rule 110",[1,0,1])||wolframNearby("Rule 110",[0,1,1])||wolframNearby("Rule 110",[0,1,0])||wolframNearby("Rule 110",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 110",false);
-							if (wolframNearby("Rule 30",[1,0,0])||wolframNearby("Rule 30",[0,1,1])||wolframNearby("Rule 30",[0,1,0])||wolframNearby("Rule 30",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 30",false);
-							if (wolframNearby("Rule 90",[1,1,0])||wolframNearby("Rule 90",[1,0,0])||wolframNearby("Rule 90",[0,1,1])||wolframNearby("Rule 90",[0,0,1])) window.pixelManipulator.setPixel(x,y,"Rule 90",false);
-							if (wolframNearby("Rule 184",[1,1,1])||wolframNearby("Rule 184",[1,0,1])||wolframNearby("Rule 184",[1,0,0])||wolframNearby("Rule 184",[0,1,1])) window.pixelManipulator.setPixel(x,y,"Rule 184",false);
+				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
+					for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
+						var confirmElement=window.pixelManipulator.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
+							mooreNearbyCounter=window.pixelManipulator.makeMooreNearbyCounter(x,y,getOldPixel),
+							wolframNearby=window.pixelManipulator.makeWolframNearby(x,y,getOldPixel),
+							currentPix=window.pixelManipulator.whatIs(x,y),
+							rel={
+								x:x,
+								y:y,
+								getOldPixel:getOldPixel,
+								confirmElement:confirmElement,
+								mooreNearbyCounter:mooreNearbyCounter,
+								wolframNearby:wolframNearby,
+								currentPix:currentPix,
+							};
+						if (typeof window.pixelManipulator.elementTypeMap[currentPix].liveCell==="function") {
+							window.pixelManipulator.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
 						}
-						for (var elm in window.pixelManipulator.elementTypeMap) if (typeof window.pixelManipulator.elementTypeMap[elm].pattern==="object"&&typeof window.pixelManipulator.elementTypeMap[elm].pattern[1]==="function") window.pixelManipulator.elementTypeMap[elm].pattern[1](rel);//execute function-based externals (dead)
+						if (currentPix==="blank") {
+							for (var elm in window.pixelManipulator.elementTypeMap) {
+								if (typeof window.pixelManipulator.elementTypeMap[elm].deadCell==="function") {
+									window.pixelManipulator.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
+								}
+							}
+						}
 					}
-					
 				}
 				window.pixelManipulator.row++;
 				if (window.pixelManipulator.row>window.pixelManipulator.canvas.height) window.pixelManipulator.row=0;
