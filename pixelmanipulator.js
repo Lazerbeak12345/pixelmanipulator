@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.57.141 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.58.142 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -43,6 +43,8 @@ window.p=window.pixelManipulator=(function () {
 		defaultElm:'blank',
 		onZoomClick:function(clickEvent,confirmColorInstance) {return window.pixelManipulator.defaultElm;},
 		onIterate:function() {},
+		onAfterIterate:function() {},
+		pixelCounts:{},
 	},{
 		licence:{
 			value:licence,
@@ -285,6 +287,7 @@ window.p=window.pixelManipulator=(function () {
 					old[i]=window.pixelManipulator.data[i]-0;
 				}
 				var getOldPixel=window.pixelManipulator.createGetPixel(old);
+				window.pixelManipulator.pixelCounts={};
 				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
 					for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
 						var confirmElement=window.pixelManipulator.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
@@ -309,6 +312,10 @@ window.p=window.pixelManipulator=(function () {
 									window.pixelManipulator.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
 								}
 							}
+						}else{
+							if (typeof window.pixelManipulator.pixelCounts[currentPix]==="undefined") {
+								window.pixelManipulator.pixelCounts[currentPix]=1;
+							}else window.pixelManipulator.pixelCounts[currentPix]++;
 						}
 					}
 				}
@@ -319,6 +326,7 @@ window.p=window.pixelManipulator=(function () {
 					x:window.pixelManipulator.zoomX,
 					y:window.pixelManipulator.zoomY,
 				});
+				window.pixelManipulator.onAfterIterate();
 			},
 		},
 		updateCanvasData:{

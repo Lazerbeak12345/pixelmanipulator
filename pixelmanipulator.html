@@ -153,10 +153,12 @@
 			<br/>
 			<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
 			<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
+			<label><input id="pixelCounterT" type="checkbox" >Show pixelCounter</label>
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">Fork Pixelmanipulator On Github!</a><br/>
-				v1.57.141 (beta-proposed), Frontend (v1.9.10)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				v1.58.142 (beta-proposed), Frontend (v1.10.10)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
+		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
 		<script>
 			function ready(callback){ //the original was from https://stackoverflow.com/a/7053197 , but I added returns in order to speed up the prossess.
@@ -367,6 +369,12 @@
 					document.getElementById("workingLine").style.top=p.row+"px";
 					document.getElementById("workingLine").style.left=(p.canvas.width+1)+"px";
 				}
+				p.onAfterIterate=function() {
+					if (document.getElementById('pixelCounterT').checked) {
+						document.getElementById("pixelCounter").innerText=JSON.stringify(p.pixelCounts).replace(/[{}"]/g,"").replace(/,/g,"\n").replace(/:/g," : ");
+					}else document.getElementById("pixelCounter").innerText="";
+				}
+				document.getElementById('pixelCounterT').addEventListener('click',p.onAfterIterate);
 				document.getElementById("play").addEventListener('click',function() {
 					p.play({
 						canvasW:document.getElementById("width").value||100,
