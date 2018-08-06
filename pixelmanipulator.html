@@ -157,7 +157,7 @@
 			<label><input id="pixelCounterT" type="checkbox" >Show pixelCounter</label>
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">Fork Pixelmanipulator On Github!</a><br/>
-				v1.58.142 (beta-proposed), Frontend (v1.10.11)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				v1.59.142 (beta-proposed), Frontend (v1.11.11)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -409,36 +409,36 @@
 				});
 				document.getElementById("normalFill").addEventListener('click',function() {
 					var pr=document.getElementById("normalFillP").value||15;
-					for (var i=0;i<p.data.length;i+=4) {
+					for (var i=0;i<p.imageData.data.length;i+=4) {
 						if (Math.random()*100<pr) {
-							p.data[i]=p.elementTypeMap[normalClick].color[0];
-							p.data[i+1]=p.elementTypeMap[normalClick].color[1];
-							p.data[i+2]=p.elementTypeMap[normalClick].color[2];
-							p.data[i+3]=p.elementTypeMap[normalClick].color[3];
+							p.imageData.data[i]=p.elementTypeMap[normalClick].color[0];
+							p.imageData.data[i+1]=p.elementTypeMap[normalClick].color[1];
+							p.imageData.data[i+2]=p.elementTypeMap[normalClick].color[2];
+							p.imageData.data[i+3]=p.elementTypeMap[normalClick].color[3];
 						}
 					}
 					p.update();
 				});
 				document.getElementById("ctrlFill").addEventListener('click',function() {
 					var pr=document.getElementById("ctrlFillP").value||15;
-					for (var i=0;i<p.data.length;i+=4) {
+					for (var i=0;i<p.imageData.data.length;i+=4) {
 						if (Math.random()*100<pr) {
-							p.data[i]=p.elementTypeMap[ctrlClick].color[0];
-							p.data[i+1]=p.elementTypeMap[ctrlClick].color[1];
-							p.data[i+2]=p.elementTypeMap[ctrlClick].color[2];
-							p.data[i+3]=p.elementTypeMap[ctrlClick].color[3];
+							p.imageData.data[i]=p.elementTypeMap[ctrlClick].color[0];
+							p.imageData.data[i+1]=p.elementTypeMap[ctrlClick].color[1];
+							p.imageData.data[i+2]=p.elementTypeMap[ctrlClick].color[2];
+							p.imageData.data[i+3]=p.elementTypeMap[ctrlClick].color[3];
 						}
 					}
 					p.update();
 				});
 				document.getElementById("altFill").addEventListener('click',function() {
 					var pr=document.getElementById("altFillP").value||15;
-					for (var i=0;i<p.data.length;i+=4) {
+					for (var i=0;i<p.imageData.data.length;i+=4) {
 						if (Math.random()*100<pr) {
-							p.data[i]=p.elementTypeMap[altClick].color[0];
-							p.data[i+1]=p.elementTypeMap[altClick].color[1];
-							p.data[i+2]=p.elementTypeMap[altClick].color[2];
-							p.data[i+3]=p.elementTypeMap[altClick].color[3];
+							p.imageData.data[i]=p.elementTypeMap[altClick].color[0];
+							p.imageData.data[i+1]=p.elementTypeMap[altClick].color[1];
+							p.imageData.data[i+2]=p.elementTypeMap[altClick].color[2];
+							p.imageData.data[i+3]=p.elementTypeMap[altClick].color[3];
 						}
 					}
 					p.update();

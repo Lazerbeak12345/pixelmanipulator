@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.58.142 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.59.142 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -26,7 +26,6 @@ window.p=window.pixelManipulator=(function () {
 		getPixel:function() {},
 		loopint:0,
 		imageData:{},
-		data:[],
 		zoomX:0,
 		zoomY:0,
 		row:0,
@@ -54,25 +53,23 @@ window.p=window.pixelManipulator=(function () {
 				__LIVE__:function(numtodie,loop,elm) {
 					return (function(rel) {
 						var nearbyTotal=rel.mooreNearbyCounter(elm,loop),willLive=true;//count how many are nearby (moore style)
-						for (var i=0; i<numtodie.length; i++) if (numtodie[i]-0==nearbyTotal) willLive=false; // if any match is found, it dies
-						if(willLive) window.pixelManipulator.setPixel(rel.x,rel.y,window.pixelManipulator.defaultElm);
+						if(numtodie.search(nearbyTotal)<=-1) window.pixelManipulator.setPixel(rel.x,rel.y,window.pixelManipulator.defaultElm);// if any match is found, it dies
 					});
 				},
 				__DEAD__:function(numtolive,loop,elm) {
 					return (function(rel) {
-						var nearbyTotal=rel.mooreNearbyCounter(elm,loop),willLive=false;//count how many are nearby
-						for (var i=0; i<numtolive.length; i++) if (numtolive[i]-0==nearbyTotal) willLive=true; // if any match is found, it lives
-						if(willLive) p.setPixel(rel.x,rel.y,elm);
+						var nearbyTotal=rel.mooreNearbyCounter(elm,loop);//count how many are nearby
+						if(numtolive.search(nearbyTotal)>-1) p.setPixel(rel.x,rel.y,elm);// if any match is found, it lives
 					});
 				},
 			}
 		},
 		__WOLFRAM_TEMPLATE__:{
-			value:function(elm,binStates) {
+			value:function(elm,binStates,loop) {
 				return (function(rel) {
+					if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit before anything happens
 					var lives=false;
-					if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit
-					for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(elm,(7-i).toString(2).padStart(3,"0"))) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
+					for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(elm,(7-i).toString(2).padStart(3,"0"),loop)) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
 					if (lives) window.pixelManipulator.setPixel(rel.x,rel.y,elm);
 				});
 			},
@@ -90,7 +87,7 @@ window.p=window.pixelManipulator=(function () {
 						}else if (map[elm].pattern.search(/Rule \d*/gi)>-1) {
 							var number=map[elm].pattern.split(/Rule /gi)[1]-0,
 								binStates=number.toString(2).padStart(8,"0");
-							map[elm].deadCell=window.pixelManipulator.__WOLFRAM_TEMPLATE__(elm,binStates);
+							map[elm].deadCell=window.pixelManipulator.__WOLFRAM_TEMPLATE__(elm,binStates,map[elm].loop);
 							console.log("wolfram pattern found: ",elm,map[elm]);
 						}
 					}
@@ -108,10 +105,10 @@ window.p=window.pixelManipulator=(function () {
 		setCanvasSizes:{
 			value:function(canvasSizes) {
 				//console.log("setCanvasSizes");
-				window.pixelManipulator.canvas.width=canvasSizes.canvasW||100;
-				window.pixelManipulator.canvas.height=canvasSizes.canvasH||100;
-				window.pixelManipulator.zoomelm.width=(canvasSizes.zoomW||20)*window.pixelManipulator.zoomScaleFactor;
-				window.pixelManipulator.zoomelm.height=(canvasSizes.zoomH||20)*window.pixelManipulator.zoomScaleFactor;
+				window.pixelManipulator.canvas.width=canvasSizes.canvasW||window.pixelManipulator.canvas.width;
+				window.pixelManipulator.canvas.height=canvasSizes.canvasH||window.pixelManipulator.canvas.height;
+				window.pixelManipulator.zoomelm.width=(canvasSizes.zoomW||window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
+				window.pixelManipulator.zoomelm.height=(canvasSizes.zoomH||window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
 				window.pixelManipulator.updateCanvasData();
 			},
 		},
@@ -123,8 +120,8 @@ window.p=window.pixelManipulator=(function () {
 					old=[];
 				//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
 				//console.log(zoomYPos,"=Math.floor(",e.offsetY,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomY,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
-				for (var i=0;i<window.pixelManipulator.data.length;i++) {
-					old[i]=window.pixelManipulator.data[i]-0;
+				for (var i=0;i<window.pixelManipulator.imageData.data.length;i++) {
+					old[i]=window.pixelManipulator.imageData.data[i]-0;
 				}
 				window.pixelManipulator.setPixel(zoomXPos,zoomYPos,//Where to set the pixel
 					window.pixelManipulator.onZoomClick(e,//pass in the click event
@@ -148,13 +145,14 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("reset");
 				clearInterval(window.pixelManipulator.loopint);
 				window.pixelManipulator.setCanvasSizes(canvasSizes);
-				for (var i=0; i < window.pixelManipulator.data.length; i+=4) {
-					for (var ii=0; ii <=2; ii++) window.pixelManipulator.data[i+ii]=0;
-					window.pixelManipulator.data[i+3]=255;
+				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
+					for (var y=0; y<window.pixelManipulator.canvas.height; y++) {
+						window.pixelManipulator.setPixel(x,y,window.pixelManipulator.defaultElm);
+					}
 				}
+				window.pixelManipulator.update();
 				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
-				p.row=0;
-				//window.pixelManipulator.play();
+				window.pixelManipulator.row=0;
 			},
 		},
 		zoom:{
@@ -194,23 +192,11 @@ window.p=window.pixelManipulator=(function () {
 					//console.log("get(old?)Pixel");
 					loop=typeof loop!=="undefined"?loop:true;
 					if (loop) {
-						while (x<0) {
-							x=window.pixelManipulator.canvas.width+x;
-						}
-						while (y<0) {
-							y=window.pixelManipulator.canvas.height+y;
-						}
-						
-						while (x>=window.pixelManipulator.canvas.width) {
-							x=x-window.pixelManipulator.canvas.width;
-						}
-						while (y>=window.pixelManipulator.canvas.height) {
-							y=y-window.pixelManipulator.canvas.height;
-						}
-					}else{
-						if (x<0||x>=window.pixelManipulator.canvas.width||y<0||x>=window.pixelManipulator.canvas.height) return "Blocks";
-					}
-					
+						while (x<0) x=window.pixelManipulator.canvas.width+x;
+						while (y<0) y=window.pixelManipulator.canvas.height+y;
+						while (x>=window.pixelManipulator.canvas.width) x=x-window.pixelManipulator.canvas.width;
+						while (y>=window.pixelManipulator.canvas.height) y=y-window.pixelManipulator.canvas.height;
+					}else if (x<0||x>=window.pixelManipulator.canvas.width||y<0||x>=window.pixelManipulator.canvas.height) return "Blocks";
 					return d.slice(((window.pixelManipulator.canvas.width*y)+x)*4,(((window.pixelManipulator.canvas.width*y)+x)*4)+4);
 				});
 			},
@@ -275,7 +261,7 @@ window.p=window.pixelManipulator=(function () {
 					while (x>=window.pixelManipulator.canvas.width) x=x-window.pixelManipulator.canvas.width;
 					while (y>=window.pixelManipulator.canvas.height) y=y-window.pixelManipulator.canvas.height;
 				}else if (x<0||x>=window.pixelManipulator.canvas.width||y<0||x>=window.pixelManipulator.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
-				for (var i=0; i<arry.length; i++) window.pixelManipulator.data[(((window.pixelManipulator.canvas.width*y)+x)*4)+i]=arry[i];
+				for (var i=0; i<4; i++) window.pixelManipulator.imageData.data[(((window.pixelManipulator.canvas.width*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
 			},
 		},
 		iterate:{
@@ -283,8 +269,8 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("iterate");
 				window.pixelManipulator.onIterate();
 				var old=[];
-				for (var i=0;i<window.pixelManipulator.data.length;i++) {
-					old[i]=window.pixelManipulator.data[i]-0;
+				for (var i=0;i<window.pixelManipulator.imageData.data.length;i++) {
+					old[i]=window.pixelManipulator.imageData.data[i]-0;
 				}
 				var getOldPixel=window.pixelManipulator.createGetPixel(old);
 				window.pixelManipulator.pixelCounts={};
@@ -333,7 +319,6 @@ window.p=window.pixelManipulator=(function () {
 			value:function() {
 				//console.log("updateCanvasData");
 				window.pixelManipulator.imageData=window.pixelManipulator.ctx.getImageData(0,0,window.pixelManipulator.canvas.width,window.pixelManipulator.canvas.height);
-				window.pixelManipulator.data=window.pixelManipulator.imageData.data;
 				window.pixelManipulator.ctx.imageSmoothingEnabled=false;
 				window.pixelManipulator.ctx.mozImageSmoothingEnabled=false;
 				window.pixelManipulator.ctx.webkitImageSmoothingEnabled=false;
@@ -342,7 +327,7 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.zoomctx.mozImageSmoothingEnabled=false;
 				window.pixelManipulator.zoomctx.webkitImageSmoothingEnabled=false;
 				window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
-				window.pixelManipulator.getPixel=window.pixelManipulator.createGetPixel(window.pixelManipulator.data);
+				window.pixelManipulator.getPixel=window.pixelManipulator.createGetPixel(window.pixelManipulator.imageData.data);
 			},
 		},
 		setCanvas:{
