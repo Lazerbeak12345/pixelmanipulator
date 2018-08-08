@@ -59,10 +59,17 @@
 			background:red;
 			position:absolute;
 		}
+		input[type="text"]{
+			text-align:right;
+			width:3em;
+		}
+		.outline{
+			/*border:1px solid metal;*/
+		}
 		</style>
 	</head>
 	<body>
-		<!--Content-->
+		<!--Content--> 
 		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
 		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
 		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
@@ -79,10 +86,10 @@
 			<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
 			<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
 			<br/>
-			Width: <input id="width"/><br/>
-			Height: <input id="height" /><br/>
-			Zoom Width: <input id="zoomWidthElm"/><br/>
-			Zoom Height: <input id="zoomHeightElm"/><br/>
+			Width: <input id="width" type="text" value="100" title="Default:100"/>px<br/>
+			Height: <input id="height" type="text" value="100" title="Default:100"/>px<br/>
+			Zoom Width: <input id="zoomWidthElm" type="text" value="20" title="Default:20"/>px<br/>
+			Zoom Height: <input id="zoomHeightElm" type="text" value="20" title="Default:20"/>px<br/>
 			<br/>
 			Normal click: 
 			<select class="elmDrop" onchange="normalClick=this.value;">
@@ -104,7 +111,7 @@
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="normalFill">Randomly fill</button>
-			<input id="normalFillP"/>%			
+			<input id="normalFillP" type="text"/>%			
 			<br/>
 			Ctrl click: 
 			<select class="elmDrop" onchange="ctrlClick=this.value;">
@@ -126,7 +133,7 @@
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="ctrlFill">Randomly fill</button>
-			<input id="ctrlFillP"/>%			
+			<input id="ctrlFillP" type="text"/>%			
 			<br/>
 
 			Alt click: 
@@ -149,15 +156,19 @@
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="altFill">Randomly fill</button>
-			<input id="altFillP"/>%			
+			<input id="altFillP" type="text"/>%<br/>
 			<br/>
+			<!--div class="outline">
+				Modify Custom Element<br/>
+				<input id="customElm"></input><br/>
+			</div><!-- -->
 			<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
 			<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
 			<br/>
 			<label><input id="pixelCounterT" type="checkbox" >Show pixelCounter</label>
 			<br/>
-			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">Fork Pixelmanipulator On Github!</a><br/>
-				v1.59.142 (beta-proposed), Frontend (v1.11.11)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On Github!</a><br/>
+				v1.60.142 (beta-proposed), Frontend (v1.12.13)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -177,10 +188,11 @@
 					ctrlClick="Blocks",
 					altClick="Water";
 			function updateBox() {
-				document.getElementById('selectorBox').style.width=(p.zoomelm.width/p.zoomScaleFactor)+"px";
-				document.getElementById('selectorBox').style.height=(p.zoomelm.height/p.zoomScaleFactor)+"px";
-				document.getElementById('selectorBox').style.left=(p.zoomX-(p.zoomelm.width/(2*p.zoomScaleFactor)))+"px";
-				document.getElementById('selectorBox').style.top=(p.zoomY-(p.zoomelm.height/(2*p.zoomScaleFactor)))+"px";
+				var selectorboxSty=document.getElementById('selectorBox').style;
+				selectorboxSty.width=(p.zoomelm.width/p.zoomScaleFactor)+"px";
+				selectorboxSty.height=(p.zoomelm.height/p.zoomScaleFactor)+"px";
+				selectorboxSty.left=(p.zoomX-(p.zoomelm.width/(2*p.zoomScaleFactor)))+"px";
+				selectorboxSty.top=(p.zoomY-(p.zoomelm.height/(2*p.zoomScaleFactor)))+"px";
 			}
 			function updateSmallLines(e) {
 				document.getElementById('smallxline').style.left=(e.pageX)+"px";
@@ -205,14 +217,17 @@
 					t=0;
 					h2=0;
 				}
-				document.getElementById("largexline").style.width=p.zoomScaleFactor+"px";
-				document.getElementById("largexline").style.height=h+"px";
-				document.getElementById("largexline").style.left=p.zoomScaleFactor*x+"px";
-				document.getElementById("largexline").style.top=t+"px";
 				
-				document.getElementById("largexline1").style.width=p.zoomScaleFactor+"px";
-				document.getElementById("largexline1").style.height=h2+"px";
-				document.getElementById("largexline1").style.left=p.zoomScaleFactor*x+"px";
+				var largexlinesty=document.getElementById("largexline").style;
+				largexlinesty.width=p.zoomScaleFactor+"px";
+				largexlinesty.height=h+"px";
+				largexlinesty.left=p.zoomScaleFactor*x+"px";
+				largexlinesty.top=t+"px";
+				
+				var largexline1sty=document.getElementById("largexline1").style;
+				largexline1sty.width=p.zoomScaleFactor+"px";
+				largexline1sty.height=h2+"px";
+				largexline1sty.left=p.zoomScaleFactor*x+"px";
 			}
 			function updateLargeLinesY(x,y) {
 				var w=(p.zoomelm.width-((1+x)*p.zoomScaleFactor)),
@@ -223,16 +238,18 @@
 					l=0;
 					w2=0;
 				}
-				document.getElementById("largeyline").style.height=p.zoomScaleFactor+"px";
-				document.getElementById("largeyline").style.width=w+"px";
-     
-				document.getElementById("largeyline").style.top=p.zoomScaleFactor*y+"px";
-				document.getElementById("largeyline").style.left=l+"px";
 				
-				document.getElementById("largeyline1").style.height=p.zoomScaleFactor+"px";
-				document.getElementById("largeyline1").style.width=w2+"px";
-				document.getElementById("largeyline1").style.top=p.zoomScaleFactor*y+"px";
-				document.getElementById("largeyline1").style.left="0px";
+				var largeylinesty=document.getElementById("largeyline").style;
+				largeylinesty.height=p.zoomScaleFactor+"px";
+				largeylinesty.width=w+"px";
+				largeylinesty.top=p.zoomScaleFactor*y+"px";
+				largeylinesty.left=l+"px";
+				
+				var largeyline1sty=document.getElementById("largeyline1").style;
+				largeyline1sty.height=p.zoomScaleFactor+"px";
+				largeyline1sty.width=w2+"px";
+				largeyline1sty.top=p.zoomScaleFactor*y+"px";
+				largeyline1sty.left="0px";
 			}
 			function selectorClicked(e) {
 				p.zoom({
@@ -260,40 +277,50 @@
 			ready(function() {
 				canvas = p.setCanvas(document.getElementById('canvas'));
 				zoomelm = p.setZoomelm(document.getElementById('zoom'));
+				var selectorBoxElm=document.getElementById('selectorBox'),//define these before, as they are used multiple times
+					smallxlineElm=document.getElementById('smallxline'),
+					smallylineElm=document.getElementById('smallyline'),
+					largexlineElm=document.getElementById('largexline'),
+					largexline1Elm=document.getElementById('largexline1'),
+					largeylineElm=document.getElementById('largeyline'),
+					largeyline1Elm=document.getElementById('largeyline1'),
+					shtargeterElm=document.getElementById('shtargeter'),
+					shfocusboxElm=document.getElementById('shfocusbox');
 				p.canvas.addEventListener('click', updateBox);
-				document.getElementById('selectorBox').addEventListener('click',selectorClicked);
+				selectorBoxElm.addEventListener('click',selectorClicked);
 				p.canvas.addEventListener('mousemove', updateSmallLines);
-				document.getElementById('selectorBox').addEventListener('mousemove', boxHoverOrClick);
-				document.getElementById('selectorBox').addEventListener('click', boxHoverOrClick);
-				document.getElementById('smallxline').addEventListener('mousemove', updateSmallLines);
-				document.getElementById('smallyline').addEventListener('mousemove', updateSmallLines);
-				document.getElementById('smallxline').addEventListener('click',selectorClicked);
-				document.getElementById('smallyline').addEventListener('click',selectorClicked);
+				selectorBoxElm.addEventListener('mousemove', boxHoverOrClick);
+				selectorBoxElm.addEventListener('click', boxHoverOrClick);
+				smallxlineElm.addEventListener('mousemove', updateSmallLines);
+				smallylineElm.addEventListener('mousemove', updateSmallLines);
+				smallxlineElm.addEventListener('click',selectorClicked);
+				smallylineElm.addEventListener('click',selectorClicked);
 				p.zoomelm.addEventListener('mousemove',updateBothLargeLines);
-				//*
-				document.getElementById('largexline').addEventListener('mousemove',bigLineGotHovered);
-				document.getElementById('largexline1').addEventListener('mousemove',bigLineGotHovered);
-				document.getElementById('largeyline').addEventListener('mousemove',bigLineGotHovered);
-				document.getElementById('largeyline1').addEventListener('mousemove',bigLineGotHovered);//*/
-				document.getElementById('shtargeter').addEventListener('click',function() {
-					var state=document.getElementById('shtargeter').checked?"hidden":"visible";
-					document.getElementById('smallxline').style.visibility=state;
-					document.getElementById('smallyline').style.visibility=state;
-					document.getElementById('largexline').style.visibility=state;
-					document.getElementById('largexline1').style.visibility=state;
-					document.getElementById('largeyline').style.visibility=state;
-					document.getElementById('largeyline1').style.visibility=state;
+				largexlineElm.addEventListener('mousemove',bigLineGotHovered);
+				largexline1Elm.addEventListener('mousemove',bigLineGotHovered);
+				largeylineElm.addEventListener('mousemove',bigLineGotHovered);
+				largeyline1Elm.addEventListener('mousemove',bigLineGotHovered);
+				shtargeterElm.addEventListener('click',function() {
+					var state=shtargeterElm.checked?"hidden":"visible";
+					smallxlineElm.style.visibility=state;
+					smallylineElm.style.visibility=state;
+					largexlineElm.style.visibility=state;
+					largexline1Elm.style.visibility=state;
+					largeylineElm.style.visibility=state;
+					largeyline1Elm.style.visibility=state;
 				});
-				document.getElementById('shfocusbox').addEventListener('click',function() {
-					var state=document.getElementById('shfocusbox').checked?"hidden":"visible";
-					document.getElementById('selectorBox').style.visibility=state;
+				shfocusboxElm.addEventListener('click',function() {
+					var state=shfocusboxElm.checked?"hidden":"visible";
+					selectorBoxElm.style.visibility=state;
 				});
-				p.setElements({
+				p.zoomX=10;
+				p.zoomY=10;
+				p.setElements({//*
 					"Acid":{
 						color:[110,162,10,255],
 						liveCell:function(rel) {//current Pixel Matches
 							var rand=Math.round(Math.random()*2)-1;factor=0;
-							while ((!p.makeConfirmColor(rel.x+rand,rel.y+factor,rel.getOldPixel,false)("blank")||Math.random()<=0.3)&&factor<3) factor++;
+							while ((!rel.confirmOldElm(rel.x+rand,rel.y+factor,"blank",false)||Math.random()<=0.3)&&factor<3) factor++;
 							if (factor<=3){
 								if (Math.random()>0.3) p.setPixel(rel.x,rel.y,"blank",false);
 								p.setPixel(rel.x+rand,rel.y+factor,"Acid",false);
@@ -309,11 +336,11 @@
 							var conductorNearbyTotal=rel.mooreNearbyCounter("Wireworld Electricity",false);
 							if(conductorNearbyTotal===1||conductorNearbyTotal===2) p.setPixel(rel.x,rel.y,"Wireworld Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
 						},
-					},
+					},//*/
 					"Conway's Game Of Life":{
 						color:[0,255,0,255],
 						pattern:"B3/S23",//born on 3, survives on 2 or 3
-					},
+					},//*
 					"Wireworld Electricity":{
 						color:[148,133,0,255],
 						liveCell:function(rel) {
@@ -355,13 +382,13 @@
 						color:[23,103,167,255],
 						liveCell:function(rel) {
 							var rand=Math.round(Math.random()*2)-1;factor=0;
-							while ((!p.makeConfirmColor(rel.x+rand,rel.y+factor,rel.getOldPixel,false)("blank"))&&factor<2) factor++;
-							if (factor<=2&&(p.makeConfirmColor(rel.x+rand,rel.y+factor,p.getPixel,false)("blank"))){
+							while ((!rel.confirmOldElm(rel.x+rand,rel.y+factor,"blank",false))&&factor<2) factor++;
+							if (factor<=2&&(p.confirmElm(rel.x+rand,rel.y+factor,"blank",false))){
 								p.setPixel(rel.x,rel.y,"blank",false);
 								p.setPixel(rel.x+rand,rel.y+factor,"Water",false);
 							}
 						},
-					},
+					},//*/
 					"blank":{//does nothing and is default element
 						color:[0,0,0,255],
 					},
@@ -382,7 +409,7 @@
 						canvasH:document.getElementById("height").value||100,
 						zoomW:document.getElementById("zoomWidthElm").value||20,
 						zoomH:document.getElementById("zoomHeightElm").value||20,
-					});//pass a function in that you want called if it is becoming unpaused. Reccomended to have a function here that sets the canvas size here, due to how startup works.
+					});//Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
 					document.getElementById('play').disabled = true;
 					document.getElementById('pause').disabled = false;
 				});
@@ -392,13 +419,13 @@
 						canvasH:document.getElementById("height").value||100,
 						zoomW:document.getElementById("zoomWidthElm").value||20,
 						zoomH:document.getElementById("zoomHeightElm").value||20,
-					});//pass a function in that you want called if it is becoming reseted. Reccomended to have a function here that sets the canvas size here, due to how startup works.
+					});//Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
 					updateBox();
 					document.getElementById('play').disabled = false;
 					document.getElementById('oneFrameAtATime').disabled = false;
 					document.getElementById('reset').disabled = false;
 					document.getElementById('pause').disabled = true;
-					p.iterate();//this will prevent new user confusion by showing the zoom box
+					p.iterate();//this will prevent new user confusion by showing the zoom box when the page loads
 				});
 				document.getElementById('reset').click();
 				document.getElementById("pause").addEventListener('click',function() {
@@ -417,7 +444,7 @@
 							p.imageData.data[i+3]=p.elementTypeMap[normalClick].color[3];
 						}
 					}
-					p.update();
+					p.update();//needed after any changes are made
 				});
 				document.getElementById("ctrlFill").addEventListener('click',function() {
 					var pr=document.getElementById("ctrlFillP").value||15;
@@ -443,12 +470,12 @@
 					}
 					p.update();
 				});
-				p.onZoomClick=function(e,theVictomPixelsNameIsTheValueOf) {
+				p.onZoomClick=function(e,rel) {//an event-like function that returns what should be set where the zoom ctx was clicked
 					//console.log("onZoomClick",arguments);
 					var active=normalClick//The default is normalClick.
 					if (e.ctrlKey) active=ctrlClick;
 					else if(e.altKey) active=altClick;
-					if (theVictomPixelsNameIsTheValueOf(active)) active="blank";
+					if (p.confirmElm(rel.x,rel.y,active)) active="blank";
 					return active;
 				};
 			});

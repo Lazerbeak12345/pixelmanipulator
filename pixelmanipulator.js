@@ -1,5 +1,5 @@
 /*
-	This is a javascript file that is in charge of interacting with canvas elements and such. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
+	This is a cellular automata javascript library. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
 
     This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.59.142 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.60.142 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -24,6 +24,8 @@ window.p=window.pixelManipulator=(function () {
 	}*/
 	return Object.create({
 		getPixel:function() {},
+		confirmElm:function() {},
+		whatIs:function() {},
 		loopint:0,
 		imageData:{},
 		zoomX:0,
@@ -40,7 +42,7 @@ window.p=window.pixelManipulator=(function () {
 		zoomctx:{},
 		zoomctxStrokeStyle:"gray",
 		defaultElm:'blank',
-		onZoomClick:function(clickEvent,confirmColorInstance) {return window.pixelManipulator.defaultElm;},
+		onZoomClick:function(clickEvent,confirmElmInstance) {return window.pixelManipulator.defaultElm;},
 		onIterate:function() {},
 		onAfterIterate:function() {},
 		pixelCounts:{},
@@ -77,30 +79,41 @@ window.p=window.pixelManipulator=(function () {
 		setElements:{
 			value:function(map) {
 				for (var elm in map) {
-					if (typeof map[elm].pattern==="string") {
-						if (map[elm].pattern.search(/B\d{0,9}\/S\d{0,9}/gi)>-1) {
-							var numbers=map[elm].pattern.split(/\/*[a-z]/gi),
-								born=numbers[1],die=numbers[2];
-							map[elm].liveCell=window.pixelManipulator.__LIFE_TEMPLATES__.__LIVE__(die,map[elm].loop,elm);
-							map[elm].deadCell=window.pixelManipulator.__LIFE_TEMPLATES__.__DEAD__(born,map[elm].loop,elm);
-							console.log("life pattern found: ",elm,map[elm]);
-						}else if (map[elm].pattern.search(/Rule \d*/gi)>-1) {
-							var number=map[elm].pattern.split(/Rule /gi)[1]-0,
-								binStates=number.toString(2).padStart(8,"0");
-							map[elm].deadCell=window.pixelManipulator.__WOLFRAM_TEMPLATE__(elm,binStates,map[elm].loop);
-							console.log("wolfram pattern found: ",elm,map[elm]);
-						}
-					}
+					window.pixelManipulator.addElement(map[elm],elm);
 				}
-				window.pixelManipulator.elementTypeMap=map;
 			},
 		},
-		whatIs:{
-			value:function(x,y,loop) {
-				for (var i in window.pixelManipulator.elementTypeMap) {
-					if (window.pixelManipulator.makeConfirmColor(x,y,p.getPixel)(i)) return i;
+		addElement:{
+			value:function(data,elm) {
+				if (typeof elm==="undefined") elm=data.name;
+				if (typeof data.color==="undefined") data.color=[255,255,255,255];
+				while (data.color.length<4) data.color.push(255);
+				if (typeof data.pattern==="string") {
+					if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)>-1) {
+						var numbers=data.pattern.split(/\/*[a-z]/gi),
+							born=numbers[1],die=numbers[2];
+						if (typeof data.liveCell==="undefined") data.liveCell=window.pixelManipulator.__LIFE_TEMPLATES__.__LIVE__(die,data.loop,elm);
+						if (typeof data.deadCell==="undefined") data.deadCell=window.pixelManipulator.__LIFE_TEMPLATES__.__DEAD__(born,data.loop,elm);
+						console.log("life pattern found: ",elm,data);
+					}else if (data.pattern.search(/Rule \d*/gi)>-1) {
+						var number=data.pattern.split(/Rule /gi)[1]-0,
+							binStates=number.toString(2).padStart(8,"0");
+						if (typeof data.deadCell==="undefined") data.deadCell=window.pixelManipulator.__WOLFRAM_TEMPLATE__(elm,binStates,data.loop);
+						console.log("wolfram pattern found: ",elm,data);
+					}
 				}
-			},
+				window.pixelManipulator.elementTypeMap[elm]=data;//for each element
+			}
+		},
+		makeWhatIs:{
+			value:function(f) {
+				var specialConfirm=window.pixelManipulator.makeConfirmElm(f);
+				return (function(x,y,loop) {
+					for (var i in window.pixelManipulator.elementTypeMap) {
+						if (specialConfirm(x,y,i,loop)) return i;
+					}
+				})
+			}
 		},
 		setCanvasSizes:{
 			value:function(canvasSizes) {
@@ -116,16 +129,12 @@ window.p=window.pixelManipulator=(function () {
 			value:function(e) {
 				//console.log("zoomClick",e);
 				var zoomXPos=Math.floor(e.offsetX/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomX-(window.pixelManipulator.zoomScaleFactor/2)),
-					zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomY-(window.pixelManipulator.zoomScaleFactor/2)),
-					old=[];
+					zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomY-(window.pixelManipulator.zoomScaleFactor/2));
 				//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
 				//console.log(zoomYPos,"=Math.floor(",e.offsetY,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomY,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
-				for (var i=0;i<window.pixelManipulator.imageData.data.length;i++) {
-					old[i]=window.pixelManipulator.imageData.data[i]-0;
-				}
 				window.pixelManipulator.setPixel(zoomXPos,zoomYPos,//Where to set the pixel
 					window.pixelManipulator.onZoomClick(e,//pass in the click event
-						p.makeConfirmColor(zoomXPos,zoomYPos,window.pixelManipulator.createGetPixel(old))));//as well as a confirmColor instance
+						{x:zoomXPos,y:zoomYPos}));//as well as the position on the main canvas that this click was regestered to be at
 				window.pixelManipulator.update();
 				window.pixelManipulator.zoom({
 					x:window.pixelManipulator.zoomX,
@@ -207,14 +216,13 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
 			},
 		},
-		makeConfirmColor:{
-			value:function(x,y,f,loop) {
-				//console.log("makeConfirmColor");
+		makeConfirmElm:{
+			value:function(f) {
+				//console.log("makeConfirmElm");
 				//loop=typeof loop!=="undefined"?loop:true;
-				var colors=f(x,y,loop);
-				return function(name) {
-					//console.log("ConfirmColor");
-					var arry=window.pixelManipulator.elementTypeMap[name].color;
+				return function(x,y,name,loop) {
+					//console.log("ConfirmElm");
+					var colors=f(x,y,loop), arry=window.pixelManipulator.elementTypeMap[name].color;
 					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
 				};
 			},
@@ -222,28 +230,30 @@ window.p=window.pixelManipulator=(function () {
 		makeMooreNearbyCounter:{
 			value:function(x,y,f) {
 				//console.log("makeMooreNearbyCounter");
+				var specialConfirm=window.pixelManipulator.makeConfirmElm(f);
 				return (function (name,loop) {
 					//console.log("mooreNearbyCounter");
-					return (window.pixelManipulator.makeConfirmColor(x-1,y-1,f,loop)(name))+//nw
-					(window.pixelManipulator.makeConfirmColor(x-1,y,f,loop)(name))+         //w
-					(window.pixelManipulator.makeConfirmColor(x-1,y+1,f,loop)(name))+       //sw
-					(window.pixelManipulator.makeConfirmColor(x,y-1,f,loop)(name))+         //n
-					(window.pixelManipulator.makeConfirmColor(x,y+1,f,loop)(name))+         //s
-					(window.pixelManipulator.makeConfirmColor(x+1,y-1,f,loop)(name))+       //ne
-					(window.pixelManipulator.makeConfirmColor(x+1,y,f,loop)(name))+         //e
-					(window.pixelManipulator.makeConfirmColor(x+1,y+1,f,loop)(name));       //se
+					return (specialConfirm(x-1,y-1,name,loop))+//nw
+					(specialConfirm(x-1,y,name,loop))+         //w
+					(specialConfirm(x-1,y+1,name,loop))+       //sw
+					(specialConfirm(x,y-1,name,loop))+         //n
+					(specialConfirm(x,y+1,name,loop))+         //s
+					(specialConfirm(x+1,y-1,name,loop))+       //ne
+					(specialConfirm(x+1,y,name,loop))+         //e
+					(specialConfirm(x+1,y+1,name,loop));       //se
 				});
 			},
 		},
 		makeWolframNearby:{
 			value:function(x,y,f) {
 				//console.log("makeWolframNearby");
+				var specialConfirm=window.pixelManipulator.makeConfirmElm(f);
 				return (function (name,a,loop) {
 					//console.log("wolframNearby");
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
-					var near=[window.pixelManipulator.makeConfirmColor(x-1,y-1,f,loop)(name),//the three spots above
-					          window.pixelManipulator.makeConfirmColor(x,y-1,f,loop)(name),
-					          window.pixelManipulator.makeConfirmColor(x+1,y-1,f,loop)(name)];
+					var near=[specialConfirm(x-1,y-1,name,loop),//the three spots above (nw,n,ne)
+					          specialConfirm(x,y-1,name,loop),
+					          specialConfirm(x+1,y-1,name,loop)];
 					return (near[0]==a[0]&&near[1]==a[1]&&near[2]==a[2]);
 				});
 			},
@@ -251,9 +261,15 @@ window.p=window.pixelManipulator=(function () {
 		setPixel:{
 			value:function(x,y,name,loop) {
 				//console.log("setPixel",x,y,name,loop);
+				var arry=window.pixelManipulator.elementTypeMap[name].color;
+				window.pixelManipulator.rawSetPixel(x,y,arry,loop);
+			},
+		},
+		rawSetPixel:{
+			value:function(x,y,arry,loop) {
+				//console.log("rawSetPixel",x,y,name,loop);
 				x=Math.floor(x);//Fix any bad math done further up the line.
 				y=Math.floor(y);//...
-				var arry=window.pixelManipulator.elementTypeMap[name].color;
 				loop=typeof loop!=="undefined"?loop:true;
 				if (loop) {
 					while (x<0) x=window.pixelManipulator.canvas.width+x;
@@ -276,29 +292,28 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.pixelCounts={};
 				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
 					for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
-						var confirmElement=window.pixelManipulator.makeConfirmColor(x,y,getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
+						var confirmOldElm=window.pixelManipulator.makeConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
 							mooreNearbyCounter=window.pixelManipulator.makeMooreNearbyCounter(x,y,getOldPixel),
 							wolframNearby=window.pixelManipulator.makeWolframNearby(x,y,getOldPixel),
-							currentPix=window.pixelManipulator.whatIs(x,y),
 							rel={
 								x:x,
 								y:y,
 								getOldPixel:getOldPixel,
-								confirmElement:confirmElement,
+								confirmOldElm:confirmOldElm,
 								mooreNearbyCounter:mooreNearbyCounter,
 								wolframNearby:wolframNearby,
-								currentPix:currentPix,
 							};
-						if (typeof window.pixelManipulator.elementTypeMap[currentPix].liveCell==="function") {
-							window.pixelManipulator.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
-						}
-						if (currentPix==="blank") {
+						if (window.pixelManipulator.confirmElm(x,y,"blank")) {
 							for (var elm in window.pixelManipulator.elementTypeMap) {
 								if (typeof window.pixelManipulator.elementTypeMap[elm].deadCell==="function") {
 									window.pixelManipulator.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
 								}
 							}
 						}else{
+							var currentPix=window.pixelManipulator.whatIs(x,y);
+							if (typeof window.pixelManipulator.elementTypeMap[currentPix].liveCell==="function") {
+								window.pixelManipulator.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
+							}
 							if (typeof window.pixelManipulator.pixelCounts[currentPix]==="undefined") {
 								window.pixelManipulator.pixelCounts[currentPix]=1;
 							}else window.pixelManipulator.pixelCounts[currentPix]++;
@@ -328,6 +343,8 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.zoomctx.webkitImageSmoothingEnabled=false;
 				window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
 				window.pixelManipulator.getPixel=window.pixelManipulator.createGetPixel(window.pixelManipulator.imageData.data);
+				window.pixelManipulator.confirmElm=window.pixelManipulator.makeConfirmElm(window.pixelManipulator.getPixel);
+				window.pixelManipulator.whatIs=window.pixelManipulator.makeWhatIs(window.pixelManipulator.getPixel);
 			},
 		},
 		setCanvas:{
