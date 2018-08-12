@@ -7,3 +7,4 @@
 * Place element in exact location (enter in numbers) (html-only)
 * Place zoom location in exact location (enter in numbers) (html-only)
 * Move element counter into update function?? may not be worth it
+* Re-organize the entire library to work with Require.js (and Dojo too?)

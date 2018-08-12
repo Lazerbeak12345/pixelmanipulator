@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.61.143 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.62.143 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -76,7 +76,7 @@ window.p=window.pixelManipulator=(function () {
 				});
 			},
 		},
-		setElements:{
+		addMultipleElements:{
 			value:function(map) {
 				for (var elm in map) {
 					window.pixelManipulator.addElement(map[elm],elm);
@@ -381,6 +381,12 @@ window.p=window.pixelManipulator=(function () {
 					y:Math.floor(window.pixelManipulator.zoomelm.height/2)-(Math.floor(window.pixelManipulator.zoomelm.height/2)*window.pixelManipulator.zoomScaleFactor),
 				});
 				return window.pixelManipulator.zoomelm;
+			},
+		},
+		canvasPrep:{
+			value:function(e) {
+				window.pixelManipulator.setCanvas(e.canvas);
+				window.pixelManipulator.setZoomelm(e.zoom);
 			},
 		},
 	});
