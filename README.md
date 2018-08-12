@@ -1,7 +1,7 @@
 # pixelmanipulator v1.62.143 (beta-proposed)
 A super powerfull library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
-[version](https://img.shields.io/badge/version-1.62.128-blue.svg)
+![version](https://img.shields.io/badge/version-1.62.128-blue.svg)
 [![Travis](https://travis-ci.org/Lazerbeak12345/pixelmanipulator.svg?branch=master)](https://travis-ci.org/Lazerbeak12345/pixelmanipulator)
 
 ## Browser Support
