@@ -199,9 +199,9 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.zoomctx.stroke();
 			}
 		},
-		createGetPixel:{
+		GetPixel:{
 			value:function(d) {
-				//console.log("createGetPixel");
+				//console.log("GetPixel");
 				return (function (x,y,loop) {
 					//           (#,#)
 					//console.log("get(old?)Pixel");
@@ -294,7 +294,7 @@ window.p=window.pixelManipulator=(function () {
 				for (var i=0;i<window.pixelManipulator.imageData.data.length;i++) {
 					old[i]=window.pixelManipulator.imageData.data[i]-0;
 				}
-				var getOldPixel=window.pixelManipulator.createGetPixel(old);
+				var getOldPixel=window.pixelManipulator.GetPixel(old);
 				window.pixelManipulator.pixelCounts={};
 				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
 					for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
@@ -348,7 +348,7 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.zoomctx.mozImageSmoothingEnabled=false;
 				window.pixelManipulator.zoomctx.webkitImageSmoothingEnabled=false;
 				window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
-				window.pixelManipulator.getPixel=window.pixelManipulator.createGetPixel(window.pixelManipulator.imageData.data);
+				window.pixelManipulator.getPixel=window.pixelManipulator.GetPixel(window.pixelManipulator.imageData.data);
 				window.pixelManipulator.confirmElm=window.pixelManipulator.makeConfirmElm(window.pixelManipulator.getPixel);
 				window.pixelManipulator.whatIs=window.pixelManipulator.makeWhatIs(window.pixelManipulator.getPixel);
 				window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;
