@@ -8,7 +8,7 @@ A super powerfull library for cellular automation on html5 canvas elements, insp
 
 Version          | Chrome             | Chromium           | Edge                | IE                  | Firefox      | Safari                      
 -----------------|--------------------|--------------------|---------------------|---------------------|--------------|-----------------------------
-Current release  | yes (68.0.3440.75) | yes (67.0.3396.99) | poor (42.17134.1.0) | no (11.165.17134.0) | yes (61.0.1) | yes (11.1.2 (11605.3.8.1)) 
+Current release  | yes (68.0.3440.75) | yes (68.0.3440.75) | poor (42.17134.1.0) | no (11.165.17134.0) | yes (61.0.1) | yes (11.1.2 (11605.3.8.1)) 
 Last supported   | yes (68.0.3440.75) | yes (67.0.3396.99) | poor (42.17134.1.0) | unknown             | yes (61.0.1) | yes (11.1.2 (11605.3.8.1))  
 Oldest supported | yes (68.0.3440.75) | yes (67.0.3396.99) | poor (42.17134.1.0) | unknown             | yes (61.0.1) | yes (11.1.2 (11605.3.8.1))  
 
