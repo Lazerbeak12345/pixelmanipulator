@@ -7,7 +7,7 @@ This is the documentation for that program, and how to use it in your own websit
 ## Things you need, and how to access the library
 
 This library should work out of the box, in most reasonable web browsers, and doesn't need jQuery, or anything like it to run.
-For more specific information about what web browsers I am talking about view the README.md file at the root of this repo.
+For more specific information about what web browsers I am talking about, view the README.md file at the root of this repo.
 
 So now I know that it doesn't need jQuery, mootools, or Angular, can I use them anyway?
 
@@ -41,7 +41,7 @@ It is by far one of the most complicated things that a user of this library will
 
 ### `p.addElement`
 
-This function takes in two arguments, the second optional. `p.addElement(data,elmName);`
+This function takes in two arguments, the second optional. `p.addElement(elmName,data);`
 
 #### `elmName`
 
@@ -55,7 +55,7 @@ The manditory first argument to `p.addElement`.
 Let's run through each varuble.
 
 	{
-		name:"Your #1 Element's name.",//optional. If the second argument to `p.addElement` is ommited, then this value will be used as the name of the element
+		name:"Your Element's name.",//optional. If the second argument to `p.addElement` is ommited, then this value will be used as the name of the element
 		color:[42,42,42,255],//reccommended. RGBA color for what your element should be. (Note that alfa, unlike usual is a range from 0-255). If it is ommitted, or not long enough, then default values of 255 will be used.
 		liveCell:function(rel) {//optional. Called when on a living instance of this element. When this function is present, it overides functionality defined by `pattern`
 			/*
@@ -87,4 +87,24 @@ It is used in the following syntax:
 ## `p.setPixel`
 
 `p.setPixel` is a function that changes the pixel at the given co-ordinates to the inputted element.
-It's syntax is like this `p.setPixel(10,3,"blank"`.
+It's syntax is like this `p.setPixel(10,3,"blank");`, where the first two arguments are the co-ordinates for where to set the pixel, and the last argument is the name of the element that you want to place.
+
+### About `p.rawSetPixel`
+
+`p.setPixel` takes the name of the element by default, but It really just calls `p.rawSetPixel`.
+`p.rawSetPixel` takes the same arguments as setPixel does, excuding the last argument, which must be an array of four numbers, each ranging from 0-255, representing rgba.
+
+>Fun Fact! The required input of the last argument for `p.rawSetPixel` is identical to the format of `p.getPixel`
+>
+>This feature allows for code like this:
+>
+>	p.addElement("My duplicating element",{
+>		liveCell:function(rel) {
+>			var whatsAbove=rel.getOldPixel(rel.x,rel.y-1);//get the (old) pixel that is above this one. (the old pixel is not effected by other pixel's changes to the enviroment)
+>			p.rawSetPixel(rel.x,rel.y+1,whatsAbove);//then set the one below this one to be the one above
+>		},
+>	});
+
+## `p.confirmElm`
+
+

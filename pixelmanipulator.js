@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.62.143 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.64.144 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -79,12 +79,12 @@ window.p=window.pixelManipulator=(function () {
 		addMultipleElements:{
 			value:function(map) {
 				for (var elm in map) {
-					window.pixelManipulator.addElement(map[elm],elm);
+					window.pixelManipulator.addElement(elm,map[elm]);
 				}
 			},
 		},
 		addElement:{
-			value:function(data,elm) {
+			value:function(elm,data) {
 				if (typeof elm==="undefined") elm=data.name;
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];
 				while (data.color.length<4) data.color.push(255);
@@ -107,7 +107,7 @@ window.p=window.pixelManipulator=(function () {
 		},
 		makeWhatIs:{
 			value:function(f) {
-				var specialConfirm=window.pixelManipulator.makeConfirmElm(f);
+				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
 				return (function(x,y,loop) {
 					for (var i in window.pixelManipulator.elementTypeMap) {
 						if (specialConfirm(x,y,i,loop)) return i;
@@ -222,9 +222,9 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
 			},
 		},
-		makeConfirmElm:{
+		ConfirmElm:{
 			value:function(f) {
-				//console.log("makeConfirmElm");
+				//console.log("ConfirmElm");
 				//loop=typeof loop!=="undefined"?loop:true;
 				return function(x,y,name,loop) {
 					//console.log("ConfirmElm");
@@ -236,7 +236,7 @@ window.p=window.pixelManipulator=(function () {
 		makeMooreNearbyCounter:{
 			value:function(x,y,f) {
 				//console.log("makeMooreNearbyCounter");
-				var specialConfirm=window.pixelManipulator.makeConfirmElm(f);
+				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
 				return (function (name,loop) {
 					//console.log("mooreNearbyCounter");
 					return (specialConfirm(x-1,y-1,name,loop))+//nw
@@ -253,7 +253,7 @@ window.p=window.pixelManipulator=(function () {
 		makeWolframNearby:{
 			value:function(x,y,f) {
 				//console.log("makeWolframNearby");
-				var specialConfirm=window.pixelManipulator.makeConfirmElm(f);
+				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
 				return (function (name,a,loop) {
 					//console.log("wolframNearby");
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
@@ -298,7 +298,7 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.pixelCounts={};
 				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
 					for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
-						var confirmOldElm=window.pixelManipulator.makeConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
+						var confirmOldElm=window.pixelManipulator.ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
 							mooreNearbyCounter=window.pixelManipulator.makeMooreNearbyCounter(x,y,getOldPixel),
 							wolframNearby=window.pixelManipulator.makeWolframNearby(x,y,getOldPixel),
 							rel={
@@ -349,7 +349,7 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.zoomctx.webkitImageSmoothingEnabled=false;
 				window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
 				window.pixelManipulator.getPixel=window.pixelManipulator.GetPixel(window.pixelManipulator.imageData.data);
-				window.pixelManipulator.confirmElm=window.pixelManipulator.makeConfirmElm(window.pixelManipulator.getPixel);
+				window.pixelManipulator.confirmElm=window.pixelManipulator.ConfirmElm(window.pixelManipulator.getPixel);
 				window.pixelManipulator.whatIs=window.pixelManipulator.makeWhatIs(window.pixelManipulator.getPixel);
 				window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;
 			},

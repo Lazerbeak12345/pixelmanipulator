@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+	<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<script src="ext\marked.min.js"></script>
+	<script src="ext\jquery.min.js"></script>
+	<script>
+		$.get('docs.md', function (response) {
+			console.log(response.toString());
+			var html = marked(response.toString());
+			$("#content").html(html);
+		});
+	</script>
+	<link rel="stylesheet" type="text/css" href="ext\bootstrap.min.css">
+	</head>
+	<body>
+		
+		<div class="container" id="content">
+			Loading...
+		</div>
+	</body>
+</html>
