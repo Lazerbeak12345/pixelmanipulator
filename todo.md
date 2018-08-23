@@ -2,6 +2,7 @@
 
 > Same-level bullet points ordered by when I plan to do them, bold *must* be done by the time it changes to not be beta anymore, and sub-bullets *must* be completed before a higher bullet can be completed.
 
+* Convert SVG to other proper icon files as the font is incorrect in most web-browsers
 * Document as much of the undocumented code as feasible.
 * create modifiable elements (html-only)
 * Place element in exact location (enter in numbers) (html-only)

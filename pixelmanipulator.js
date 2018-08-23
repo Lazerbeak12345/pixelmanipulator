@@ -1,5 +1,5 @@
 /*
-	This is a cellular automata javascript library. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
+	This is a cellular automata JavaScript library. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
 
     This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.64.144 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.65.145 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -32,7 +32,9 @@ window.p=window.pixelManipulator=(function () {
 		zoomY:0,
 		row:0,
 		elementTypeMap:{
-			"blank":[0,0,0,255],
+			"blank":{
+				color:[0,0,0,255],
+			},
 		},
 		mode:"paused",
 		zoomScaleFactor:20,
@@ -105,7 +107,7 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.elementTypeMap[elm]=data;//for each element
 			}
 		},
-		makeWhatIs:{
+		WhatIs:{
 			value:function(f) {
 				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
 				return (function(x,y,loop) {
@@ -233,9 +235,9 @@ window.p=window.pixelManipulator=(function () {
 				};
 			},
 		},
-		makeMooreNearbyCounter:{
+		MooreNearbyCounter:{
 			value:function(x,y,f) {
-				//console.log("makeMooreNearbyCounter");
+				//console.log("MooreNearbyCounter");
 				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
 				return (function (name,loop) {
 					//console.log("mooreNearbyCounter");
@@ -250,9 +252,9 @@ window.p=window.pixelManipulator=(function () {
 				});
 			},
 		},
-		makeWolframNearby:{
+		WolframNearby:{
 			value:function(x,y,f) {
-				//console.log("makeWolframNearby");
+				//console.log("WolframNearby");
 				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
 				return (function (name,a,loop) {
 					//console.log("wolframNearby");
@@ -299,8 +301,8 @@ window.p=window.pixelManipulator=(function () {
 				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
 					for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
 						var confirmOldElm=window.pixelManipulator.ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
-							mooreNearbyCounter=window.pixelManipulator.makeMooreNearbyCounter(x,y,getOldPixel),
-							wolframNearby=window.pixelManipulator.makeWolframNearby(x,y,getOldPixel),
+							mooreNearbyCounter=window.pixelManipulator.MooreNearbyCounter(x,y,getOldPixel),
+							wolframNearby=window.pixelManipulator.WolframNearby(x,y,getOldPixel),
 							rel={
 								x:x,
 								y:y,
@@ -350,7 +352,7 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
 				window.pixelManipulator.getPixel=window.pixelManipulator.GetPixel(window.pixelManipulator.imageData.data);
 				window.pixelManipulator.confirmElm=window.pixelManipulator.ConfirmElm(window.pixelManipulator.getPixel);
-				window.pixelManipulator.whatIs=window.pixelManipulator.makeWhatIs(window.pixelManipulator.getPixel);
+				window.pixelManipulator.whatIs=window.pixelManipulator.WhatIs(window.pixelManipulator.getPixel);
 				window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;
 			},
 		},

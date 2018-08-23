@@ -1,0 +1,5 @@
+# Dependency directories
+node_modules/
+
+# Notepad++ session (what is open, what line is selected, etc. I only use this when on windows though.)
+.notepadppsession

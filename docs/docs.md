@@ -1,6 +1,6 @@
 # PixelManipulator documentation
 
-PixelManipulator is a super powerfull library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
+PixelManipulator is a super powerful library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
 This is the documentation for that program, and how to use it in your own website, if you so desired.
 
@@ -11,14 +11,14 @@ For more specific information about what web browsers I am talking about, view t
 
 So now I know that it doesn't need jQuery, mootools, or Angular, can I use them anyway?
 
-Of course! This library intends to prevent such problems by storing itself in two global varubles: `window.p` and `window.pixelManipulator` or just `p` and `pixelManipulator`.
-You may have also noticed that the Generic name "`p`" isn't `$` or any other "reserved" varuble names.
+Of course! This library intends to prevent such problems by storing itself in two global variables: `window.p` and `window.pixelManipulator` or just `p` and `pixelManipulator`.
+You may have also noticed that the Generic name "`p`" isn't `$` or any other "reserved" variable names.
 
 But what if I need to use a library that uses the global alias `p` for something? Don't worry, you can still use `pixelManipulator`, or make your own alias with this code:
 
 		var newAlias=window.pixelManipulator;
 
-> Unfortunately, I haven't found time to re-organise the entire library to work with dependancy systems like Require.js.
+> Unfortunately, I haven't found time to re-organize the entire library to work with dependency systems like Require.js.
 
 ## The `p.canvasPrep` function
 
@@ -46,18 +46,18 @@ This function takes in two arguments, the second optional. `p.addElement(elmName
 #### `elmName`
 
 The optional second argument to `p.addElement`, "`elmName`" is a string that specifies what the name for the element should be.
-If this is ommitted, than `data.name` must be defined instead.
+If this is omitted, than `data.name` must be defined instead.
 However, if both are present, than `elmName` will override `data.name`
 
 #### `data`
 
-The manditory first argument to `p.addElement`.
-Let's run through each varuble.
+The mandatory first argument to `p.addElement`.
+Let's run through each variable.
 
 	{
-		name:"Your Element's name.",//optional. If the second argument to `p.addElement` is ommited, then this value will be used as the name of the element
-		color:[42,42,42,255],//reccommended. RGBA color for what your element should be. (Note that alfa, unlike usual is a range from 0-255). If it is ommitted, or not long enough, then default values of 255 will be used.
-		liveCell:function(rel) {//optional. Called when on a living instance of this element. When this function is present, it overides functionality defined by `pattern`
+		name:"Your Element's name.",//optional. If the second argument to `p.addElement` is omitted, then this value will be used as the name of the element
+		color:[42,42,42,255],//recommended. RGBA color for what your element should be. (Note that alpha, unlike usual is a range from 0-255). If it is omitted, or not long enough, then default values of 255 will be used.
+		liveCell:function(rel) {//optional. Called when on a living instance of this element. When this function is present, it overrides functionality defined by `pattern`
 			/*
 			the values of rel are the following:
 			rel={
@@ -65,13 +65,13 @@ Let's run through each varuble.
 				y,//the y position
 				getOldPixel,//same syntax as `p.getPixel` but instead of getting the current pixels, it gets the pixels as they were _before_ any of them were modified 
 				confirmOldElm,//same idea as `getOldPixel`, but with `p.confimElm` instead
-				mooreNearbyCounter,//counts how many of an element are in the immidiate vicinity (including diagnals) can be used as such `rel.mooreNearbyCounter("elmName",booleanOfWeatherOrNotToLoopAroundTheEdgesOfTheScreen);
-				wolframNearby,//returns true if the three pixels above this one matches an imputted value (it can either be a string or an array of 1's & 0's, for example "010" means that the queried element is not above to the left or right, but is directly above) here's how it's used: `rel.wolframNearby("elmName","011",booleanOfWeatherOrNotToLoopAroundTheEdgesOfTheScreen);`
+				mooreNearbyCounter,//counts how many of an element are in the immediate vicinity (including diagonals) can be used as such `rel.mooreNearbyCounter("elmName",booleanOfWeatherOrNotToLoopAroundTheEdgesOfTheScreen);
+				wolframNearby,//returns true if the three pixels above this one matches an inputted value (it can either be a string or an array of 1's & 0's, for example "010" means that the queried element is not above to the left or right, but is directly above) here's how it's used: `rel.wolframNearby("elmName","011",booleanOfWeatherOrNotToLoopAroundTheEdgesOfTheScreen);`
 			}
 			*/
 		},
-		deadCell:function(rel) {},//optional. same idea as liveCell, only differance is that the cell at (x,y) is the default element, not the current element
-		pattern:"Rule 90"//optional. this string can be in Born/Survive syntax or wolfram Rule # syntax. Some valid examples are "B3/S23" (conway's game of life: born with 3 of this elm nearby, survive with 2 or 3 of this elm nearby) "B36/S23" (HighLife, born 3 or 6, survives 2 or 3) "Rule 30" (transalate 30 into binary, then you get 00011110. that means that the wolfram pattern 111 isn't alive, 110 isn't alive, 101 isn't alive 100 is alive, 011 is alive 010 is alive 001 is alive and 000 is dead [decreasing binary.] For more info view "Rule 30" on Wikipedia)
+		deadCell:function(rel) {},//optional. same idea as liveCell, only difference is that the cell at (x,y) is the default element, not the current element
+		pattern:"Rule 90"//optional. this string can be in Born/Survive syntax or wolfram Rule # syntax. Some valid examples are "B3/S23" (Conway's game of life: born with 3 of this elm nearby, survive with 2 or 3 of this elm nearby) "B36/S23" (HighLife, born 3 or 6, survives 2 or 3) "Rule 30" (translate 30 into binary, then you get 00011110. that means that the wolfram pattern 111 isn't alive, 110 isn't alive, 101 isn't alive 100 is alive, 011 is alive 010 is alive 001 is alive and 000 is dead [decreasing binary.] For more info view "Rule 30" on Wikipedia)
 	}
 
 ### `p.addMultipleElements`
@@ -94,7 +94,7 @@ It's syntax is like this `p.setPixel(10,3,"blank");`, where the first two argume
 `p.setPixel` takes the name of the element by default, but It really just calls `p.rawSetPixel`.
 `p.rawSetPixel` takes the same arguments as setPixel does, excuding the last argument, which must be an array of four numbers, each ranging from 0-255, representing rgba.
 
->Fun Fact! The required input of the last argument for `p.rawSetPixel` is identical to the format of `p.getPixel`
+>Fun Fact! The required input of the last argument for `p.rawSetPixel` is identical to the output format of `p.getPixel`
 >
 >This feature allows for code like this:
 >
