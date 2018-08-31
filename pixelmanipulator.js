@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.65.145 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.65.146 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -52,30 +52,42 @@ window.p=window.pixelManipulator=(function () {
 		licence:{
 			value:licence,
 		},
-		__LIFE_TEMPLATES__:{
+		__TEMPLATES__:{
 			value:{
-				__LIVE__:function(numtodie,loop,elm) {
+				__LIFE__:{
+					__LIVE__:function(numtodie,loop,elm) {
+						return (function(rel) {
+							var nearbyTotal=rel.mooreNearbyCounter(elm,loop),willLive=true;//count how many are nearby (moore style)
+							if(numtodie.search(nearbyTotal)<=-1) window.pixelManipulator.setPixel(rel.x,rel.y,window.pixelManipulator.defaultElm);// if any match is found, it dies
+						});
+					},
+					__DEAD__:function(numtolive,loop,elm) {
+						return (function(rel) {
+							var nearbyTotal=rel.mooreNearbyCounter(elm,loop);//count how many are nearby
+							if(numtolive.search(nearbyTotal)>-1) p.setPixel(rel.x,rel.y,elm);// if any match is found, it lives
+						});
+					},
+				},
+				/*__WOLFRAM__:function(elm,binStates,loop) {
 					return (function(rel) {
-						var nearbyTotal=rel.mooreNearbyCounter(elm,loop),willLive=true;//count how many are nearby (moore style)
-						if(numtodie.search(nearbyTotal)<=-1) window.pixelManipulator.setPixel(rel.x,rel.y,window.pixelManipulator.defaultElm);// if any match is found, it dies
+						if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit before anything happens
+						var lives=false;
+						for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(elm,(7-i).toString(2).padStart(3,"0"),loop)) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
+						if (lives) window.pixelManipulator.setPixel(rel.x,rel.y,elm);
+					});
+				},*/
+				__WOLFRAM__:function(elm,binStates,loop) {
+					return (function(rel) {
+						if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit before anything happens
+						for (var xoff=-1; xoff<=1; xoff++) {
+							var lives=false//,thingToSet;
+							for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(rel.x-xoff,rel.y+1,elm,(7-i).toString(2).padStart(3,"0"),loop)) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
+							//thingToSet=lives?elm:window.pixelManipulator.defaultElm;
+							//window.pixelManipulator.setPixel(rel.x-xoff,rel.y+1,thingToSet,loop);
+							if (lives) window.pixelManipulator.setPixel(rel.x-xoff,rel.y+1,elm,loop);
+						}
 					});
 				},
-				__DEAD__:function(numtolive,loop,elm) {
-					return (function(rel) {
-						var nearbyTotal=rel.mooreNearbyCounter(elm,loop);//count how many are nearby
-						if(numtolive.search(nearbyTotal)>-1) p.setPixel(rel.x,rel.y,elm);// if any match is found, it lives
-					});
-				},
-			}
-		},
-		__WOLFRAM_TEMPLATE__:{
-			value:function(elm,binStates,loop) {
-				return (function(rel) {
-					if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit before anything happens
-					var lives=false;
-					for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(elm,(7-i).toString(2).padStart(3,"0"),loop)) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
-					if (lives) window.pixelManipulator.setPixel(rel.x,rel.y,elm);
-				});
 			},
 		},
 		addMultipleElements:{
@@ -94,13 +106,14 @@ window.p=window.pixelManipulator=(function () {
 					if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)>-1) {
 						var numbers=data.pattern.split(/\/*[a-z]/gi),
 							born=numbers[1],die=numbers[2];
-						if (typeof data.liveCell==="undefined") data.liveCell=window.pixelManipulator.__LIFE_TEMPLATES__.__LIVE__(die,data.loop,elm);
-						if (typeof data.deadCell==="undefined") data.deadCell=window.pixelManipulator.__LIFE_TEMPLATES__.__DEAD__(born,data.loop,elm);
+						if (typeof data.liveCell==="undefined") data.liveCell=window.pixelManipulator.__TEMPLATES__.__LIFE__.__LIVE__(die,data.loop,elm);
+						if (typeof data.deadCell==="undefined") data.deadCell=window.pixelManipulator.__TEMPLATES__.__LIFE__.__DEAD__(born,data.loop,elm);
 						console.log("life pattern found: ",elm,data);
 					}else if (data.pattern.search(/Rule \d*/gi)>-1) {
 						var number=data.pattern.split(/Rule /gi)[1]-0,
 							binStates=number.toString(2).padStart(8,"0");
-						if (typeof data.deadCell==="undefined") data.deadCell=window.pixelManipulator.__WOLFRAM_TEMPLATE__(elm,binStates,data.loop);
+						data.loop=typeof data.loop!=="undefined"?data.loop:false;
+						if (typeof data.deadCell==="undefined") data.liveCell=window.pixelManipulator.__TEMPLATES__.__WOLFRAM__(elm,binStates,data.loop);
 						console.log("wolfram pattern found: ",elm,data);
 					}
 				}
@@ -253,10 +266,10 @@ window.p=window.pixelManipulator=(function () {
 			},
 		},
 		WolframNearby:{
-			value:function(x,y,f) {
+			value:function(f) {
 				//console.log("WolframNearby");
 				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
-				return (function (name,a,loop) {
+				return (function (x,y,name,a,loop) {
 					//console.log("wolframNearby");
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
 					var near=[specialConfirm(x-1,y-1,name,loop),//the three spots above (nw,n,ne)
@@ -302,7 +315,7 @@ window.p=window.pixelManipulator=(function () {
 					for (var y=0; y<window.pixelManipulator.canvas.height; y++) { //iterate through x and y
 						var confirmOldElm=window.pixelManipulator.ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
 							mooreNearbyCounter=window.pixelManipulator.MooreNearbyCounter(x,y,getOldPixel),
-							wolframNearby=window.pixelManipulator.WolframNearby(x,y,getOldPixel),
+							wolframNearby=window.pixelManipulator.WolframNearby(getOldPixel),
 							rel={
 								x:x,
 								y:y,
