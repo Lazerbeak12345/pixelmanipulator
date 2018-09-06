@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.65.146 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.65.147 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -79,13 +79,9 @@ window.p=window.pixelManipulator=(function () {
 				__WOLFRAM__:function(elm,binStates,loop) {
 					return (function(rel) {
 						if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit before anything happens
-						for (var xoff=-1; xoff<=1; xoff++) {
-							var lives=false//,thingToSet;
-							for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(rel.x-xoff,rel.y+1,elm,(7-i).toString(2).padStart(3,"0"),loop)) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
-							//thingToSet=lives?elm:window.pixelManipulator.defaultElm;
-							//window.pixelManipulator.setPixel(rel.x-xoff,rel.y+1,thingToSet,loop);
-							if (lives) window.pixelManipulator.setPixel(rel.x-xoff,rel.y+1,elm,loop);
-						}
+						var lives=false;//,thingToSet;
+						for (var i=0; i<8; i++) if(binStates[i]=="1") if (rel.wolframNearby(rel.x,rel.y+1,elm,(7-i).toString(2).padStart(3,"0"),loop)) lives=true;//for every possible state, if the state is "on", if there is a wolfram match (wolfram code goes from 111 to 000), then it lives
+						if (lives) window.pixelManipulator.setPixel(rel.x,rel.y+1,elm,loop);
 					});
 				},
 			},
@@ -113,7 +109,7 @@ window.p=window.pixelManipulator=(function () {
 						var number=data.pattern.split(/Rule /gi)[1]-0,
 							binStates=number.toString(2).padStart(8,"0");
 						data.loop=typeof data.loop!=="undefined"?data.loop:false;
-						if (typeof data.deadCell==="undefined") data.liveCell=window.pixelManipulator.__TEMPLATES__.__WOLFRAM__(elm,binStates,data.loop);
+						if (typeof data.deadCell==="undefined") data.deadCell=window.pixelManipulator.__TEMPLATES__.__WOLFRAM__(elm,binStates,data.loop);
 						console.log("wolfram pattern found: ",elm,data);
 					}
 				}
