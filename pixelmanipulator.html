@@ -169,7 +169,7 @@
 			<label><input id="pixelCounterT" type="checkbox" >Show pixelCounter</label>
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On Github!</a><br/>
-				1.65.147 (beta-proposed), Frontend (v1.16.17)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				1.65.148 (beta-proposed), Frontend (v1.16.18)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -278,6 +278,8 @@
 			ready(function() {
 				canvas = p.setCanvas(document.getElementById('canvas'));
 				zoomelm = p.setZoomelm(document.getElementById('zoom'));
+				window.pixelManipulator.zoomelm.addEventListener('click',zoomClick);
+				window.pixelManipulator.zoomelm.addEventListener('drag',zoomClick);
 				var selectorBoxElm=document.getElementById('selectorBox'),//define these before, as they are used multiple times
 					smallxlineElm=document.getElementById('smallxline'),
 					smallylineElm=document.getElementById('smallyline'),
@@ -394,6 +396,29 @@
 						color:[0,0,0,255],
 					},
 				});
+				onZoomClick=function(e,rel) {//an event-like function that returns what should be set where the zoom ctx was clicked
+					//console.log("onZoomClick",arguments);
+					var active=normalClick//The default is normalClick.
+					if (e.ctrlKey) active=ctrlClick;
+					else if(e.altKey) active=altClick;
+					if (p.confirmElm(rel.x,rel.y,active)) active="blank";
+					return active;
+				};
+				function zoomClick(e) {
+					//console.log("zoomClick",e);
+					var zoomXPos=Math.floor(e.offsetX/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomX-(window.pixelManipulator.zoomScaleFactor/2)),
+						zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomY-(window.pixelManipulator.zoomScaleFactor/2));
+					//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
+					//console.log(zoomYPos,"=Math.floor(",e.offsetY,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomY,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
+					window.pixelManipulator.setPixel(zoomXPos,zoomYPos,//Where to set the pixel
+						onZoomClick(e,//pass in the click event
+							{x:zoomXPos,y:zoomYPos}));//as well as the position on the main canvas that this click was regestered to be at
+					window.pixelManipulator.update();
+					window.pixelManipulator.zoom({
+						x:window.pixelManipulator.zoomX,
+						y:window.pixelManipulator.zoomY,
+					});
+				}
 				p.onIterate=function() {
 					document.getElementById("workingLine").style.top=p.row+"px";
 					document.getElementById("workingLine").style.left=(p.canvas.width+1)+"px";
@@ -470,14 +495,6 @@
 					}
 					p.update();
 				});
-				p.onZoomClick=function(e,rel) {//an event-like function that returns what should be set where the zoom ctx was clicked
-					//console.log("onZoomClick",arguments);
-					var active=normalClick//The default is normalClick.
-					if (e.ctrlKey) active=ctrlClick;
-					else if(e.altKey) active=altClick;
-					if (p.confirmElm(rel.x,rel.y,active)) active="blank";
-					return active;
-				};
 			});
 		</script>
 	</body>
