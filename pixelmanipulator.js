@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.65.148 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.65.149 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -81,7 +81,7 @@ window.p=window.pixelManipulator=(function () {
 						var number=data.pattern.split(/Rule /gi)[1]-0,
 							binStates=number.toString(2).padStart(8,"0");
 						console.log("Wolfram pattern found: ",elm,data);
-						return [,window.pixelManipulator.__TEMPLATES__.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
+						return [undefined,window.pixelManipulator.__TEMPLATES__.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
 					},
 					__DEAD__:function(elm,binStates,loop) {
 						return (function(rel) {
