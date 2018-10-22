@@ -105,7 +105,7 @@ window.p=window.pixelManipulator=(function () {
 		},
 		randomlyFill:{
 			value:function(pr,value) {
-				var pr=pr||15;
+				pr=pr||15;
 				for (var xPos=0; xPos<window.pixelManipulator.canvas.width; xPos++) {
 					for (var yPos=0; yPos<window.pixelManipulator.canvas.height; yPos++) { //iterate through x and y
 						if (Math.random()*100<pr) window.pixelManipulator.setPixel(xPos,yPos,value);
@@ -315,6 +315,12 @@ window.p=window.pixelManipulator=(function () {
 					old[i]=window.pixelManipulator.imageData.data[i]-0;
 				}
 				var getOldPixel=window.pixelManipulator.GetPixel(old);
+				var iterateThroughPresentElementsOnBlank=function(elm) {
+					if (typeof window.pixelManipulator.elementTypeMap[elm].deadCell==="function") {
+						//console.log(xPos,yPos,"Thing");
+						window.pixelManipulator.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
+					}
+				};
 				window.pixelManipulator.pixelCounts={};
 				for (var xPos=0; xPos<window.pixelManipulator.canvas.width; xPos++) {
 					for (var yPos=0; yPos<window.pixelManipulator.canvas.height; yPos++) { //iterate through x and y
@@ -331,12 +337,7 @@ window.p=window.pixelManipulator=(function () {
 							};
 						if (window.pixelManipulator.confirmElm(xPos,yPos,"blank")) {
 							//for (var elm in window.pixelManipulator.elementTypeMap) {
-							window.pixelManipulator.presentElements.forEach(function(elm) {
-								if (typeof window.pixelManipulator.elementTypeMap[elm].deadCell==="function") {
-									//console.log(xPos,yPos,"Thing");
-									window.pixelManipulator.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
-								}
-							});
+							window.pixelManipulator.presentElements.forEach(iterateThroughPresentElementsOnBlank);
 							//}
 						}else{
 							var currentPix=window.pixelManipulator.whatIs(xPos,yPos);
