@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.65.149 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+	var licence="pixelmanipulator.js v1.66.149 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 	/*function ret(v) {
 		return (function() {
 			return v;
@@ -47,6 +47,8 @@ window.p=window.pixelManipulator=(function () {
 		onIterate:function() {},
 		onAfterIterate:function() {},
 		pixelCounts:{},
+		presentElements:[],
+		frames:0,
 	},{
 		licence:{
 			value:licence,
@@ -58,6 +60,7 @@ window.p=window.pixelManipulator=(function () {
 						if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1) return [];
 						var numbers=data.pattern.split(/\/*[a-z]/gi),
 							born=numbers[1],die=numbers[2];
+						data.loop=typeof data.loop!=="undefined"?data.loop:true;
 						console.log("Life Pattern found: ",elm,data);
 						return [window.pixelManipulator.__TEMPLATES__.__LIFE__.__LIVE__(die,data.loop,elm),
 							window.pixelManipulator.__TEMPLATES__.__LIFE__.__DEAD__(born,data.loop,elm)];
@@ -80,6 +83,7 @@ window.p=window.pixelManipulator=(function () {
 						if (data.pattern.search(/Rule \d*/gi)<=-1) return [];
 						var number=data.pattern.split(/Rule /gi)[1]-0,
 							binStates=number.toString(2).padStart(8,"0");
+						data.loop=typeof data.loop!=="undefined"?data.loop:false;
 						console.log("Wolfram pattern found: ",elm,data);
 						return [undefined,window.pixelManipulator.__TEMPLATES__.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
 					},
@@ -99,6 +103,16 @@ window.p=window.pixelManipulator=(function () {
 				},
 			},
 		},
+		randomlyFill:{
+			value:function(pr,value) {
+				var pr=pr||15;
+				for (var xPos=0; xPos<window.pixelManipulator.canvas.width; xPos++) {
+					for (var yPos=0; yPos<window.pixelManipulator.canvas.height; yPos++) { //iterate through x and y
+						if (Math.random()*100<pr) window.pixelManipulator.setPixel(xPos,yPos,value);
+					}
+				}
+			},
+		},
 		addMultipleElements:{
 			value:function(map) {
 				for (var elm in map) {
@@ -115,7 +129,6 @@ window.p=window.pixelManipulator=(function () {
 				if (typeof elm==="undefined") elm=data.name;
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];
 				while (data.color.length<4) data.color.push(255);
-				data.loop=typeof data.loop!=="undefined"?data.loop:false;
 				if (typeof data.pattern==="string") {
 					for (var tempNam in window.pixelManipulator.__TEMPLATES__) {
 						var out=window.pixelManipulator.__TEMPLATES__[tempNam].__INDEX__(elm,data);
@@ -131,8 +144,8 @@ window.p=window.pixelManipulator=(function () {
 			value:function(f) {
 				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
 				return (function(x,y,loop) {
-					for (var i in window.pixelManipulator.elementTypeMap) {
-						if (specialConfirm(x,y,i,loop)) return i;
+					for (var i=0;i<window.pixelManipulator.presentElements.length;i++) {
+						if (specialConfirm(x,y,window.pixelManipulator.presentElements[i],loop)) return window.pixelManipulator.presentElements[i];
 					}
 				});
 			}
@@ -142,14 +155,17 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("setCanvasSizes");
 				window.pixelManipulator.canvas.width=canvasSizes.canvasW||window.pixelManipulator.canvas.width;
 				window.pixelManipulator.canvas.height=canvasSizes.canvasH||window.pixelManipulator.canvas.height;
-				window.pixelManipulator.zoomelm.width=(canvasSizes.zoomW||window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
-				window.pixelManipulator.zoomelm.height=(canvasSizes.zoomH||window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
+				if (typeof window.pixelManipulator.zoomelm.height!=="undefined") {
+					window.pixelManipulator.zoomelm.width=(canvasSizes.zoomW||window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
+					window.pixelManipulator.zoomelm.height=(canvasSizes.zoomH||window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
+				}
 				window.pixelManipulator.updateData();
 			},
 		},
 		play:{
 			value:function(canvasSizes) {
 				//console.log("play");
+				if (typeof canvasSizes!="undefined") window.pixelManipulator.reset(canvasSizes);
 				window.pixelManipulator.mode="playing";
 				window.pixelManipulator.loopint=setInterval(window.pixelManipulator.iterate,1);
 			},
@@ -168,6 +184,7 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.update();
 				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
 				window.pixelManipulator.row=0;
+				window.pixelManipulator.frames=0;
 			},
 		},
 		pause:{
@@ -179,6 +196,7 @@ window.p=window.pixelManipulator=(function () {
 		zoom:{
 			value:function(e) {
 				//console.log("zoom",e);
+				if (typeof window.pixelManipulator.zoomelm.height==="undefined") return;
 				if (e.x>=0&&e.y>=0) {
 					window.pixelManipulator.zoomX=e.x;
 					window.pixelManipulator.zoomY=e.y;
@@ -229,10 +247,10 @@ window.p=window.pixelManipulator=(function () {
 		},
 		ConfirmElm:{
 			value:function(f) {
-				//console.log("ConfirmElm");
+				//console.log("ConfirmElm",f);
 				//loop=typeof loop!=="undefined"?loop:true;
 				return function(x,y,name,loop) {
-					//console.log("ConfirmElm");
+					//console.log("confirmElm",x,y,name,loop);
 					var colors=f(x,y,loop), arry=window.pixelManipulator.elementTypeMap[name].color;
 					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
 				};
@@ -270,18 +288,15 @@ window.p=window.pixelManipulator=(function () {
 			},
 		},
 		setPixel:{
-			value:function(x,y,name,loop) {
-				//console.log("setPixel",x,y,name,loop);
-				var arry=window.pixelManipulator.elementTypeMap[name].color;
-				window.pixelManipulator.rawSetPixel(x,y,arry,loop);
-			},
-		},
-		rawSetPixel:{
 			value:function(x,y,arry,loop) {
 				//console.log("rawSetPixel",x,y,name,loop);
 				x=Math.floor(x).toString()-0;//Fix any bad math done further up the line. Also remove bad math later
 				y=Math.floor(y).toString()-0;//...
 				loop=typeof loop!=="undefined"?loop:true;
+				if (typeof arry==="string") {
+					if (!window.pixelManipulator.presentElements.includes(arry)) window.pixelManipulator.presentElements.push(arry);
+					arry=window.pixelManipulator.elementTypeMap[arry].color;
+				}
 				if (loop) {
 					while (x<0) x=window.pixelManipulator.canvas.width+x;
 					while (y<0) y=window.pixelManipulator.canvas.height+y;
@@ -315,12 +330,14 @@ window.p=window.pixelManipulator=(function () {
 								wolframNearby:wolframNearby,
 							};
 						if (window.pixelManipulator.confirmElm(xPos,yPos,"blank")) {
-							for (var elm in window.pixelManipulator.elementTypeMap) {
+							//for (var elm in window.pixelManipulator.elementTypeMap) {
+							window.pixelManipulator.presentElements.forEach(function(elm) {
 								if (typeof window.pixelManipulator.elementTypeMap[elm].deadCell==="function") {
 									//console.log(xPos,yPos,"Thing");
 									window.pixelManipulator.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
 								}
-							}
+							});
+							//}
 						}else{
 							var currentPix=window.pixelManipulator.whatIs(xPos,yPos);
 							if (typeof window.pixelManipulator.elementTypeMap[currentPix].liveCell==="function") {
@@ -334,6 +351,7 @@ window.p=window.pixelManipulator=(function () {
 				}
 				window.pixelManipulator.row++;
 				if (window.pixelManipulator.row>window.pixelManipulator.canvas.height) window.pixelManipulator.row=0;
+				window.pixelManipulator.frames++;
 				window.pixelManipulator.update();
 				window.pixelManipulator.zoom({
 					x:window.pixelManipulator.zoomX,
@@ -350,14 +368,16 @@ window.p=window.pixelManipulator=(function () {
 				window.pixelManipulator.ctx.mozImageSmoothingEnabled=false;
 				window.pixelManipulator.ctx.webkitImageSmoothingEnabled=false;
 				window.pixelManipulator.ctx.msImageSmoothingEnabled=false;
-				window.pixelManipulator.zoomctx.imageSmoothingEnabled=false;
-				window.pixelManipulator.zoomctx.mozImageSmoothingEnabled=false;
-				window.pixelManipulator.zoomctx.webkitImageSmoothingEnabled=false;
-				window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
+				if (typeof window.pixelManipulator.zoomelm.height!="undefined") {
+					window.pixelManipulator.zoomctx.imageSmoothingEnabled=false;
+					window.pixelManipulator.zoomctx.mozImageSmoothingEnabled=false;
+					window.pixelManipulator.zoomctx.webkitImageSmoothingEnabled=false;
+					window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
+					window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;
+				}
 				window.pixelManipulator.getPixel=window.pixelManipulator.GetPixel(window.pixelManipulator.imageData.data);
 				window.pixelManipulator.confirmElm=window.pixelManipulator.ConfirmElm(window.pixelManipulator.getPixel);
 				window.pixelManipulator.whatIs=window.pixelManipulator.WhatIs(window.pixelManipulator.getPixel);
-				window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;
 			},
 		},
 		setCanvas:{
@@ -365,12 +385,6 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("setCanvas");
 				window.pixelManipulator.canvas=v;
 				window.pixelManipulator.ctx=window.pixelManipulator.canvas.getContext('2d');
-				window.pixelManipulator.canvas.addEventListener('click',function(event) {
-					window.pixelManipulator.zoom({
-						x:event.offsetX,
-						y:event.offsetY,
-					});
-				});
 				return window.pixelManipulator.canvas;
 			},
 		},
@@ -379,18 +393,20 @@ window.p=window.pixelManipulator=(function () {
 				//console.log("setZoomelm");
 				window.pixelManipulator.zoomelm=v;
 				window.pixelManipulator.zoomctx=window.pixelManipulator.zoomelm.getContext('2d');
-				window.pixelManipulator.updateData();
-				window.pixelManipulator.zoom({
-					x:Math.floor(window.pixelManipulator.canvas.width/2)-(Math.floor(window.pixelManipulator.zoomelm.width/2)*window.pixelManipulator.zoomScaleFactor),
-					y:Math.floor(window.pixelManipulator.zoomelm.height/2)-(Math.floor(window.pixelManipulator.zoomelm.height/2)*window.pixelManipulator.zoomScaleFactor),
-				});
 				return window.pixelManipulator.zoomelm;
 			},
 		},
 		canvasPrep:{
 			value:function(e) {
 				window.pixelManipulator.setCanvas(e.canvas);
-				window.pixelManipulator.setZoomelm(e.zoom);
+				if (typeof e.zoom!=="undefined") window.pixelManipulator.setZoomelm(e.zoom);
+				window.pixelManipulator.updateData();
+				if (typeof e.zoom!=="undefined") {
+					window.pixelManipulator.zoom({
+						x:Math.floor(window.pixelManipulator.canvas.width/2)-(Math.floor(window.pixelManipulator.zoomelm.width/2)*window.pixelManipulator.zoomScaleFactor),
+						y:Math.floor(window.pixelManipulator.zoomelm.height/2)-(Math.floor(window.pixelManipulator.zoomelm.height/2)*window.pixelManipulator.zoomScaleFactor),
+					});
+				}
 			},
 		},
 	});

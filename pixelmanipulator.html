@@ -166,10 +166,10 @@
 			<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
 			<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
 			<br/>
-			<label><input id="pixelCounterT" type="checkbox" >Show pixelCounter</label>
+			<label><input id="pixelCounterT" type="checkbox" >Hide pixelCounter</label>
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a><br/>
-				1.65.149 (beta-proposed), Frontend (v1.16.19)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				1.66.149 (beta-proposed), Frontend (v1.17.19)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -276,8 +276,16 @@
 				updateLargeLinesY(e.offsetX,e.offsetY);
 			}; 
 			ready(function() {
-				canvas = p.setCanvas(document.getElementById('canvas'));
-				zoomelm = p.setZoomelm(document.getElementById('zoom'));
+				p.canvasPrep({
+					canvas:document.getElementById('canvas'),
+					zoom:document.getElementById('zoom'),
+				});
+				window.pixelManipulator.canvas.addEventListener('click',function(event) {
+					window.pixelManipulator.zoom({
+						x:event.offsetX,
+						y:event.offsetY,
+					});
+				});
 				window.pixelManipulator.zoomelm.addEventListener('click',zoomClick);
 				window.pixelManipulator.zoomelm.addEventListener('drag',zoomClick);
 				var selectorBoxElm=document.getElementById('selectorBox'),//define these before, as they are used multiple times
@@ -424,18 +432,13 @@
 					document.getElementById("workingLine").style.left=(p.canvas.width+1)+"px";
 				}
 				p.onAfterIterate=function() {
-					if (document.getElementById('pixelCounterT').checked) {
-						document.getElementById("pixelCounter").innerText=JSON.stringify(p.pixelCounts).replace(/[{}"]/g,"").replace(/,/g,"\n").replace(/:/g," : ");
+					if (!document.getElementById('pixelCounterT').checked) {
+						document.getElementById("pixelCounter").innerText=JSON.stringify(p.pixelCounts).replace(/[{}"]/g,"").replace(/,/g,"\n").replace(/:/g," : ")+"\n\nFrames:"+p.frames;
 					}else document.getElementById("pixelCounter").innerText="";
 				}
 				document.getElementById('pixelCounterT').addEventListener('click',p.onAfterIterate);
 				document.getElementById("play").addEventListener('click',function() {
-					p.play({
-						canvasW:document.getElementById("width").value||100,
-						canvasH:document.getElementById("height").value||100,
-						zoomW:document.getElementById("zoomWidthElm").value||20,
-						zoomH:document.getElementById("zoomHeightElm").value||20,
-					});//Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
+					p.play();
 					document.getElementById('play').disabled = true;
 					document.getElementById('pause').disabled = false;
 				});
@@ -469,6 +472,7 @@
 							p.imageData.data[i+3]=p.elementTypeMap[normalClick].color[3];
 						}
 					}
+					if (!p.presentElements.includes(normalClick)) p.presentElements.push(normalClick);
 					p.update();//needed after any changes are made
 				});
 				document.getElementById("ctrlFill").addEventListener('click',function() {
@@ -481,6 +485,7 @@
 							p.imageData.data[i+3]=p.elementTypeMap[ctrlClick].color[3];
 						}
 					}
+					if (!p.presentElements.includes(ctrlClick)) p.presentElements.push(ctrlClick);
 					p.update();
 				});
 				document.getElementById("altFill").addEventListener('click',function() {
@@ -493,6 +498,7 @@
 							p.imageData.data[i+3]=p.elementTypeMap[altClick].color[3];
 						}
 					}
+					if (!p.presentElements.includes(altClick)) p.presentElements.push(altClick);
 					p.update();
 				});
 			});
