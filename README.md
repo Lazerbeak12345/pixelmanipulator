@@ -2,7 +2,7 @@
 
 A super powerfull library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
-[![View the Demo](https://img.shields.io/badge/view-the_demo-green.svg)]
+[![View the Demo](https://img.shields.io/badge/view-the_demo-green.svg)](https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html)
 Scroll down for docs.
 
 ## Browser Support
@@ -31,7 +31,7 @@ PixelManipulator is a JavaScript library, written by Nathan Fritzler that allows
 to run cellular automata, such as "Conway's Game of Life," and "Rule 90."
 I can also run pixel simulations entirely of your design, as
 demonstrated by the simulation of WireWorld in
-[the demo](lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html).
+[the demo](https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html).
 
 ### Getting Started
 
@@ -45,7 +45,7 @@ We don't have a CDN service hosting us yet, so you'll have to download it.
 But don't worry, it's super small!
 
 First, navigate to
-[PixelManipulator's GitHub repo](lazerbeak12345.github.io/pixelmanipulator)
+[PixelManipulator's GitHub repo](https://lazerbeak12345.github.io/pixelmanipulator)
 
 When you are there, you can download `pixelmanipulator.js`.
 
@@ -56,7 +56,7 @@ Then, include this in your html:
 #### Downloading (or compiling) minified PixelManipulator
 
 First, navigate to
-[PixelManipulator's GitHub repo](lazerbeak12345.github.io/pixelmanipulator)
+[PixelManipulator's GitHub repo](https://lazerbeak12345.github.io/pixelmanipulator)
 
 When you are there, you can download `pixelmanipulator.min.js`.
 
