@@ -26,6 +26,7 @@
 		<style>
 		body{
 			background-color:grey;
+			font-family: sans-serif;
 		}
 		#canvas{/*This is where the pixels are being renderd*/
 			position:fixed;
@@ -40,8 +41,8 @@
 			height:100%;
 			overflow-y:scroll;
 		}
-		#selectorBox,
-		#smallxline,
+		#selectorBox,/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
+		#smallxline,/*These are the lines that show where on the canvas the mouse cursor is hovering.*/
 		#smallyline,
 		#largexline,
 		#largeyline,
@@ -54,7 +55,7 @@
 		#selectorBox:hover{
 			border:solid rgba(255,255,255,.5) 1px;
 		}
-		#workingLine{
+		#workingLine{/*This is the line that says where the elements such as the wolfram elemnts are currently being rendered*/
 			width:4px;
 			height:1px;
 			background:red;
@@ -64,13 +65,13 @@
 			text-align:right;
 			width:3em;
 		}
-		.outline{
-			/*border:1px solid metal;*/
-		}
+		/*.outline{
+			/*border:1px solid metal;
+		}*/
 		</style>
 	</head>
 	<body>
-		<!--Content--> 
+		<!--Content-->
 		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
 		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
 		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
@@ -92,7 +93,7 @@
 			Zoom Width: <input id="zoomWidthElm" type="text" value="20" title="Default:20"/>px<br/>
 			Zoom Height: <input id="zoomHeightElm" type="text" value="20" title="Default:20"/>px<br/>
 			<br/>
-			Normal click: 
+			Normal click:
 			<select class="elmDrop" onchange="normalClick=this.value;">
 				<option>Acid</option>
 				<option>blank</option>
@@ -112,9 +113,9 @@
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="normalFill">Randomly fill</button>
-			<input id="normalFillP" type="text"/>%			
+			<input id="normalFillP" type="text"/>%
 			<br/>
-			Ctrl click: 
+			Ctrl click:
 			<select class="elmDrop" onchange="ctrlClick=this.value;">
 				<option>Acid</option>
 				<option>blank</option>
@@ -134,10 +135,9 @@
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="ctrlFill">Randomly fill</button>
-			<input id="ctrlFillP" type="text"/>%			
+			<input id="ctrlFillP" type="text"/>%
 			<br/>
-
-			Alt click: 
+			Alt click:
 			<select class="elmDrop" onchange="altClick=this.value">
 				<option>Acid</option>
 				<option>blank</option>
@@ -169,7 +169,7 @@
 			<label><input id="pixelCounterT" type="checkbox" >Hide pixelCounter</label>
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a><br/>
-				1.66.150 (beta-proposed), Frontend (v1.17.20)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				1.67.151 (beta-proposed), Frontend (v1.18.21)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -187,7 +187,11 @@
 			var file = document.getElementById('file'),
 					normalClick="Conway's Game Of Life",
 					ctrlClick="Blocks",
-					altClick="Water";
+					altClick="Water",
+					timedebug=true,
+					//times=[],
+					lasttime=NaN,
+					frames=0;
 			function updateBox() {
 				var selectorboxSty=document.getElementById('selectorBox').style;
 				selectorboxSty.width=(p.zoomelm.width/p.zoomScaleFactor)+"px";
@@ -207,7 +211,7 @@
 				if ((e.pageY<((p.zoomelm.height/(2*p.zoomScaleFactor))+p.zoomY)&&e.pageY>((p.zoomelm.height/(-2*p.zoomScaleFactor))+p.zoomY))) {
 					updateLargeLinesY(x,y);
 				}else updateLargeLinesY(x,-1);
-     
+
 			}
 			function updateLargeLinesX(x,y) {
 				var h=(p.zoomelm.height-((1+y)*p.zoomScaleFactor)),
@@ -218,13 +222,13 @@
 					t=0;
 					h2=0;
 				}
-				
+
 				var largexlinesty=document.getElementById("largexline").style;
 				largexlinesty.width=p.zoomScaleFactor+"px";
 				largexlinesty.height=h+"px";
 				largexlinesty.left=p.zoomScaleFactor*x+"px";
 				largexlinesty.top=t+"px";
-				
+
 				var largexline1sty=document.getElementById("largexline1").style;
 				largexline1sty.width=p.zoomScaleFactor+"px";
 				largexline1sty.height=h2+"px";
@@ -239,13 +243,13 @@
 					l=0;
 					w2=0;
 				}
-				
+
 				var largeylinesty=document.getElementById("largeyline").style;
 				largeylinesty.height=p.zoomScaleFactor+"px";
 				largeylinesty.width=w+"px";
 				largeylinesty.top=p.zoomScaleFactor*y+"px";
 				largeylinesty.left=l+"px";
-				
+
 				var largeyline1sty=document.getElementById("largeyline1").style;
 				largeyline1sty.height=p.zoomScaleFactor+"px";
 				largeyline1sty.width=w2+"px";
@@ -255,7 +259,7 @@
 			function selectorClicked(e) {
 				p.zoom({
 					x:e.pageX,
-					y:e.pageY,	
+					y:e.pageY,
 				});
 				updateBox();
 			}
@@ -274,7 +278,7 @@
 				updateSmallLines(e);
 				updateLargeLinesX(e.offsetX,e.offsetY);
 				updateLargeLinesY(e.offsetX,e.offsetY);
-			}; 
+			};
 			ready(function() {
 				p.canvasPrep({
 					canvas:document.getElementById('canvas'),
@@ -344,7 +348,7 @@
 					"Wireworld Conductor":{
 						color:[67,75,77,255],
 						liveCell:function(rel) {
-							var conductorNearbyTotal=rel.mooreNearbyCounter("Wireworld Electricity",false);
+							var conductorNearbyTotal=rel.mooreNearbyCounter(rel.x,rel.y,"Wireworld Electricity",false);
 							if(conductorNearbyTotal===1||conductorNearbyTotal===2) p.setPixel(rel.x,rel.y,"Wireworld Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
 						},
 					},//*/
@@ -430,11 +434,18 @@
 				p.onIterate=function() {
 					document.getElementById("workingLine").style.top=p.row+"px";
 					document.getElementById("workingLine").style.left=(p.canvas.width+1)+"px";
+					if (timedebug) lasttime=performance.now();
+					frames++;
 				}
 				p.onAfterIterate=function() {
 					if (!document.getElementById('pixelCounterT').checked) {
-						document.getElementById("pixelCounter").innerText=JSON.stringify(p.pixelCounts).replace(/[{}"]/g,"").replace(/,/g,"\n").replace(/:/g," : ")+"\n\nFrames:"+p.frames;
+						//for (var timei=0,avrge=0;timei<times.length;timei++) { avrge+=times[timei]; } avrge/=times.length;
+						//console.log(1/(avrge/1000));
+						document.getElementById("pixelCounter").innerText=JSON.stringify(p.pixelCounts).replace(/[{}"]/g,"").replace(/,/g,"\n").replace(/:/g," : ")+
+							"\n\nFrames:"+frames+
+							(timedebug?("\nFps:"+(1/((performance.now()-lasttime)/1000))):"");
 					}else document.getElementById("pixelCounter").innerText="";
+					//times.push(performance.now()-lasttime);
 				}
 				document.getElementById('pixelCounterT').addEventListener('click',p.onAfterIterate);
 				document.getElementById("play").addEventListener('click',function() {
@@ -454,6 +465,7 @@
 					document.getElementById('oneFrameAtATime').disabled = false;
 					document.getElementById('reset').disabled = false;
 					document.getElementById('pause').disabled = true;
+					frames=0;
 					p.iterate();//this will prevent new user confusion by showing the zoom box when the page loads
 				});
 				document.getElementById('reset').click();

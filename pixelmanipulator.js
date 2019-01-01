@@ -1,5 +1,4 @@
-/*
-	This is a cellular automata JavaScript library. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
+/*  This is a cellular automata JavaScript library called PixelManipulator. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018  Nathan Fritzler
 
     This program is free software: you can redistribute it and/or modify
@@ -15,85 +14,79 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-window.p=window.pixelManipulator=(function () {
-	var licence="pixelmanipulator.js v1.66.150 (beta-proposed) Copyright (C) 2018  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
-	/*function ret(v) {
-		return (function() {
-			return v;
-		});
-	}*/
-	return Object.create({
-		getPixel:function() {},
-		confirmElm:function() {},
-		whatIs:function() {},
-		loopint:0,
-		imageData:{},
-		zoomX:0,
-		zoomY:0,
-		row:0,
-		elementTypeMap:{
-			"blank":{
-				color:[0,0,0,255],
+// Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
+(function(g) {
+	"use strict";
+	var pxversion="1.67.151 (beta-proposed)";
+	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
+		/*function ret(v) {
+			return (function() {
+				return v;
+			});
+		}*/
+		if (typeof g.window=="undefined") console.warn("This enviroment has not been tested, and is officially not supported.\nGood luck.");
+		var innerP={
+			get version() {
+				return pxversion;//strangly enough, this actually upped the frame rate. Not entirely pointles?
 			},
-		},
-		mode:"paused",
-		zoomScaleFactor:20,
-		ctx:{},
-		canvas:{},
-		zoomelm:{},
-		zoomctx:{},
-		zoomctxStrokeStyle:"gray",
-		defaultElm:'blank',
-		onIterate:function() {},
-		onAfterIterate:function() {},
-		pixelCounts:{},
-		presentElements:[],
-		frames:0,
-	},{
-		licence:{
-			value:licence,
-		},
-		__TEMPLATES__:{
-			value:{
-				__LIFE__:{
+			get licence() {
+				return "PixelManipulator v"+this.version+" Copyright (C) 2018-2019  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+			},
+			loopint:0,
+			//imageData:{},
+			zoomX:0,
+			zoomY:0,
+			row:0,
+			elementTypeMap:{
+				"blank":{
+					color:[0,0,0,255],
+				},
+			},
+			mode:"paused",
+			zoomScaleFactor:20,
+			zoomctxStrokeStyle:"gray",
+			defaultElm:'blank',
+			onIterate:function() {},//both of these need to be defined so the absence of either is suitiable.
+			onAfterIterate:function() {},
+			//pixelCounts:{},
+			presentElements:[],
+			__TEMPLATES__:{
+				__LIFE__:{//Things like Conway's Game of Life
 					__INDEX__:function(elm,data) {
 						if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1) return [];
-						var numbers=data.pattern.split(/\/*[a-z]/gi),
-							born=numbers[1],die=numbers[2];
+						var numbers=data.pattern.split(/\/*[a-z]/gi);//"B",born,die
 						data.loop=typeof data.loop!=="undefined"?data.loop:true;
 						console.log("Life Pattern found: ",elm,data);
-						return [window.pixelManipulator.__TEMPLATES__.__LIFE__.__LIVE__(die,data.loop,elm),
-							window.pixelManipulator.__TEMPLATES__.__LIFE__.__DEAD__(born,data.loop,elm)];
+						return [innerP.__TEMPLATES__.__LIFE__.__LIVE__(numbers[2],data.loop,elm),
+							innerP.__TEMPLATES__.__LIFE__.__DEAD__(numbers[1],data.loop,elm)];
 					},
 					__LIVE__:function(numtodie,loop,elm) {
 						return (function(rel) {
-							var nearbyTotal=rel.mooreNearbyCounter(elm,loop),willLive=true;//count how many are nearby (moore style)
-							if(numtodie.search(nearbyTotal)<=-1) window.pixelManipulator.setPixel(rel.x,rel.y,window.pixelManipulator.defaultElm);// if any match is found, it dies
+							if(numtodie.search(rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))<=-1) innerP.setPixel(rel.x,rel.y,innerP.defaultElm);// if any match (of how many moore are nearby) is found, it dies
 						});
 					},
 					__DEAD__:function(numtolive,loop,elm) {
 						return (function(rel) {
-							var nearbyTotal=rel.mooreNearbyCounter(elm,loop);//count how many are nearby
-							if(numtolive.search(nearbyTotal)>-1) p.setPixel(rel.x,rel.y,elm);// if any match is found, it lives
+							if(numtolive.search(rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))>-1) innerP.setPixel(rel.x,rel.y,elm);// if any match (of how many moore are nearby) is found, it lives
 						});
 					},
 				},
 				__WOLFRAM__:{
 					__INDEX__:function(elm,data) {
+
 						if (data.pattern.search(/Rule \d*/gi)<=-1) return [];
-						var number=data.pattern.split(/Rule /gi)[1]-0,
-							binStates=number.toString(2).padStart(8,"0");
+						var binStates=(data.pattern.split(/Rule /gi)[1]-0).toString(2).padStart(8,"0");
 						data.loop=typeof data.loop!=="undefined"?data.loop:false;
 						console.log("Wolfram pattern found: ",elm,data);
-						return [undefined,window.pixelManipulator.__TEMPLATES__.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
+						return [undefined,innerP.__TEMPLATES__.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
 					},
-					__DEAD__:function(elm,binStates,loop) {
+					__DEAD__:function(elm,binStates,loop) {//In order not to erase the spawner pixels (which are the pixels, usually in the top row that make the pattern appear), erasing on live shouldn't be done.
 						return (function(rel) {
-							if (rel.y!==window.pixelManipulator.row) return;//if it is not in the active row, exit before anything happens
+							if (rel.y!==innerP.row) return;//if it is not in the active row, exit before anything happens
 							for (var binDex=0; binDex<8; binDex++) {//for every possible state
 								if(binStates[binDex]=="1"){//if the state is "on"
-									if(rel.wolframNearby(rel.x,rel.y,elm,(7-binDex).toString(2).padStart(3,"0"),loop)) {//if there is a wolfram match (wolfram code goes from 111 to 000)
-										window.pixelManipulator.setPixel(rel.x,rel.y,elm,loop);
+									if(rel.wolframNearbyCounter(rel.x,rel.y,elm,(7-binDex).toString(2).padStart(3,"0"),loop)) {//if there is a wolfram match (wolfram code goes from 111 to 000)
+										innerP.setPixel(rel.x,rel.y,elm,loop);
 										return;//No more logic needed, it is done.
 									}
 								}
@@ -102,313 +95,283 @@ window.p=window.pixelManipulator=(function () {
 					},
 				},
 			},
-		},
-		randomlyFill:{
-			value:function(pr,value) {
+			randomlyFill:function(pr,value) {
 				pr=pr||15;
-				for (var xPos=0; xPos<window.pixelManipulator.canvas.width; xPos++) {
-					for (var yPos=0; yPos<window.pixelManipulator.canvas.height; yPos++) { //iterate through x and y
-						if (Math.random()*100<pr) window.pixelManipulator.setPixel(xPos,yPos,value);
+				for (var xPos=0; xPos<innerP.canvas.width; xPos++) {
+					for (var yPos=0; yPos<innerP.canvas.height; yPos++) { //iterate through x and y
+						if (Math.random()*100<pr) innerP.setPixel(xPos,yPos,value);
 					}
 				}
 			},
-		},
-		addMultipleElements:{
-			value:function(map) {
+			addMultipleElements:function(map) {//adds multiple elements
+				//                      ({} )
 				for (var elm in map) {
-					window.pixelManipulator.addElement(elm,map[elm]);
+					innerP.addElement(elm,map[elm]);
 				}
 			},
-		},
-		addElement:{
-			value:function(elm,data) {
+			addElement:function(elm,data) {//adds a single element
+				//             ("" ,{}  )
 				if (arguments.length<2) {
 					data=elm;
 					elm=undefined;
 				}
-				if (typeof elm==="undefined") elm=data.name;
-				if (typeof data.color==="undefined") data.color=[255,255,255,255];
+				if (typeof elm==="undefined") elm=data.name;//name of the element
+				if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
 				while (data.color.length<4) data.color.push(255);
 				if (typeof data.pattern==="string") {
-					for (var tempNam in window.pixelManipulator.__TEMPLATES__) {
-						var out=window.pixelManipulator.__TEMPLATES__[tempNam].__INDEX__(elm,data);
+					for (var tempNam in innerP.__TEMPLATES__) {
+						var out=innerP.__TEMPLATES__[tempNam].__INDEX__(elm,data);
 						if (out.length===0) continue;//if the output was [], then go on.
 						if (typeof data.liveCell==="undefined"&&typeof out[0]==="function") data.liveCell=out[0];
 						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
 					}
 				}
-				window.pixelManipulator.elementTypeMap[elm]=data;//for each element
-			}
-		},
-		WhatIs:{
-			value:function(f) {
-				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
-				return (function(x,y,loop) {
-					for (var i=0;i<window.pixelManipulator.presentElements.length;i++) {
-						if (specialConfirm(x,y,window.pixelManipulator.presentElements[i],loop)) return window.pixelManipulator.presentElements[i];
+				innerP.elementTypeMap[elm]=data;//for each element
+			},
+			__WhatIs:function(f ) {//Generator for whatIs
+				//           (())
+				return (function(x,y,loop ) {//return the name of an element in a given location
+					//          (#,#,true?)
+					for (var i=0;i<innerP.presentElements.length;i++) {
+						if (f(x,y,innerP.presentElements[i],loop)) return innerP.presentElements[i];
 					}
 				});
-			}
-		},
-		setCanvasSizes:{
-			value:function(canvasSizes) {
-				//console.log("setCanvasSizes");
-				window.pixelManipulator.canvas.width=canvasSizes.canvasW||window.pixelManipulator.canvas.width;
-				window.pixelManipulator.canvas.height=canvasSizes.canvasH||window.pixelManipulator.canvas.height;
-				if (typeof window.pixelManipulator.zoomelm.height!=="undefined") {
-					window.pixelManipulator.zoomelm.width=(canvasSizes.zoomW||window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
-					window.pixelManipulator.zoomelm.height=(canvasSizes.zoomH||window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor)*window.pixelManipulator.zoomScaleFactor;
-				}
-				window.pixelManipulator.updateData();
 			},
-		},
-		play:{
-			value:function(canvasSizes) {
+			play:function(canvasSizes) {//Start iterations on all of the elements on the canvas
+				//       ({}?        )
 				//console.log("play");
-				if (typeof canvasSizes!="undefined") window.pixelManipulator.reset(canvasSizes);
-				window.pixelManipulator.mode="playing";
-				window.pixelManipulator.loopint=setInterval(window.pixelManipulator.iterate,1);
+				if (typeof canvasSizes!="undefined") innerP.reset(canvasSizes);
+				innerP.mode="playing";
+				innerP.loopint=setInterval(innerP.iterate,1);
 			},
-		},
-		reset:{
-			value:function(canvasSizes) {
+			reset:function(canvasSizes) {//reset (and resize) the canvas(es)
+				//        ({}?        )
 				//console.log("reset");
-				clearInterval(window.pixelManipulator
-.loopint);
-				window.pixelManipulator.setCanvasSizes(canvasSizes);
-				for (var x=0; x<window.pixelManipulator.canvas.width; x++) {
-					for (var y=0; y<window.pixelManipulator.canvas.height; y++) {
-						window.pixelManipulator.setPixel(x,y,window.pixelManipulator.defaultElm);
+				//clearInterval(innerP.loopint);
+				innerP.pause();
+				innerP.canvas.width=canvasSizes.canvasW||innerP.canvas.width;
+				innerP.canvas.height=canvasSizes.canvasH||innerP.canvas.height;
+				if (typeof innerP.zoomelm.height!=="undefined") {
+					innerP.zoomelm.width=(canvasSizes.zoomW||innerP.zoomelm.width/innerP.zoomScaleFactor)*innerP.zoomScaleFactor;
+					innerP.zoomelm.height=(canvasSizes.zoomH||innerP.zoomelm.height/innerP.zoomScaleFactor)*innerP.zoomScaleFactor;
+				}
+				innerP.updateData();
+				for (var x=0; x<innerP.canvas.width; x++) {
+					for (var y=0; y<innerP.canvas.height; y++) {
+						innerP.setPixel(x,y,innerP.defaultElm);
 					}
 				}
-				window.pixelManipulator.update();
-				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
-				window.pixelManipulator.row=0;
-				window.pixelManipulator.frames=0;
+				innerP.update();
+				innerP.ctx.putImageData(innerP.imageData,0,0);
+				innerP.row=0;
 			},
-		},
-		pause:{
-			value:function() {
-				window.pixelManipulator.mode="paused";
-				clearInterval(window.pixelManipulator.loopint);
+			pause:function() {//pause canvas iterations
+				innerP.mode="paused";
+				clearInterval(innerP.loopint);
 			},
-		},
-		zoom:{
-			value:function(e) {
+			zoom:function(e  ) {
+				//       ({}?)
 				//console.log("zoom",e);
-				if (typeof window.pixelManipulator.zoomelm.height==="undefined") return;
+				if (typeof innerP.zoomelm.height==="undefined") return;
+				if (typeof e=="undefined") e={};
+				if (typeof e.x=="undefined") e.x=innerP.zoomX;
+				if (typeof e.y=="undefined") e.x=innerP.zoomY;
 				if (e.x>=0&&e.y>=0) {
-					window.pixelManipulator.zoomX=e.x;
-					window.pixelManipulator.zoomY=e.y;
+					innerP.zoomX=e.x;
+					innerP.zoomY=e.y;
 				}
-				if (window.pixelManipulator.canvas.height<2) window.pixelManipulator.canvas.height=400;//it would be pointless to have a canvas this small
-				if (window.pixelManipulator.canvas.width<2) window.pixelManipulator.canvas.width=400;
-				window.pixelManipulator.zoomctx.clearRect(0,0,window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);//clear the screen
-				window.pixelManipulator.zoomctx.drawImage(window.pixelManipulator.canvas,//draw the selected section of the canvas onto the zoom canvas
-								  (window.pixelManipulator.zoomX - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
-								  (window.pixelManipulator.zoomY - Math.floor(window.pixelManipulator.zoomScaleFactor/2)),
-								  Math.floor(window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor),Math.floor(window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor),
-								  0,0,
-								  window.pixelManipulator.zoomelm.width,window.pixelManipulator.zoomelm.height);
-				window.pixelManipulator.zoomctx.beginPath();//draw the grid
-				for (var i=1; i<(window.pixelManipulator.zoomelm.width/window.pixelManipulator.zoomScaleFactor); i++) {
-					window.pixelManipulator.zoomctx.moveTo(i*window.pixelManipulator.zoomScaleFactor,0);
-					window.pixelManipulator.zoomctx.lineTo(i*window.pixelManipulator.zoomScaleFactor,window.pixelManipulator.zoomelm.height);
+				if (innerP.canvas.height<2) innerP.canvas.height=400;//it would be pointless to have a canvas this small
+				if (innerP.canvas.width<2) innerP.canvas.width=400;
+				innerP.zoomctx.clearRect(0,0,innerP.zoomelm.width,innerP.zoomelm.height);//clear the screen
+				innerP.zoomctx.drawImage(innerP.canvas,//draw the selected section of the canvas onto the zoom canvas
+								(innerP.zoomX - Math.floor(innerP.zoomScaleFactor/2)),
+								(innerP.zoomY - Math.floor(innerP.zoomScaleFactor/2)),
+								Math.floor(innerP.zoomelm.width/innerP.zoomScaleFactor),Math.floor(innerP.zoomelm.height/innerP.zoomScaleFactor),
+								0,0,
+								innerP.zoomelm.width,innerP.zoomelm.height);
+				innerP.zoomctx.beginPath();//draw the grid
+				for (var i=1; i<(innerP.zoomelm.width/innerP.zoomScaleFactor); i++) {
+					innerP.zoomctx.moveTo(i*innerP.zoomScaleFactor,0);
+					innerP.zoomctx.lineTo(i*innerP.zoomScaleFactor,innerP.zoomelm.height);
 				}
-				for (i=1; i<(window.pixelManipulator.zoomelm.height/window.pixelManipulator.zoomScaleFactor); i++) {
-					window.pixelManipulator.zoomctx.moveTo(0,i*window.pixelManipulator.zoomScaleFactor);
-					window.pixelManipulator.zoomctx.lineTo(window.pixelManipulator.zoomelm.width,i*window.pixelManipulator.zoomScaleFactor);
+				for (i=1; i<(innerP.zoomelm.height/innerP.zoomScaleFactor); i++) {
+					innerP.zoomctx.moveTo(0,i*innerP.zoomScaleFactor);
+					innerP.zoomctx.lineTo(innerP.zoomelm.width,i*innerP.zoomScaleFactor);
 				}
-				window.pixelManipulator.zoomctx.stroke();
-			}
-		},
-		GetPixel:{
-			value:function(d) {
+				innerP.zoomctx.stroke();
+			},
+			__GetPixel:function(d ) {//Generates getPixel and getOldPixel instances
+				//             ({})
 				//console.log("GetPixel");
-				return (function (x,y,loop) {
-					//           (#,#)
+				return (function (x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
+					//           (#,#,true?)
 					//console.log("get(old?)Pixel");
 					loop=typeof loop!=="undefined"?loop:true;
 					if (loop) {
-						while (x<0) x=window.pixelManipulator.canvas.width+x;
-						while (y<0) y=window.pixelManipulator.canvas.height+y;
-						while (x>=window.pixelManipulator.canvas.width) x=x-window.pixelManipulator.canvas.width;
-						while (y>=window.pixelManipulator.canvas.height) y=y-window.pixelManipulator.canvas.height;
-					}else if (x<0||x>=window.pixelManipulator.canvas.width||y<0||x>=window.pixelManipulator.canvas.height) return "Blocks";
-					return d.slice(((window.pixelManipulator.canvas.width*y)+x)*4,(((window.pixelManipulator.canvas.width*y)+x)*4)+4);
+						while (x<0) x=innerP.canvas.width+x;
+						while (y<0) y=innerP.canvas.height+y;
+						while (x>=innerP.canvas.width) x=x-innerP.canvas.width;
+						while (y>=innerP.canvas.height) y=y-innerP.canvas.height;
+					}else if (x<0||x>=innerP.canvas.width||y<0||x>=innerP.canvas.height) return "Blocks";
+					return d.slice(((innerP.canvas.width*y)+x)*4,(((innerP.canvas.width*y)+x)*4)+4);
 				});
 			},
-		},
-		update:{
-			value:function() {
+			update:function() {//applies changes made by setPixel to the graphical canvas(es)
 				//console.log("update");
-				window.pixelManipulator.ctx.putImageData(window.pixelManipulator.imageData,0,0);
+				innerP.ctx.putImageData(innerP.imageData,0,0);
+				if (typeof innerP.zoomelm!=="undefined") innerP.zoom();
 			},
-		},
-		ConfirmElm:{
-			value:function(f) {
+			__ConfirmElm:function(f ) {//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
+				//               (())
 				//console.log("ConfirmElm",f);
 				//loop=typeof loop!=="undefined"?loop:true;
-				return function(x,y,name,loop) {
+				return function(x,y,name,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
+					//         (#,#,""  ,true?)
 					//console.log("confirmElm",x,y,name,loop);
-					var colors=f(x,y,loop), arry=window.pixelManipulator.elementTypeMap[name].color;
+					var colors=f(x,y,loop), arry=innerP.elementTypeMap[name].color;
 					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
 				};
 			},
-		},
-		MooreNearbyCounter:{
-			value:function(x,y,f) {
+			__MooreNearbyCounter:function(f ) {//Generate mooreNearbyCounter
+				//                       (())
 				//console.log("MooreNearbyCounter");
-				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
-				return (function (name,loop) {
+				//var specialConfirm=innerP.__ConfirmElm(f);
+				return (function (x,y,name,loop ) {//Count how many cells of this name match in a moore radius
+					//           (#,#,""  ,true?)
 					//console.log("mooreNearbyCounter");
-					return (specialConfirm(x-1,y-1,name,loop))+//nw
-					(specialConfirm(x-1,y,name,loop))+         //w
-					(specialConfirm(x-1,y+1,name,loop))+       //sw
-					(specialConfirm(x,y-1,name,loop))+         //n
-					(specialConfirm(x,y+1,name,loop))+         //s
-					(specialConfirm(x+1,y-1,name,loop))+       //ne
-					(specialConfirm(x+1,y,name,loop))+         //e
-					(specialConfirm(x+1,y+1,name,loop));       //se
+					return (f(x-1,y-1,name,loop))+//nw
+					(f(x-1,y,name,loop))+         //w
+					(f(x-1,y+1,name,loop))+       //sw
+					(f(x,y-1,name,loop))+         //n
+					(f(x,y+1,name,loop))+         //s
+					(f(x+1,y-1,name,loop))+       //ne
+					(f(x+1,y,name,loop))+         //e
+					(f(x+1,y+1,name,loop));       //se
 				});
 			},
-		},
-		WolframNearby:{
-			value:function(f) {
-				//console.log("WolframNearby");
-				var specialConfirm=window.pixelManipulator.ConfirmElm(f);
-				return (function (x,y,name,a,loop) {
+			__WolframNearbyCounter:function(f ) {//Generate wolframNearbyCounter
+				//                         (())
+				//console.log("WolframNearbygetOldPixel");
+				return (function (x,y,name,a ,loop ) {//determine if the three cells above a given cell match an inputted element query
+					//           (#,#,""  ,[],true?)
 					//console.log("wolframNearby");
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
-					var near=[specialConfirm(x-1,y-1,name,loop),//the three spots above (nw,n,ne)
-					          specialConfirm(x,y-1,name,loop),
-					          specialConfirm(x+1,y-1,name,loop)];
+					var near=[f(x-1,y-1,name,loop),//the three spots above (nw,n,ne)
+							f(x,y-1,name,loop),
+							f(x+1,y-1,name,loop)];
 					return (near[0]==a[0]&&near[1]==a[1]&&near[2]==a[2]);
 				});
 			},
-		},
-		setPixel:{
-			value:function(x,y,arry,loop) {
+			setPixel:function(x,y,arry ,loop ) {//places given pixel at the x and y position, handling for loop (default loop is true)
+				//           (#,#,[]:"",true?)
 				//console.log("rawSetPixel",x,y,name,loop);
 				x=Math.floor(x).toString()-0;//Fix any bad math done further up the line. Also remove bad math later
 				y=Math.floor(y).toString()-0;//...
 				loop=typeof loop!=="undefined"?loop:true;
 				if (typeof arry==="string") {
-					if (!window.pixelManipulator.presentElements.includes(arry)) window.pixelManipulator.presentElements.push(arry);
-					arry=window.pixelManipulator.elementTypeMap[arry].color;
+					if (!innerP.presentElements.includes(arry)) innerP.presentElements.push(arry);
+					arry=innerP.elementTypeMap[arry].color;
 				}
+				while (arry.length<4) arry.push(255);//allows for arrays that are too small
 				if (loop) {
-					while (x<0) x=window.pixelManipulator.canvas.width+x;
-					while (y<0) y=window.pixelManipulator.canvas.height+y;
-					while (x>=window.pixelManipulator.canvas.width) x=x-window.pixelManipulator.canvas.width;
-					while (y>=window.pixelManipulator.canvas.height) y=y-window.pixelManipulator.canvas.height;
-				}else if (x<0||x>=window.pixelManipulator.canvas.width||y<0||x>=window.pixelManipulator.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
-				for (var i=0; i<4; i++) window.pixelManipulator.imageData.data[(((window.pixelManipulator.canvas.width*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
+					while (x<0) x=innerP.canvas.width+x;
+					while (y<0) y=innerP.canvas.height+y;
+					while (x>=innerP.canvas.width) x=x-innerP.canvas.width;
+					while (y>=innerP.canvas.height) y=y-innerP.canvas.height;
+				}else if (x<0||x>=innerP.canvas.width||y<0||x>=innerP.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
+				for (var i=0; i<4; i++) innerP.imageData.data[(((innerP.canvas.width*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
 			},
-		},
-		iterate:{
-			value:function() {
+			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
-				window.pixelManipulator.onIterate();
+				innerP.onIterate();
 				var old=[];
-				for (var i=0;i<window.pixelManipulator.imageData.data.length;i++) {
-					old[i]=window.pixelManipulator.imageData.data[i]-0;
+				for (var i=0;i<innerP.imageData.data.length;i++) {
+					old[i]=innerP.imageData.data[i]-0;
 				}
-				var getOldPixel=window.pixelManipulator.GetPixel(old);
+				var getOldPixel=innerP.__GetPixel(old);
 				var iterateThroughPresentElementsOnBlank=function(elm) {
-					if (typeof window.pixelManipulator.elementTypeMap[elm].deadCell==="function") {
+					if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
 						//console.log(xPos,yPos,"Thing");
-						window.pixelManipulator.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
+						innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
 					}
 				};
-				window.pixelManipulator.pixelCounts={};
-				for (var xPos=0; xPos<window.pixelManipulator.canvas.width; xPos++) {
-					for (var yPos=0; yPos<window.pixelManipulator.canvas.height; yPos++) { //iterate through x and y
-						var confirmOldElm=window.pixelManipulator.ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
-							mooreNearbyCounter=window.pixelManipulator.MooreNearbyCounter(xPos,yPos,getOldPixel),
-							wolframNearby=window.pixelManipulator.WolframNearby(getOldPixel),
+				innerP.pixelCounts={};
+				for (var xPos=0; xPos<innerP.canvas.width; xPos++) {
+					for (var yPos=0; yPos<innerP.canvas.height; yPos++) { //iterate through x and y
+						var confirmOldElm=innerP.__ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
 							rel={
 								x:xPos,
 								y:yPos,
 								getOldPixel:getOldPixel,
 								confirmOldElm:confirmOldElm,
-								mooreNearbyCounter:mooreNearbyCounter,
-								wolframNearby:wolframNearby,
+								mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
+								wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
 							};
-						if (window.pixelManipulator.confirmElm(xPos,yPos,"blank")) {
-							//for (var elm in window.pixelManipulator.elementTypeMap) {
-							window.pixelManipulator.presentElements.forEach(iterateThroughPresentElementsOnBlank);
+						if (innerP.confirmElm(xPos,yPos,"blank")) {
+							//for (var elm in innerP.elementTypeMap) {
+							innerP.presentElements.forEach(iterateThroughPresentElementsOnBlank);
 							//}
 						}else{
-							var currentPix=window.pixelManipulator.whatIs(xPos,yPos);
-							if (typeof window.pixelManipulator.elementTypeMap[currentPix].liveCell==="function") {
-								window.pixelManipulator.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
+							var currentPix=innerP.whatIs(xPos,yPos);
+							if (typeof innerP.elementTypeMap[currentPix].liveCell==="function") {
+								innerP.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
 							}
-							if (typeof window.pixelManipulator.pixelCounts[currentPix]==="undefined") {
-								window.pixelManipulator.pixelCounts[currentPix]=1;
-							}else window.pixelManipulator.pixelCounts[currentPix]++;
+							if (typeof innerP.pixelCounts[currentPix]==="undefined") {
+								innerP.pixelCounts[currentPix]=1;
+							}else innerP.pixelCounts[currentPix]++;
 						}
 					}
 				}
-				window.pixelManipulator.row++;
-				if (window.pixelManipulator.row>window.pixelManipulator.canvas.height) window.pixelManipulator.row=0;
-				window.pixelManipulator.frames++;
-				window.pixelManipulator.update();
-				window.pixelManipulator.zoom({
-					x:window.pixelManipulator.zoomX,
-					y:window.pixelManipulator.zoomY,
-				});
-				window.pixelManipulator.onAfterIterate();
+				innerP.row++;
+				if (innerP.row>innerP.canvas.height) innerP.row=0;
+				innerP.update();
+				innerP.onAfterIterate();
 			},
-		},
-		updateData:{
-			value:function() {
+			updateData:function() {//defines the starting values of the library and is run on `p.reset();`
 				//console.log("updateData");
-				window.pixelManipulator.imageData=window.pixelManipulator.ctx.getImageData(0,0,window.pixelManipulator.canvas.width,window.pixelManipulator.canvas.height);
-				window.pixelManipulator.ctx.imageSmoothingEnabled=false;
-				window.pixelManipulator.ctx.mozImageSmoothingEnabled=false;
-				window.pixelManipulator.ctx.webkitImageSmoothingEnabled=false;
-				window.pixelManipulator.ctx.msImageSmoothingEnabled=false;
-				if (typeof window.pixelManipulator.zoomelm.height!="undefined") {
-					window.pixelManipulator.zoomctx.imageSmoothingEnabled=false;
-					window.pixelManipulator.zoomctx.mozImageSmoothingEnabled=false;
-					window.pixelManipulator.zoomctx.webkitImageSmoothingEnabled=false;
-					window.pixelManipulator.zoomctx.msImageSmoothingEnabled=false;
-					window.pixelManipulator.zoomctx.strokeStyle=window.pixelManipulator.zoomctxStrokeStyle;
+				innerP.imageData=innerP.ctx.getImageData(0,0,innerP.canvas.width,innerP.canvas.height);
+				innerP.ctx.imageSmoothingEnabled=false;
+				innerP.ctx.mozImageSmoothingEnabled=false;
+				innerP.ctx.webkitImageSmoothingEnabled=false;
+				innerP.ctx.msImageSmoothingEnabled=false;
+				if (typeof innerP.zoomelm.height!="undefined") {
+					innerP.zoomctx.imageSmoothingEnabled=false;
+					innerP.zoomctx.mozImageSmoothingEnabled=false;
+					innerP.zoomctx.webkitImageSmoothingEnabled=false;
+					innerP.zoomctx.msImageSmoothingEnabled=false;
+					innerP.zoomctx.strokeStyle=innerP.zoomctxStrokeStyle;
 				}
-				window.pixelManipulator.getPixel=window.pixelManipulator.GetPixel(window.pixelManipulator.imageData.data);
-				window.pixelManipulator.confirmElm=window.pixelManipulator.ConfirmElm(window.pixelManipulator.getPixel);
-				window.pixelManipulator.whatIs=window.pixelManipulator.WhatIs(window.pixelManipulator.getPixel);
+				innerP.getPixel=innerP.__GetPixel(innerP.imageData.data);
+				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixel);
+				innerP.whatIs=innerP.__WhatIs(innerP.confirmElm);
 			},
-		},
-		setCanvas:{
-			value:function(v) {
-				//console.log("setCanvas");
-				window.pixelManipulator.canvas=v;
-				window.pixelManipulator.ctx=window.pixelManipulator.canvas.getContext('2d');
-				return window.pixelManipulator.canvas;
-			},
-		},
-		setZoomelm:{
-			value:function(v) {
-				//console.log("setZoomelm");
-				window.pixelManipulator.zoomelm=v;
-				window.pixelManipulator.zoomctx=window.pixelManipulator.zoomelm.getContext('2d');
-				return window.pixelManipulator.zoomelm;
-			},
-		},
-		canvasPrep:{
-			value:function(e) {
-				window.pixelManipulator.setCanvas(e.canvas);
-				if (typeof e.zoom!=="undefined") window.pixelManipulator.setZoomelm(e.zoom);
-				window.pixelManipulator.updateData();
+			canvasPrep:function(e ) {//Tells PixelManipulator what canvas(es) to use.
+				//             ({})
+				//Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
+				innerP.canvas=e.canvas;
+				innerP.ctx=innerP.canvas.getContext('2d');
 				if (typeof e.zoom!=="undefined") {
-					window.pixelManipulator.zoom({
-						x:Math.floor(window.pixelManipulator.canvas.width/2)-(Math.floor(window.pixelManipulator.zoomelm.width/2)*window.pixelManipulator.zoomScaleFactor),
-						y:Math.floor(window.pixelManipulator.zoomelm.height/2)-(Math.floor(window.pixelManipulator.zoomelm.height/2)*window.pixelManipulator.zoomScaleFactor),
+					innerP.zoomelm=e.zoom;
+					innerP.zoomctx=innerP.zoomelm.getContext('2d');
+				}
+				innerP.updateData();
+				if (typeof e.zoom!=="undefined") {
+					innerP.zoom({
+						x:Math.floor(innerP.canvas.width/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
+						y:Math.floor(innerP.zoomelm.height/2)-(Math.floor(innerP.zoomelm.height/2)*innerP.zoomScaleFactor),
 					});
 				}
 			},
-		},
-	});
-})();
+		};
+		console.log(innerP.licence);
+		if (typeof module!=="undefined") module.exports=innerP;
+		else return innerP;
+	}
+	if (typeof g.require=="undefined"&&typeof g.module=="undefined") {
+		g.p=g.pixelManipulator=pix();
+	}else if (typeof g.define!="undefined"&&typeof g.module=="undefined") {
+		g.define(pix);
+	}else {
+		pix(g.require,g.exports,g.module);
+	}
+})(this);

@@ -8,10 +8,10 @@
 ## Pull requests
 
 1. Make it clear why the change that is being proposed should be pulled into master.
-	* Is it a issue, or a feature?
-	* If it has, to your knowledge, something to do with a previous issue or pull-request, mention it.
-	* Explain what the change does.
-	* Make sure that the modified code has at least one comment clarifiying what the code does, and if neede, how it does it.
+    * Is it a issue, or a feature?
+    * If it has, to your knowledge, something to do with a previous issue or pull-request, mention it.
+    * Explain what the change does.
+    * Make sure that the modified code has at least one comment clarifiying what the code does, and if neede, how it does it.
 2. Keep things as backwards compatible as possible.
 3. Let me handle re-versioning of software. This guarantees an absence of merge conflicts. If you wish to know how I do the versioning
 
@@ -28,4 +28,3 @@ Let's see an example of these parts:
 
 There is also another syntax: `1.65`. This syntax is to be used in general terms _only_.
 As it is plain to see, the first number is the major version number from above, and the second is the feature number from above.
-    
