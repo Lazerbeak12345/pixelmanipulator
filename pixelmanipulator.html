@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-	This is the test html file intended to show what this library can do.
+	This is the advanced demo for PixelManipulator
     Copyright (C) 2018  Nathan Fritzler
 
     This program is free software: you can redistribute it and/or modify
@@ -169,7 +169,7 @@
 			<label><input id="pixelCounterT" type="checkbox" >Hide pixelCounter</label>
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a><br/>
-				1.67.151 (beta-proposed), Frontend (v1.18.21)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				1.68.151 (beta-proposed), Frontend (v1.19.21)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -184,14 +184,14 @@
 					if (document.readyState=='complete') callback();
 				});
 			}
-			var file = document.getElementById('file'),
-					normalClick="Conway's Game Of Life",
-					ctrlClick="Blocks",
-					altClick="Water",
-					timedebug=true,
-					//times=[],
-					lasttime=NaN,
-					frames=0;
+			var //file = document.getElementById('file'),
+				normalClick="Conway's Game Of Life",
+				ctrlClick="Blocks",
+				altClick="Water",
+				timedebug=true,
+				//times=[],
+				//lasttime=NaN,
+				frames=0;
 			function updateBox() {
 				var selectorboxSty=document.getElementById('selectorBox').style;
 				selectorboxSty.width=(p.zoomelm.width/p.zoomScaleFactor)+"px";
@@ -476,41 +476,17 @@
 				});
 				document.getElementById("normalFill").addEventListener('click',function() {
 					var pr=document.getElementById("normalFillP").value||15;
-					for (var i=0;i<p.imageData.data.length;i+=4) {
-						if (Math.random()*100<pr) {
-							p.imageData.data[i]=p.elementTypeMap[normalClick].color[0];
-							p.imageData.data[i+1]=p.elementTypeMap[normalClick].color[1];
-							p.imageData.data[i+2]=p.elementTypeMap[normalClick].color[2];
-							p.imageData.data[i+3]=p.elementTypeMap[normalClick].color[3];
-						}
-					}
-					if (!p.presentElements.includes(normalClick)) p.presentElements.push(normalClick);
+					p.randomlyFill(pr,normalClick);
 					p.update();//needed after any changes are made
 				});
 				document.getElementById("ctrlFill").addEventListener('click',function() {
 					var pr=document.getElementById("ctrlFillP").value||15;
-					for (var i=0;i<p.imageData.data.length;i+=4) {
-						if (Math.random()*100<pr) {
-							p.imageData.data[i]=p.elementTypeMap[ctrlClick].color[0];
-							p.imageData.data[i+1]=p.elementTypeMap[ctrlClick].color[1];
-							p.imageData.data[i+2]=p.elementTypeMap[ctrlClick].color[2];
-							p.imageData.data[i+3]=p.elementTypeMap[ctrlClick].color[3];
-						}
-					}
-					if (!p.presentElements.includes(ctrlClick)) p.presentElements.push(ctrlClick);
+					p.randomlyFill(pr,ctrlClick);
 					p.update();
 				});
 				document.getElementById("altFill").addEventListener('click',function() {
 					var pr=document.getElementById("altFillP").value||15;
-					for (var i=0;i<p.imageData.data.length;i+=4) {
-						if (Math.random()*100<pr) {
-							p.imageData.data[i]=p.elementTypeMap[altClick].color[0];
-							p.imageData.data[i+1]=p.elementTypeMap[altClick].color[1];
-							p.imageData.data[i+2]=p.elementTypeMap[altClick].color[2];
-							p.imageData.data[i+3]=p.elementTypeMap[altClick].color[3];
-						}
-					}
-					if (!p.presentElements.includes(altClick)) p.presentElements.push(altClick);
+					p.randomlyFill(pr,altClick);
 					p.update();
 				});
 			});

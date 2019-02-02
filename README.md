@@ -1,4 +1,4 @@
-# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 1.67.151](https://img.shields.io/badge/version-1.67.151_(beta--proposed)-blue.svg)](https://lazerbeak12345.github.io/pixelmanipulator) [![Travis](https://travis-ci.org/Lazerbeak12345/pixelmanipulator.svg?branch=master)](https://travis-ci.org/Lazerbeak12345/pixelmanipulator)
+# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 1.68.151](https://img.shields.io/badge/version-1.68.151_(beta--proposed)-blue.svg)](https://lazerbeak12345.github.io/pixelmanipulator) [![Travis](https://travis-ci.org/Lazerbeak12345/pixelmanipulator.svg?branch=master)](https://travis-ci.org/Lazerbeak12345/pixelmanipulator)
 
 A super powerfull library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
@@ -22,7 +22,7 @@ Oldest known supported | yes (68.0.3440.75)  | yes (67.0.3396.99) | poor (42.171
 
 ## PixelManipulator documentation
 
-This is the official Documentation for `PixelManipulator v1.66.149`.
+This is the official Documentation for `PixelManipulator v1.68.151`.
 Hopefully, it will serve you well.
 
 ### What is PixelManipulator
