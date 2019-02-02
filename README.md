@@ -117,12 +117,12 @@ Note its id tags of "myCanvas" That will be important later.
 
 Right now, PixelManipulator has no idea what canvas it has to work with, so we
 need to tell it just that.
-To do this, insert the folloCall for a single frame
+To do this, insert the following line of JavaScript code into the labeled
 location:
 
-    //Get the canvas elementCall for a single frame
-    var canvas=document.getECall for a single frame
-    //Tell PixelManipulator Call for a single frame
+    //Get the canvas element
+    var canvas=document.getElementById("myCanvas");
+    //Tell PixelManipulator to use it
     p.canvasPrep({
         canvas:canvas,
     });

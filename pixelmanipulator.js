@@ -37,6 +37,7 @@
 			zoomX:0,
 			zoomY:0,
 			row:0,
+			//__oldDraw:false,
 			elementTypeMap:{
 				"blank":{
 					color:[0,0,0,255],
@@ -151,7 +152,7 @@
 				innerP.pause();
 				innerP.canvas.width=canvasSizes.canvasW||innerP.canvas.width;
 				innerP.canvas.height=canvasSizes.canvasH||innerP.canvas.height;
-				if (typeof innerP.zoomelm.height!=="undefined") {
+				if (typeof innerP.zoomelm!=="undefined") {
 					innerP.zoomelm.width=(canvasSizes.zoomW||innerP.zoomelm.width/innerP.zoomScaleFactor)*innerP.zoomScaleFactor;
 					innerP.zoomelm.height=(canvasSizes.zoomH||innerP.zoomelm.height/innerP.zoomScaleFactor)*innerP.zoomScaleFactor;
 				}
@@ -273,13 +274,97 @@
 					arry=innerP.elementTypeMap[arry].color;
 				}
 				while (arry.length<4) arry.push(255);//allows for arrays that are too small
-				if (loop) {
-					while (x<0) x=innerP.canvas.width+x;
-					while (y<0) y=innerP.canvas.height+y;
-					while (x>=innerP.canvas.width) x=x-innerP.canvas.width;
-					while (y>=innerP.canvas.height) y=y-innerP.canvas.height;
-				}else if (x<0||x>=innerP.canvas.width||y<0||x>=innerP.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
-				for (var i=0; i<4; i++) innerP.imageData.data[(((innerP.canvas.width*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
+				//if (innerP.__oldDraw) {
+					if (loop) {
+						while (x<0) x=innerP.canvas.width+x;
+						while (y<0) y=innerP.canvas.height+y;
+						while (x>=innerP.canvas.width) x=x-innerP.canvas.width;
+						while (y>=innerP.canvas.height) y=y-innerP.canvas.height;
+					}else if (x<0||x>=innerP.canvas.width||y<0||x>=innerP.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
+					for (var i=0; i<4; i++) innerP.imageData.data[(((innerP.canvas.width*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
+				/*
+				}else{
+					var nth="#";
+					for (var i=0;i<4;i++) {
+						var ch1=0;
+						while (arry[i]>=16) {
+							ch1++;
+							arry[i]-=16;
+						}
+						switch (ch1) {
+							case 0:
+							case 1:
+							case 2:
+							case 3:
+							case 4:
+							case 5:
+							case 6:
+							case 7:
+							case 8:
+							case 9:
+								nth+=ch1;
+								break;
+							case 10:
+								nth+="A";
+								break;
+							case 11:
+								nth+="B";
+								break;
+							case 12:
+								nth+="C";
+								break;
+							case 13:
+								nth+="D";
+								break;
+							case 14:
+								nth+="E";
+								break;
+							case 15:
+								nth+="F";
+								break;
+							default:
+								throw "Number too high!";
+						}
+						switch (arry[i]) {
+							case 0:
+							case 1:
+							case 2:
+							case 3:
+							case 4:
+							case 5:
+							case 6:
+							case 7:
+							case 8:
+							case 9:
+								nth+=arry[i];
+								break;
+							case 10:
+								nth+="A";
+								break;
+							case 11:
+								nth+="B";
+								break;
+							case 12:
+								nth+="C";
+								break;
+							case 13:
+								nth+="D";
+								break;
+							case 14:
+								nth+="E";
+								break;
+							case 15:
+								nth+="F";
+								break;
+							default:
+								throw "Number too high!";
+						}
+					}
+					innerP.ctx.fillStyle=nth;
+					//throw innerP.ctx;
+					innerP.ctx.fillRect(x,y,1,1);
+					innerP.ctx.fill();
+				}//*/
 			},
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
@@ -334,7 +419,7 @@
 				innerP.ctx.mozImageSmoothingEnabled=false;
 				innerP.ctx.webkitImageSmoothingEnabled=false;
 				innerP.ctx.msImageSmoothingEnabled=false;
-				if (typeof innerP.zoomelm.height!="undefined") {
+				if (typeof innerP.zoomelm!="undefined") {
 					innerP.zoomctx.imageSmoothingEnabled=false;
 					innerP.zoomctx.mozImageSmoothingEnabled=false;
 					innerP.zoomctx.webkitImageSmoothingEnabled=false;
@@ -370,8 +455,8 @@
 	if (typeof g.require=="undefined"&&typeof g.module=="undefined") {
 		g.p=g.pixelManipulator=pix();
 	}else if (typeof g.define!="undefined"&&typeof g.module=="undefined") {
-		g.define(pix);
+		g.define(["require","exports","module"],pix);
 	}else {
-		pix(g.require,g.exports,g.module);
+		pix(require,exports,module);
 	}
 })(this);

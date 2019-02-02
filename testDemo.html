@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+	<head>
+		<title>My first PixelManipulator Instance</title>
+		<meta charset="utf-8">
+		<!--Replace the below line with where you are getting
+		pixelmanipualator-->
+		<script src="pixelmanipulator.js"></script>
+	</head>
+	<body>
+		<canvas id="myCanvas"></canvas>
+		<script>
+			//This is where we will be putting our JavaScript code
+			//Get the canvas element
+			var canvas=document.getElementById("myCanvas");
+			
+			//Tell PixelManipulator to use it
+			p.canvasPrep({
+				canvas:canvas,
+			});
+			p.addElement("Conway's Game Of Life",{
+				color:[0,255,0,255],
+				pattern:"B3/S23",//born on 3, survives on 2 or 3
+			});
+			p.play({});//final initialisation, and play
+			//fill 15% of the canvas with this element
+			p.randomlyFill(15,"Conway's Game Of Life");
+		</script>
+	</body>
+</html>
