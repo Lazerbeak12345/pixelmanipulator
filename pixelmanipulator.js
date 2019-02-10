@@ -16,8 +16,8 @@
 */
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
-	"use strict";
-	var pxversion="1.68.151 (beta-proposed)";
+	'use strict';
+	var pxversion="2.0.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -30,7 +30,7 @@
 				return pxversion;//strangly enough, this actually upped the frame rate. Not entirely pointles?
 			},
 			get licence() {
-				return "PixelManipulator v"+this.version+" Copyright (C) 2018-2019  Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+				return "PixelManipulator v"+this.version+" Copyright (C) 2018-2019 Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
 			},
 			loopint:0,
 			//imageData:{},
@@ -51,15 +51,16 @@
 			onAfterIterate:function() {},
 			//pixelCounts:{},
 			presentElements:[],
-			__TEMPLATES__:{
+			__templates:{//an object containing the different templates that are currently in the system
 				__LIFE__:{//Things like Conway's Game of Life
-					__INDEX__:function(elm,data) {
+					__index__:function(elm,data) {
+						//            ("" ,{}  )
 						if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1) return [];
 						var numbers=data.pattern.split(/\/*[a-z]/gi);//"B",born,die
 						data.loop=typeof data.loop!=="undefined"?data.loop:true;
 						console.log("Life Pattern found: ",elm,data);
-						return [innerP.__TEMPLATES__.__LIFE__.__LIVE__(numbers[2],data.loop,elm),
-							innerP.__TEMPLATES__.__LIFE__.__DEAD__(numbers[1],data.loop,elm)];
+						return [innerP.__templates.__LIFE__.__LIVE__(numbers[2],data.loop,elm),
+							innerP.__templates.__LIFE__.__DEAD__(numbers[1],data.loop,elm)];
 					},
 					__LIVE__:function(numtodie,loop,elm) {
 						return (function(rel) {
@@ -73,13 +74,12 @@
 					},
 				},
 				__WOLFRAM__:{
-					__INDEX__:function(elm,data) {
-
+					__index__:function(elm,data) {
 						if (data.pattern.search(/Rule \d*/gi)<=-1) return [];
 						var binStates=(data.pattern.split(/Rule /gi)[1]-0).toString(2).padStart(8,"0");
 						data.loop=typeof data.loop!=="undefined"?data.loop:false;
 						console.log("Wolfram pattern found: ",elm,data);
-						return [undefined,innerP.__TEMPLATES__.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
+						return [undefined,innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
 					},
 					__DEAD__:function(elm,binStates,loop) {//In order not to erase the spawner pixels (which are the pixels, usually in the top row that make the pattern appear), erasing on live shouldn't be done.
 						return (function(rel) {
@@ -96,7 +96,12 @@
 					},
 				},
 			},
-			randomlyFill:function(pr,value) {
+			randomlyFill:function(pr ,value) {//fills the screen with value, at an optional given percent
+				//               ({}?,""   )
+				if (arguments.length===1) {
+					value=pr;
+					pr=undefined;
+				}
 				pr=pr||15;
 				for (var xPos=0; xPos<innerP.canvas.width; xPos++) {
 					for (var yPos=0; yPos<innerP.canvas.height; yPos++) { //iterate through x and y
@@ -120,8 +125,8 @@
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
 				while (data.color.length<4) data.color.push(255);
 				if (typeof data.pattern==="string") {
-					for (var tempNam in innerP.__TEMPLATES__) {
-						var out=innerP.__TEMPLATES__[tempNam].__INDEX__(elm,data);
+					for (var tempNam in innerP.__templates) {
+						var out=innerP.__templates[tempNam].__index__(elm,data);
 						if (out.length===0) continue;//if the output was [], then go on.
 						if (typeof data.liveCell==="undefined"&&typeof out[0]==="function") data.liveCell=out[0];
 						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
@@ -141,7 +146,7 @@
 			play:function(canvasSizes) {//Start iterations on all of the elements on the canvas
 				//       ({}?        )
 				//console.log("play");
-				if (typeof canvasSizes!="undefined") innerP.reset(canvasSizes);
+				if (innerP.mode==="playing") innerP.reset(canvasSizes);
 				innerP.mode="playing";
 				innerP.loopint=setInterval(innerP.iterate,1);
 			},
@@ -170,7 +175,7 @@
 				innerP.mode="paused";
 				clearInterval(innerP.loopint);
 			},
-			zoom:function(e  ) {
+			zoom:function(e  ) {//This tells pixelmanipulator where to focus the center of the zoomElm
 				//       ({}?)
 				//console.log("zoom",e);
 				if (typeof innerP.zoomelm.height==="undefined") return;
@@ -441,7 +446,7 @@
 				}
 				innerP.updateData();
 				if (typeof e.zoom!=="undefined") {
-					innerP.zoom({
+					innerP.zoom({//zoom at the center
 						x:Math.floor(innerP.canvas.width/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
 						y:Math.floor(innerP.zoomelm.height/2)-(Math.floor(innerP.zoomelm.height/2)*innerP.zoomScaleFactor),
 					});

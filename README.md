@@ -1,4 +1,4 @@
-# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 1.68.151](https://img.shields.io/badge/version-1.68.151_(beta--proposed)-blue.svg)](https://lazerbeak12345.github.io/pixelmanipulator) [![Travis](https://travis-ci.org/Lazerbeak12345/pixelmanipulator.svg?branch=master)](https://travis-ci.org/Lazerbeak12345/pixelmanipulator)
+# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 2.0.0](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://lazerbeak12345.github.io/pixelmanipulator) [![Travis](https://travis-ci.org/Lazerbeak12345/pixelmanipulator.svg?branch=master)](https://travis-ci.org/Lazerbeak12345/pixelmanipulator)
 
 A super powerfull library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
@@ -17,12 +17,14 @@ Oldest known supported | yes (68.0.3440.75)  | yes (67.0.3396.99) | poor (42.171
 > -----------|----------------------------------------------------------------------------------|-------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------
 > Meaning    | Works very well, with little sign of lagging, when the main canvas is 100x100px. | Works, but is very slow, when the main canvas is 100x100px. | Displays a lack of functionallity not displayed in browsers marked as "yes", for example, IE cannot handle arrays that are 1000 itms long, and thus cannot modify the `canvas.data` attribute properly. | This browser in this senario has not been tested yet, and thus there is no information about it. | Due to the contents of nearby boxes, this senario is irrelevent, unimportant, or Not Applicable.
 
+.
+
 > I can't test Browser support as well as I want to, so feel free to update this table! (this includes adding other browsers)
 > If it works on a version outside of the range that is listed, please send a pull request with that updated information.
 
 ## PixelManipulator documentation
 
-This is the official Documentation for `PixelManipulator v1.68.151`.
+This is the official Documentation for `PixelManipulator v2.0.0`.
 Hopefully, it will serve you well.
 
 ### What is PixelManipulator
@@ -201,6 +203,10 @@ To test this out, insert the following JavaScript:
 
 Wow, only 29 lines of code!
 
+> This can also be done using a library such as require.js
+
+.
+
 > From here on, this will be less of a tutorial and more of documenatation.
 
 ### Media Controls
@@ -330,8 +336,6 @@ If the three-didget binary number correctly matches the state of the cells above
 
 ### Custom Cellular Automata
 
-Now for the hard, yet interesting, stuff.
-
 #### liveCell, deadCell
 
 `liveCell` and `deadCell` are properties of an element that is passed into the addElement function.
@@ -434,7 +438,7 @@ Generator for wolframNearbyCounter. Takes in instance of `__ConfirmElm`.
 
 ###### wolframNearbyCounter
 
-Determines if a string such as `"101"` describes the state of the cells above a given cell. `rel.wolfranNearbyCounter(4,7,"Rule 90","011")`
+Determines if a string such as `"101"` describes the state of the cells above a given cell. `rel.wolframNearbyCounter(4,7,"Rule 90","011")`
 Append a boolean as the fifth argument, and it will set the loop state. (default false)
 
 __IMPORTANT__: `wolframNearbyCounter` can only be accesed via the callback to `liveCell` and `deadCell`
@@ -443,6 +447,119 @@ __IMPORTANT__: `wolframNearbyCounter` can only be accesed via the callback to `l
 
 #### Making your own pre-built class
 
-### Preparation Functions
+You may have noticed that when using `addElement` and `addMultipleElements`, you can add elements without the need to define the `liveCell` and `deadCell` functions.
+This is because in those instances, there is a template that detects (usually through the pattern that was supplied) that it can create the `liveCell` and `deadCell` functions you will need, and does so.
 
-### Other Usefull things
+This, naturally, may raise the question: "Can I make one of those?"
+The answer, as you may have guessed, is a strong, encouraging "_YES!_"
+
+##### p._templates
+
+`_templates` is an object containing the different templates that are currently in the system.
+The name of the template doesn't really matter, as long as you understand that it is what you will be using internally.
+
+###### p.__templates.__index__
+
+To create a template, you create an object that contains the function `__index__`.
+There are two values that are passed into this function:
+
+1. A string, representing the name of the element that was passed in using any tactic of either `addElement` or `addMutipleElements`.
+2. An object, containing details about the element, including something that is usually a string: `pattern`. This string's syntax (as the template maker) you define yourself, but it must not conflict with the syntax of any of the other templates, because this most likely will cause a conflict of some sort.
+
+> I have never tried to see what will happen if you have two templates expecting the same syntax, but I think that what will happen is that the alphabetically last of the two that share a template will be the one that lays claim on the element. This, however may end up being different across browsers.
+
+The return value must be one of two things:
+
+* An empty array
+* An array with exactly two function values, the first, the `liveCell` function, and the second, `deadCell`.
+* A mixed version of the above, where the missing value is `undefined` (an array with one value, being a function, would go here)
+
+### Other
+
+This is the rest of the library
+
+#### p.canvasPrep
+
+A function where you pass in an object that must contain the key `canvas`, whith a html5 canvas as the key.
+This is where the logic and rendering will take place, but it will all be 1:1, so you may want a zoom elm.
+
+Another value, this one optional, is the key `zoom`, and it must be a html5 canvas.
+This is a movable, scaled viewport.
+In the demo, this is where a user clicks to mannually place cells.
+
+> `canvasPrep` currently calls `updateData` automatically
+
+#### p.update
+
+Not to be confused with `p.updateData`, `update` applies any changes made (typically via `setPixel`) to the canvas, and shows them on the zoomElm if it is present.
+
+In the demo, this is used to show changes the users make when they click on the zoomElm.
+
+> `p.update` currently calls `p.zoom` automatically
+
+#### p.zoom
+
+Initially a click envent handler from mid to late version 0 all the way to early version 1, zoom takes in an object that contains `x` and `y`. If these values are missing, the last values (saved at `p.zoomX` and `p.zoomY`, respectivly).
+
+This tells pixelmanipulator where to focus the center of the zoomElm (or zoom-box).
+
+#### p.updateData
+
+A function that sets things such as `imageSmoothinEnabled` to be `false`, and defines `getPixel`, `confirmElm`, and `whatIs`.
+
+#### onIterate and onAfterIterate
+
+These functions get called before and after the `iterate` function does it's work (respectfully).
+
+#### version
+
+This is a string indicating the version of the library. Formatting info can be found in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+#### licence
+
+This is a string containing basic licencing information, and is automatically printed to the terminal at startup. More licencing info can be found at [LICENCE](LICENCE)
+
+#### loopint
+
+This is the number that indicates what interval the iterate function is being called with.
+
+> You can use this to mannually stop the iterations like so: `clearInterval(p.loopint);` (not reccommended)
+
+#### zoomX and zoomY
+
+The coordinates of where the center of the zoomelm is windowed at.
+
+#### row
+
+The row that elements such as `Rule 90` are getting proccessed at.
+
+#### elementTypeMap
+
+A low-level listing of the availiable elements.
+
+> This has been around since late version 0!
+
+#### mode
+
+A string indicating weather it is currently animating or not.
+
+It is `"playing"` if it is currently animating, or `"paused"` if not currently animating.
+
+> This has been around since early version 0, and once was the `innerText` value of a pause/play button!
+
+#### zoomScaleFactor
+
+How many times bigger should the zoom elm be as compared to the actual size found in the normal canvas?
+
+#### zoomctxStrokeStyle
+
+The color of the lines drawn on the zoom elm.
+
+#### defaultElm
+
+The elm that pixelmanipulator will fill the screen with upon initialization, and what elements should return to when they are "dead". Default value is `'blank'`, an element with the color `#000F`
+
+#### presentElements
+
+An array of any elements that should be on screen.
+This is appended to by `setPixel`, and read from with `whatIs`
