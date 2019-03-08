@@ -98,17 +98,20 @@
 				<option>Acid</option>
 				<option>blank</option>
 				<option>Blocks</option>
-				<option>Wireworld Conductor</option>
+				<option>Brian's Brain (dying)</option>
+				<option>Brian's Brain (on)</option>
 				<option selected="selected">Conway's Game Of Life</option>
-				<option>Wireworld Electricity</option>
-				<option>Wireworld FadingElectricity</option>
-				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
+				<option>Seeds</option>
+				<option>Highlife</option>
 				<option>Rule 30</option>
 				<option>Rule 90</option>
 				<option>Rule 110</option>
 				<option>Rule 184</option>
 				<option>Water</option>
+				<option>Wireworld Conductor</option>
+				<option>Wireworld Electricity</option>
+				<option>Wireworld FadingElectricity</option>
 			</select>
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
@@ -120,16 +123,19 @@
 				<option>Acid</option>
 				<option>blank</option>
 				<option selected="selected">Blocks</option>
-				<option>Wireworld Conductor</option>
+				<option>Brian's Brain (dying)</option>
+				<option>Brian's Brain (on)</option>
 				<option>Conway's Game Of Life</option>
-				<option>Wireworld Electricity</option>
-				<option>Wireworld FadingElectricity</option>
-				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
+				<option>Seeds</option>
+				<option>Highlife</option>
 				<option>Rule 30</option>
 				<option>Rule 90</option>
 				<option>Rule 110</option>
 				<option>Rule 184</option>
+				<option>Wireworld Conductor</option>
+				<option>Wireworld Electricity</option>
+				<option>Wireworld FadingElectricity</option>
 				<option>Water</option>
 			</select>
 			<br/>
@@ -142,17 +148,20 @@
 				<option>Acid</option>
 				<option>blank</option>
 				<option>Blocks</option>
-				<option>Wireworld Conductor</option>
+				<option>Brian's Brain (dying)</option>
+				<option>Brian's Brain (on)</option>
 				<option>Conway's Game Of Life</option>
-				<option>Wireworld Electricity</option>
-				<option>Wireworld FadingElectricity</option>
-				<option>Highlife</option>
 				<option>No-loop Conway's Game Of Life</option>
+				<option>Seeds</option>
+				<option>Highlife</option>
 				<option>Rule 30</option>
 				<option>Rule 90</option>
 				<option>Rule 110</option>
 				<option>Rule 184</option>
 				<option selected="selected">Water</option>
+				<option>Wireworld Conductor</option>
+				<option>Wireworld Electricity</option>
+				<option>Wireworld FadingElectricity</option>
 			</select>
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
@@ -170,7 +179,7 @@
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a><br/>
 			<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-				2.0.0, Frontend (v1.20.21)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				2.0.0, Frontend (v1.21.21)</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -345,6 +354,26 @@
 					},
 					"Blocks":{//does nothing
 						color:[127,127,127,255],
+					},
+					"Brian's Brain (dying)":{
+						color:[254,254,254,255], //not quite white
+						liveCell:function(rel) {
+							p.setPixel(rel.x,rel.y,"blank",false);//Cells that were in the dying state go into the off state
+						},
+					},
+					"Brian's Brain (on)":{
+						color:[0,0,254,255],//not quite blue
+						liveCell:function(rel) {//All cells that were "on" go into the "dying" state, which is not counted as an "on" cell in the neighbor count, and prevents any cell from being born there.
+							p.setPixel(rel.x,rel.y,"Brian's Brain (dying)",false);
+						},
+						pattern:"B2/S",//same pattern as seeds
+						//deadCell:function(rel) {// a cell turns on if it was off but had exactly two neighbors that were on, just like the birth rule for Seeds.
+						//	if (rel.mooreNearbyCounter(rel.x,rel.y,"Brian's Brain (on)")===2) p.setPixel(rel.x,rel.y,"Brian's Brain (on)");
+						//},
+					},
+					"Seeds":{
+						color:[194, 178, 128],
+						pattern:"B2/S",
 					},
 					"Wireworld Conductor":{
 						color:[67,75,77,255],
