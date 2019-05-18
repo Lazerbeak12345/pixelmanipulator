@@ -1,6 +1,6 @@
 # ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 2.0.0](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://lazerbeak12345.github.io/pixelmanipulator) [![Travis](https://travis-ci.org/Lazerbeak12345/pixelmanipulator.svg?branch=master)](https://travis-ci.org/Lazerbeak12345/pixelmanipulator)
 
-A super powerfull library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
+A super powerful library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
 [![View the Demo](https://img.shields.io/badge/view-the_demo-green.svg)](https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html)
 Scroll down for docs.
