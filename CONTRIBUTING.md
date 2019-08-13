@@ -7,13 +7,22 @@
 
 ## Pull requests
 
-1. Make it clear why the change that is being proposed should be pulled into master.
-    * Is it a issue, or a feature?
-    * If it has, to your knowledge, something to do with a previous issue or pull-request, mention it.
-    * Explain what the change does.
-    * Make sure that the modified code has at least one comment clarifiying what the code does, and if neede, how it does it.
-2. Keep things as backwards compatible as possible.
-3. Let me handle re-versioning of software. This guarantees an absence of merge conflicts. If you wish to know how I do the versioning
+When doing a pull request, follow these steps:
+
+1. Make a fork of the repository
+2. Clone that fork to your computer where you will be modifying the code (if not using the web ide)
+3. Make fork master into a new branch where the title is a clear, yet consise summary of your planned changes.
+4. Make your changes on that branch.
+	* Keep things as backwards compatible as possible.
+	* Let me handle re-versioning of software. This guarantees an absence of merge conflicts. If you wish to know how I do the versioning see [Versioning](#Versioning) below.
+5. Test those changes. - I'd rather have the code tested by both myself, contributers, and the CI, then have messy or faulty code.
+6. Make a pull request from your branch on your fork of my repo to the master branch on my repo.
+	* The pull request must:
+		* Make it clear why the change that is being proposed should be pulled into master.
+    	* Is it a issue, or a feature?
+    	* If it has, to your knowledge, something to do with a previous issue or pull-request, mention it.
+    	* Explain what the change does.
+    	* Make sure that the modified code has at least one code comment clarifiying what the code does, and if needed, how it does it.
 
 ## Versioning
 
