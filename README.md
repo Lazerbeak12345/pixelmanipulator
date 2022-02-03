@@ -1,4 +1,4 @@
-# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 2.0.0](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://lazerbeak12345.github.io/pixelmanipulator) [![Travis](https://travis-ci.org/Lazerbeak12345/pixelmanipulator.svg?branch=master)](https://travis-ci.org/Lazerbeak12345/pixelmanipulator)
+# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 2.0.0](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/lazerbeak12345/pixelmanipulator)
 
 A super powerful library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
@@ -40,26 +40,11 @@ Then, include this in your html:
 
 #### Downloading (or compiling) minified PixelManipulator
 
-First, navigate to
-[PixelManipulator's GitHub repo](https://lazerbeak12345.github.io/pixelmanipulator)
-
-When you are there, you can download `pixelmanipulator.min.js`.
-
-Then, include this in your html:
-
-    <script src="pixelmanipulator.min.js"></script>
-
-> WARNING!
-> This version of PixelManipulator is __NOT__ frequently updated.
-> See below for how to get the latest minified version.
+Not supported. Minify it yourself.
 
 ##### Compiling for the latest version
 
-> You'll need a working Grunt session on your computer.
-
-Pull the repo onto your computer, then navigate to its directory.
-Run `grunt compile`.
-Your newly created file is found at `pixelmanipulator.min.js`.
+Not supported. Minify it yourself.
 
 ### Running your first simulation
 
