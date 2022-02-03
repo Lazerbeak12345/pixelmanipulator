@@ -125,7 +125,7 @@
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a><br/>
 				<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-				Library v<span id="backendversion"></span>, Frontend v1.23.0</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				Library v<span id="backendversion"></span>, Frontend v1.24.0</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -291,12 +291,16 @@
 					"Acid":{
 						color:[110,162,10,255],
 						liveCell:function(rel) {//current Pixel Matches
-							var rand=Math.round(Math.random()*2)-1;factor=0;
-							while ((!rel.confirmOldElm(rel.x+rand,rel.y+factor,"blank",false)||Math.random()<=0.3)&&factor<3) factor++;
-							if (factor<=3){
-								if (Math.random()>0.3) p.setPixel(rel.x,rel.y,"blank",false);
-								p.setPixel(rel.x+rand,rel.y+factor,"Acid",false);
-							}
+							var rands_acid=new Uint8Array(3)
+							window.crypto.getRandomValues(rands_acid);
+							var newx=rel.x+(rands_acid[0]%3)-1,
+								newy=rel.y+rands_acid[1]%4
+							while((newy>=p.canvas.height||p.confirmElm(newx,newy,"Acid",false))&&newy-1>=rel.y)
+								newy--
+							if(!p.confirmElm(newx,newy,"Acid",false)){
+								p.setPixel(rel.x,rel.y,"blank",false);
+								p.setPixel(newx,newy,"Acid",false)
+							}else if(rands_acid[2]%100===0)p.setPixel(newx,newy,"blank")
 						},
 					},
 					"Blocks":{//does nothing
@@ -373,11 +377,15 @@
 					"Water":{
 						color:[23,103,167,255],
 						liveCell:function(rel) {
-							var rand=Math.round(Math.random()*2)-1;factor=0;
-							while ((!rel.confirmOldElm(rel.x+rand,rel.y+factor,"blank",false))&&factor<2) factor++;
-							if (factor<=2&&(p.confirmElm(rel.x+rand,rel.y+factor,"blank",false))){
+							var rands_water=new Uint8Array(2)
+							window.crypto.getRandomValues(rands_water);
+							var newx=rel.x+(rands_water[0]%3)-1,
+								newy=rel.y+rands_water[1]%4
+							while((newy>=p.canvas.height||!p.confirmElm(newx,newy,"blank",false))&&newy-1>=rel.y)
+								newy--
+							if(p.confirmElm(newx,newy,"blank",false)){
 								p.setPixel(rel.x,rel.y,"blank",false);
-								p.setPixel(rel.x+rand,rel.y+factor,"Water",false);
+								p.setPixel(newx,newy,"Water",false)
 							}
 						},
 					},//*/
