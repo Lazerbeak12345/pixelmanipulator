@@ -10,7 +10,7 @@
 	<script>
 		$.get('README.md', function (response) {
 			$(function () {
-				$("#content").html(marked(response.toString()));
+				$("#content").html(marked.parse(response.toString()));
 				$("table").addClass("table table-striped table-bordered table-hover table-sm");
 				//*
 				$("blockquote").each(function() {
