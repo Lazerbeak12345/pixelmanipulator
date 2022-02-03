@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.0.3";
+	var pxversion="2.0.4";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -276,6 +276,8 @@
 				loop=typeof loop!=="undefined"?loop:true;
 				if (typeof arry==="string") {
 					if (!innerP.presentElements.includes(arry)) innerP.presentElements.push(arry);
+					if(typeof innerP.elementTypeMap[arry]==="undefined")
+						throw new Error("Color name "+arry+" invalid!")
 					arry=innerP.elementTypeMap[arry].color;
 				}
 				while (arry.length<4) arry.push(255);//allows for arrays that are too small
