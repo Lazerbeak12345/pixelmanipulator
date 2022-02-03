@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.0.2";
+	var pxversion="2.0.3";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -285,7 +285,7 @@
 						while (y<0) y=innerP.canvas.height+y;
 						while (x>=innerP.canvas.width) x=x-innerP.canvas.width;
 						while (y>=innerP.canvas.height) y=y-innerP.canvas.height;
-					}else if (x<0||x>=innerP.canvas.width||y<0||x>=innerP.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
+					}else if (x<0||x>=innerP.canvas.width||y<0||y>=innerP.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
 					for (var i=0; i<4; i++) innerP.imageData.data[(((innerP.canvas.width*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
 				/*
 				}else{
