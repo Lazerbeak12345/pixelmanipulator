@@ -1,5 +1,5 @@
 /*  This is a cellular automata JavaScript library called PixelManipulator. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
-    Copyright (C) 2018  Nathan Fritzler
+    Copyright (C) 2018-2021  Nathan Fritzler
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.0.0";
+	var pxversion="2.0.1";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -30,7 +30,7 @@
 				return pxversion;//strangly enough, this actually upped the frame rate. Not entirely pointles?
 			},
 			get licence() {
-				return "PixelManipulator v"+this.version+" Copyright (C) 2018-2019 Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE.";
+				return "PixelManipulator v"+this.version+" Copyright (C) 2018-2021 Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is free software, and you are welcome to redistribute it\nunder certain conditions, as according to the GNU GENERAL PUBLIC LICENSE version 3 or later.";
 			},
 			loopint:0,
 			//imageData:{},
