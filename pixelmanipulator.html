@@ -94,75 +94,21 @@
 			Zoom Height: <input id="zoomHeightElm" type="text" value="20" title="Default:20"/>px<br/>
 			<br/>
 			Normal click:
-			<select class="elmDrop" onchange="normalClick=this.value;">
-				<option>Acid</option>
-				<option>blank</option>
-				<option>Blocks</option>
-				<option>Brian's Brain (dying)</option>
-				<option>Brian's Brain (on)</option>
-				<option selected="selected">Conway's Game Of Life</option>
-				<option>No-loop Conway's Game Of Life</option>
-				<option>Seeds</option>
-				<option>Highlife</option>
-				<option>Rule 30</option>
-				<option>Rule 90</option>
-				<option>Rule 110</option>
-				<option>Rule 184</option>
-				<option>Water</option>
-				<option>Wireworld Conductor</option>
-				<option>Wireworld Electricity</option>
-				<option>Wireworld FadingElectricity</option>
-			</select>
+			<select class="elmDrop" onchange="normalClick=this.value;"></select>
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="normalFill">Randomly fill</button>
 			<input id="normalFillP" type="text"/>%
 			<br/>
 			Ctrl click:
-			<select class="elmDrop" onchange="ctrlClick=this.value;">
-				<option>Acid</option>
-				<option>blank</option>
-				<option selected="selected">Blocks</option>
-				<option>Brian's Brain (dying)</option>
-				<option>Brian's Brain (on)</option>
-				<option>Conway's Game Of Life</option>
-				<option>No-loop Conway's Game Of Life</option>
-				<option>Seeds</option>
-				<option>Highlife</option>
-				<option>Rule 30</option>
-				<option>Rule 90</option>
-				<option>Rule 110</option>
-				<option>Rule 184</option>
-				<option>Wireworld Conductor</option>
-				<option>Wireworld Electricity</option>
-				<option>Wireworld FadingElectricity</option>
-				<option>Water</option>
-			</select>
+			<select class="elmDrop" onchange="ctrlClick=this.value;"></select>
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="ctrlFill">Randomly fill</button>
 			<input id="ctrlFillP" type="text"/>%
 			<br/>
 			Alt click:
-			<select class="elmDrop" onchange="altClick=this.value">
-				<option>Acid</option>
-				<option>blank</option>
-				<option>Blocks</option>
-				<option>Brian's Brain (dying)</option>
-				<option>Brian's Brain (on)</option>
-				<option>Conway's Game Of Life</option>
-				<option>No-loop Conway's Game Of Life</option>
-				<option>Seeds</option>
-				<option>Highlife</option>
-				<option>Rule 30</option>
-				<option>Rule 90</option>
-				<option>Rule 110</option>
-				<option>Rule 184</option>
-				<option selected="selected">Water</option>
-				<option>Wireworld Conductor</option>
-				<option>Wireworld Electricity</option>
-				<option>Wireworld FadingElectricity</option>
-			</select>
+			<select class="elmDrop" onchange="altClick=this.value"></select>
 			<br/>
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<button id="altFill">Randomly fill</button>
@@ -179,7 +125,7 @@
 			<br/>
 			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a><br/>
 				<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-				Library v<span id="backendversion"></span>, Frontend v1.22.0</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				Library v<span id="backendversion"></span>, Frontend v1.23.0</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
@@ -520,6 +466,17 @@
 					p.randomlyFill(pr,altClick);
 					p.update();
 				});
+				var elmdrops=document.getElementsByClassName("elmDrop")
+				for (var i=0;i<elmdrops.length;i++){
+					for (var elementName in p.elementTypeMap) {
+						var newElement=document.createElement("option")
+						newElement.innerText=elementName
+						elmdrops[i].appendChild(newElement)
+					}
+				}
+				elmdrops[0].value="Conway's Game Of Life"
+				elmdrops[1].value="Blocks"
+				elmdrops[2].value="Water"
 			});
 		</script>
 	</body>
