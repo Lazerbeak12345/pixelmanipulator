@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.0.1";
+	var pxversion="2.0.2";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -56,7 +56,7 @@
 					__index__:function(elm,data) {
 						//            ("" ,{}  )
 						if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1) return [];
-						var numbers=data.pattern.split(/\/*[a-z]/gi);//"B",born,die
+						var numbers=data.pattern.split(/\/?[a-z]/gi);//"B",born,die
 						data.loop=typeof data.loop!=="undefined"?data.loop:true;
 						console.log("Life Pattern found: ",elm,data);
 						return [innerP.__templates.__LIFE__.__LIVE__(numbers[2],data.loop,elm),
