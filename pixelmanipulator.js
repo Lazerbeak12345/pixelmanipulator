@@ -303,99 +303,15 @@
 					arry=innerP.elementTypeMap[arry].color;
 				}
 				while (arry.length<4) arry.push(255);//allows for arrays that are too small
-				//if (innerP.__oldDraw) {
 				var w=innerP.get_width(),
 					h=innerP.get_height();
-					if (loop) {
-						while (x<0) x=w+x;
-						while (y<0) y=h+y;
-						while (x>=w) x=x-w;
-						while (y>=h) y=y-h;
-					}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
-					for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
-				/*
-				}else{
-					var nth="#";
-					for (var i=0;i<4;i++) {
-						var ch1=0;
-						while (arry[i]>=16) {
-							ch1++;
-							arry[i]-=16;
-						}
-						switch (ch1) {
-							case 0:
-							case 1:
-							case 2:
-							case 3:
-							case 4:
-							case 5:
-							case 6:
-							case 7:
-							case 8:
-							case 9:
-								nth+=ch1;
-								break;
-							case 10:
-								nth+="A";
-								break;
-							case 11:
-								nth+="B";
-								break;
-							case 12:
-								nth+="C";
-								break;
-							case 13:
-								nth+="D";
-								break;
-							case 14:
-								nth+="E";
-								break;
-							case 15:
-								nth+="F";
-								break;
-							default:
-								throw "Number too high!";
-						}
-						switch (arry[i]) {
-							case 0:
-							case 1:
-							case 2:
-							case 3:
-							case 4:
-							case 5:
-							case 6:
-							case 7:
-							case 8:
-							case 9:
-								nth+=arry[i];
-								break;
-							case 10:
-								nth+="A";
-								break;
-							case 11:
-								nth+="B";
-								break;
-							case 12:
-								nth+="C";
-								break;
-							case 13:
-								nth+="D";
-								break;
-							case 14:
-								nth+="E";
-								break;
-							case 15:
-								nth+="F";
-								break;
-							default:
-								throw "Number too high!";
-						}
-					}
-					innerP.ctx.fillStyle=nth;
-					//throw innerP.ctx;
-					innerP.ctx.fillRect(x,y,1,1);
-					innerP.ctx.fill();
-				}//*/
+				if (loop) {
+					while (x<0) x=w+x;
+					while (y<0) y=h+y;
+					while (x>=w) x=x-w;
+					while (y>=h) y=y-h;
+				}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
+				for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
 			},
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
