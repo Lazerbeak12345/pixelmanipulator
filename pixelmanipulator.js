@@ -138,6 +138,7 @@
 					elm=undefined;
 				}
 				if (typeof elm==="undefined") elm=data.name;//name of the element
+				if (typeof elm==="undefined") throw new Error("Name is required for element");
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
 				while (data.color.length<4) data.color.push(255);
 				if (typeof data.pattern==="string") {
