@@ -241,20 +241,11 @@
 				//            (# )->false?[#,#,#,#]
 				return (innerP.elementTypeMap[innerP.elementNumList[id]]||{color:false}).color
 			},
-			__GetPixelId:function(getPixel) {//Generates getPixelId and getOldPixelId instances
-				//               (())
+			__GetPixelId:function(d ) {//Generates getPixelId and getOldPixelId instances
+				//               ([])
 				//console.log("GetPixelId");
 				return (function getPixelIdGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
 					//           (#,#,true?)
-					return innerP.colorToId(getPixel(x,y,loop));
-				});
-			},
-			__GetPixel:function(d ) {//Generates getPixel and getOldPixel instances
-				//             ({})
-				//console.log("GetPixel");
-				return (function getPixelGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
-					//           (#,#,true?)
-					//console.log("get(old?)Pixel");
 					var w=innerP.get_width(),
 						h=innerP.get_height();
 					loop=typeof loop!=="undefined"?loop:true;
@@ -264,7 +255,14 @@
 						while (x>=w) x-=w;
 						while (y>=h) y-=h;
 					}else if (x<0||x>=w||y<0||x>=h) return "Blocks";
-					return d.slice(((w*y)+x)*4,(((w*y)+x)*4)+4);
+					return d[(w*y)+x]
+				});
+			},
+			__GetPixel:function(getPixelId) {//Generates getPixel and getOldPixel instances
+				//             ((#,#,bool))
+				return (function getPixelGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
+					//           (#,#,true?)
+					return innerP.idToColor(getPixelId(x,y,loop))
 				});
 			},
 			update:function() {//applies changes made by setPixel to the graphical canvas(es)
@@ -352,22 +350,18 @@
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
 				innerP.onIterate();
-				var old=[];
-				for (var i=0;i<innerP.imageData.data.length;i++) {
-					old[i]=innerP.imageData.data[i]-0;
-				}
-				var oldElements=new Uint32Array(innerP.currentElements);
-				var getOldPixel=innerP.__GetPixel(old),
-					getOldPixelId=innerP.__GetPixelId(getOldPixel);
-				var iterateThroughPresentElementsOnBlank=function(elm) {
-					if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
-						//console.log(xPos,yPos,"Thing");
-						innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
-					}
-				};
-				innerP.pixelCounts={};
-				var w=innerP.get_width(),
+				var oldElements=new Uint32Array(innerP.currentElements),
+					getOldPixelId=innerP.__GetPixelId(oldElements),
+					getOldPixel=innerP.__GetPixel(getOldPixelId),
+					iterateThroughPresentElementsOnBlank=function(elm) {
+						if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
+							//console.log(xPos,yPos,"Thing");
+							innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
+						}
+					},
+					w=innerP.get_width(),
 					h=innerP.get_height();
+				innerP.pixelCounts={};
 				for (var xPos=0; xPos<w; xPos++) {
 					for (var yPos=0; yPos<h; yPos++) { //iterate through x and y
 						var confirmOldElm=innerP.__ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
@@ -417,8 +411,8 @@
 					innerP.zoomctx.msImageSmoothingEnabled=false;
 					innerP.zoomctx.strokeStyle=innerP.zoomctxStrokeStyle;
 				}
-				innerP.getPixel=innerP.__GetPixel(innerP.imageData.data);
-				innerP.getPixelId=innerP.__GetPixelId(innerP.getPixel);
+				innerP.getPixelId=innerP.__GetPixelId(innerP.currentElements);
+				innerP.getPixel=innerP.__GetPixel(innerP.getPixelId);
 				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixel);
 				innerP.whatIs=innerP.__WhatIs(innerP.confirmElm);
 			},
