@@ -148,9 +148,11 @@
 						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
 					}
 				}
-				data.number=innerP.elementNumList.length
+				if(innerP.elementNumList.indexOf(elm)===-1){
+					data.number=innerP.elementNumList.length
+					innerP.elementNumList.push(elm)
+				}else data.number=innerP.elementTypeMap[elm].number // Copy from old
 				innerP.elementTypeMap[elm]=data;//for each element
-				innerP.elementNumList.push(elm)
 			},
 			__WhatIs:function(f ) {//Generator for whatIs
 				//           (())
