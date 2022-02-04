@@ -148,7 +148,7 @@
 						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 					</div>
 					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.25.3
+					Library v<span id="backendversion"></span>, Frontend v1.26.0
 				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
@@ -319,8 +319,9 @@
 							var rands_acid=new Uint8Array(3)
 							window.crypto.getRandomValues(rands_acid);
 							var newx=rel.x+(rands_acid[0]%3)-1,
-								newy=rel.y+rands_acid[1]%4
-							while((newy>=p.get_height()||p.confirmElm(newx,newy,"Acid",false))&&newy-1>=rel.y)
+								newy=rel.y+rands_acid[1]%4,
+								h=p.get_height();
+							while((newy>=h||p.confirmElm(newx,newy,"Acid",false))&&newy-1>=rel.y)
 								newy--
 							if(!p.confirmElm(newx,newy,"Acid",false)){
 								p.setPixel(rel.x,rel.y,"blank",false);
@@ -405,8 +406,9 @@
 							var rands_water=new Uint8Array(2)
 							window.crypto.getRandomValues(rands_water);
 							var newx=rel.x+(rands_water[0]%3)-1,
-								newy=rel.y+rands_water[1]%4
-							while((newy>=p.get_height()||!p.confirmElm(newx,newy,"blank",false))&&newy-1>=rel.y)
+								newy=rel.y+rands_water[1]%4,
+								h=p.get_height()
+							while((newy>=h||!p.confirmElm(newx,newy,"blank",false))&&newy-1>=rel.y)
 								newy--
 							if(p.confirmElm(newx,newy,"blank",false)){
 								p.setPixel(rel.x,rel.y,"blank",false);
