@@ -420,7 +420,7 @@
 				innerP.updateData();
 				if (typeof e.zoom!=="undefined") {
 					innerP.zoom({//zoom at the center
-						x:Math.floor(innerP.get_width()/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
+						x:Math.floor(innerP.zoomelm.width/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
 						y:Math.floor(innerP.zoomelm.height/2)-(Math.floor(innerP.zoomelm.height/2)*innerP.zoomScaleFactor),
 					});
 				}
