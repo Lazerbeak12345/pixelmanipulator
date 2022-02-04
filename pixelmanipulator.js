@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.1.0";
+	var pxversion="2.1.1";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -75,12 +75,12 @@
 							innerP.__templates.__LIFE__.__DEAD__(numbers[1],data.loop,elm)];
 					},
 					__LIVE__:function(numtodie,loop,elm) {
-						return (function(rel) {
+						return (function llive(rel) {
 							if(numtodie.search(rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))<=-1) innerP.setPixel(rel.x,rel.y,innerP.defaultElm);// if any match (of how many moore are nearby) is found, it dies
 						});
 					},
 					__DEAD__:function(numtolive,loop,elm) {
-						return (function(rel) {
+						return (function ldead(rel) {
 							if(numtolive.search(rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))>-1) innerP.setPixel(rel.x,rel.y,elm);// if any match (of how many moore are nearby) is found, it lives
 						});
 					},
@@ -94,7 +94,7 @@
 						return [undefined,innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
 					},
 					__DEAD__:function(elm,binStates,loop) {//In order not to erase the spawner pixels (which are the pixels, usually in the top row that make the pattern appear), erasing on live shouldn't be done.
-						return (function(rel) {
+						return (function wdead(rel) {
 							if (rel.y!==innerP.row) return;//if it is not in the active row, exit before anything happens
 							for (var binDex=0; binDex<8; binDex++) {//for every possible state
 								if(binStates[binDex]=="1"){//if the state is "on"
@@ -150,7 +150,7 @@
 			},
 			__WhatIs:function(f ) {//Generator for whatIs
 				//           (())
-				return (function(x,y,loop ) {//return the name of an element in a given location
+				return (function whatIsGeneric(x,y,loop ) {//return the name of an element in a given location
 					//          (#,#,true?)
 					for (var i=0;i<innerP.presentElements.length;i++) {
 						if (f(x,y,innerP.presentElements[i],loop)) return innerP.presentElements[i];
@@ -225,7 +225,7 @@
 			__GetPixel:function(d ) {//Generates getPixel and getOldPixel instances
 				//             ({})
 				//console.log("GetPixel");
-				return (function (x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
+				return (function getPixelGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
 					//           (#,#,true?)
 					//console.log("get(old?)Pixel");
 					var w=innerP.get_width(),
@@ -249,7 +249,7 @@
 				//               (())
 				//console.log("ConfirmElm",f);
 				//loop=typeof loop!=="undefined"?loop:true;
-				return function(x,y,name,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
+				return function confirmElmGeneric(x,y,name,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
 					//         (#,#,""  ,true?)
 					//console.log("confirmElm",x,y,name,loop);
 					var colors=f(x,y,loop), arry=innerP.elementTypeMap[name].color;
@@ -260,7 +260,7 @@
 				//                       (())
 				//console.log("MooreNearbyCounter");
 				//var specialConfirm=innerP.__ConfirmElm(f);
-				return (function (x,y,name,loop ) {//Count how many cells of this name match in a moore radius
+				return (function mooreNearbyCounter(x,y,name,loop ) {//Count how many cells of this name match in a moore radius
 					//           (#,#,""  ,true?)
 					//console.log("mooreNearbyCounter");
 					return (f(x-1,y-1,name,loop))+//nw
@@ -276,7 +276,7 @@
 			__WolframNearbyCounter:function(f ) {//Generate wolframNearbyCounter
 				//                         (())
 				//console.log("WolframNearbygetOldPixel");
-				return (function (x,y,name,a ,loop ) {//determine if the three cells above a given cell match an inputted element query
+				return (function wolframNearbyCounter(x,y,name,a ,loop ) {//determine if the three cells above a given cell match an inputted element query
 					//           (#,#,""  ,[],true?)
 					//console.log("wolframNearby");
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
