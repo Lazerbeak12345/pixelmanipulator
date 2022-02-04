@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.2.0";
+	var pxversion="2.3.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -67,30 +67,53 @@
 			presentElements:[],
 			__templates:{//an object containing the different templates that are currently in the system
 				__LIFE__:{//Things like Conway's Game of Life
+					_convertNumListToBf:function(nl){
+						//                      ("")->#
+						// While I used to use string with each digit in it, I found that since
+						// there are 0-8, I could use a 9bit field (remember: off by one)
+						var out=0
+						for(var i=0;i<nl.length;i++){
+							var item=nl[i];
+							out|=1<<item
+						}
+						return out
+					},
 					__index__:function(elm,data) {
 						//            ("" ,{}  )
-						if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1) return [];
+						if(data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1)return[];
 						var numbers=data.pattern.split(/\/?[a-z]/gi);//"B",born,die
 						data.loop=typeof data.loop!=="undefined"?data.loop:true;
 						console.log("Life Pattern found: ",elm,data);
-						return [innerP.__templates.__LIFE__.__LIVE__(numbers[2],data.loop,elm),
-							innerP.__templates.__LIFE__.__DEAD__(numbers[1],data.loop,elm)];
+						return [
+							innerP.__templates.__LIFE__.__LIVE__(
+								innerP.__templates.__LIFE__._convertNumListToBf(numbers[2]),
+								data.loop,
+								elm
+							),
+							innerP.__templates.__LIFE__.__DEAD__(
+								innerP.__templates.__LIFE__._convertNumListToBf(numbers[1]),
+								data.loop,
+								elm
+							)
+						];
 					},
-					__LIVE__:function(numtodie,loop,elm) {
-						return (function llive(rel) {
-							if(numtodie.search(rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))<=-1) innerP.setPixel(rel.x,rel.y,innerP.defaultElm);// if any match (of how many moore are nearby) is found, it dies
+					__LIVE__:function(bfdie,loop,elm) {
+						return (function llive(rel) {12&1<<0
+							if((bfdie&1<<rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))==0)
+								innerP.setPixel(rel.x,rel.y,innerP.defaultElm);// if any match (of how many moore are nearby) is found, it dies
 						});
 					},
-					__DEAD__:function(numtolive,loop,elm) {
+					__DEAD__:function(bflive,loop,elm) {
 						return (function ldead(rel) {
-							if(numtolive.search(rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))>-1) innerP.setPixel(rel.x,rel.y,elm);// if any match (of how many moore are nearby) is found, it lives
+							if((bflive&1<<rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))>0)
+								innerP.setPixel(rel.x,rel.y,elm);// if any match (of how many moore are nearby) is found, it lives
 						});
 					},
 				},
 				__WOLFRAM__:{
 					__index__:function(elm,data) {
-						if (data.pattern.search(/Rule \d*/gi)<=-1) return [];
-						var binStates=(data.pattern.split(/Rule /gi)[1]-0).toString(2).padStart(8,"0");
+						if(data.pattern.search(/Rule \d*/gi)<=-1)return[];
+						var binStates=data.pattern.split(/Rule /gi)[1]-0;
 						data.loop=typeof data.loop!=="undefined"?data.loop:false;
 						console.log("Wolfram pattern found: ",elm,data);
 						return [undefined,innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
@@ -99,8 +122,8 @@
 						return (function wdead(rel) {
 							if (rel.y!==innerP.row) return;//if it is not in the active row, exit before anything happens
 							for (var binDex=0; binDex<8; binDex++) {//for every possible state
-								if(binStates[binDex]=="1"){//if the state is "on"
-									if(rel.wolframNearbyCounter(rel.x,rel.y,elm,(7-binDex).toString(2).padStart(3,"0"),loop)) {//if there is a wolfram match (wolfram code goes from 111 to 000)
+								if((binStates&1<<binDex)>0){//if the state is "on". Use a bit mask and shift it
+									if(rel.wolframNearbyCounter(rel.x,rel.y,elm,binDex,loop)) {//if there is a wolfram match (wolfram code goes from 111 to 000)
 										innerP.setPixel(rel.x,rel.y,elm,loop);
 										return;//No more logic needed, it is done.
 									}
@@ -302,14 +325,18 @@
 			__WolframNearbyCounter:function(f ) {//Generate wolframNearbyCounter
 				//                         (())
 				//console.log("WolframNearbygetOldPixel");
-				return (function wolframNearbyCounter(x,y,name,a ,loop ) {//determine if the three cells above a given cell match an inputted element query
-					//           (#,#,""  ,[],true?)
+				return (function wolframNearbyCounter(x,y,name,binDex,loop ) {//determine if the three cells above a given cell match an inputted element query
+					//                               (#,#,""  ,#     ,true?)
 					//console.log("wolframNearby");
+					if(typeof binDex==="string"){
+						//Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
+						binDex=(binDex[0]==="1")<<2|(binDex[1]==="1")<<1|(binDex[2]==="1")<<0
+					}
 					loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
-					var near=[f(x-1,y-1,name,loop),//the three spots above (nw,n,ne)
-							f(x,y-1,name,loop),
-							f(x+1,y-1,name,loop)];
-					return (near[0]==a[0]&&near[1]==a[1]&&near[2]==a[2]);
+					// the three spots above (nw,n,ne)
+					return f(x-1,y-1,name,loop)===(binDex&1<<2)>0&&
+						f(x,y-1,name,loop)===(binDex&1<<1)>0&&
+						f(x+1,y-1,name,loop)===(binDex&1<<0)>0;
 				});
 			},
 			setPixel:function(x,y,arry ,loop ) {//places given pixel at the x and y position, handling for loop (default loop is true)
