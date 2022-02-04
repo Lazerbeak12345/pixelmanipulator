@@ -353,12 +353,6 @@
 				var oldElements=new Uint32Array(innerP.currentElements),
 					getOldPixelId=innerP.__GetPixelId(oldElements),
 					getOldPixel=innerP.__GetPixel(getOldPixelId),
-					iterateThroughPresentElementsOnBlank=function(elm) {
-						if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
-							//console.log(xPos,yPos,"Thing");
-							innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
-						}
-					},
 					w=innerP.get_width(),
 					h=innerP.get_height(),
 					confirmOldElm=innerP.__ConfirmElm(getOldPixelId),
@@ -375,7 +369,13 @@
 				for(;rel.x<w;rel.x++){
 					for(rel.y=0;rel.y<h;rel.y++){ //iterate through x and y
 						if(innerP.confirmElm(rel.x,rel.y,"blank")){
-							innerP.presentElements.forEach(iterateThroughPresentElementsOnBlank);
+							for(var i=0,elm;i<innerP.presentElements.length;i++){
+								elm=innerP.presentElements[i];
+								if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
+									//console.log(xPos,yPos,"Thing");
+									innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
+								}
+							}
 						}else{
 							var currentPix=innerP.whatIs(rel.x,rel.y);
 							if (typeof innerP.elementTypeMap[currentPix].liveCell==="function") {
