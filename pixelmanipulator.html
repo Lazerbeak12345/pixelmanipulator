@@ -105,10 +105,10 @@
 			</div>
 			<div id="scroll-box">
 				<div id="sizes-box">
-					<div>Width: <input id="width" type="text" value="100" title="Default:100"/>px</div>
-					<div>Height: <input id="height" type="text" value="100" title="Default:100"/>px</div>
-					<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" title="Default:20"/>px</div>
-					<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" title="Default:20"/>px</div>
+					<div>Width: <input id="width" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+					<div>Height: <input id="height" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+					<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+					<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
 				</div>
 				<div id="click-types">
 					<div class="click-type">
@@ -116,7 +116,7 @@
 						<select class="elmDrop" onchange="normalClick=this.value;"></select>
 						<div class="click-type-random">
 							<button id="normalFill">Randomly fill</button>
-							<input id="normalFillP" type="text"/>%
+							<input id="normalFillP" type="text" value="15" placeholder="15"/>%
 						</div>
 					</div>
 					<div class="click-type">
@@ -124,7 +124,7 @@
 						<select class="elmDrop" onchange="ctrlClick=this.value;"></select>
 						<div class="click-type-random">
 							<button id="ctrlFill">Randomly fill</button>
-							<input id="ctrlFillP" type="text"/>%
+							<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
 						</div>
 					</div>
 					<div class="click-type">
@@ -132,7 +132,7 @@
 						<select class="elmDrop" onchange="altClick=this.value"></select>
 						<div class="click-type-random">
 							<button id="altFill">Randomly fill</button>
-							<input id="altFillP" type="text"/>%
+							<input id="altFillP" type="text" value="15" placeholder="15"/>%
 						</div>
 					</div>
 				</div>
@@ -148,7 +148,7 @@
 						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 					</div>
 					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.25.0
+					Library v<span id="backendversion"></span>, Frontend v1.25.1
 				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
