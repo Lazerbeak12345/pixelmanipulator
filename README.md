@@ -1,4 +1,4 @@
-# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator [![version 2.0.0](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/lazerbeak12345/pixelmanipulator)
+# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator
 
 A super powerful library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
 
@@ -7,8 +7,15 @@ Scroll down for docs.
 
 ## PixelManipulator documentation
 
-This is the official Documentation for `PixelManipulator v2.0.0`.
+This is the official Documentation for `PixelManipulator v2.0`.
 Hopefully, it will serve you well.
+
+> Most likely you are using the latest version. As PM now uses semver, you can
+> rely on version 2 maintaining compatibility, though version 2.1 and later
+> includes some new features and speed changes not documented below. In
+> particular, some functions documented to be fast, or to be slow, might not be
+> so fast or slow in 2.2 and later, once I release that version. **I do have
+> plans to update documentation in the future.**
 
 ### What is PixelManipulator
 
