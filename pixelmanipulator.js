@@ -155,13 +155,11 @@
 				}else data.number=innerP.elementTypeMap[elm].number // Copy from old
 				innerP.elementTypeMap[elm]=data;//for each element
 			},
-			__WhatIs:function(f ) {//Generator for whatIs
-				//           (())
+			__WhatIs:function(getPixelId) {//Generator for whatIs
+				//           (()        )
 				return (function whatIsGeneric(x,y,loop ) {//return the name of an element in a given location
 					//          (#,#,true?)
-					for (var i=0;i<innerP.presentElements.length;i++) {
-						if (f(x,y,innerP.presentElements[i],loop)) return innerP.presentElements[i];
-					}
+					return innerP.elementNumList[getPixelId(x,y,loop)]
 				});
 			},
 			play:function(canvasSizes) {//Start iterations on all of the elements on the canvas
@@ -350,18 +348,16 @@
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
 				innerP.onIterate();
-				var oldElements=new Uint32Array(innerP.currentElements),
-					getOldPixelId=innerP.__GetPixelId(oldElements),
-					getOldPixel=innerP.__GetPixel(getOldPixelId),
+				var getOldPixelId=innerP.__GetPixelId(new Uint32Array(innerP.currentElements)),
+					confirmOldElm=innerP.__ConfirmElm(getOldPixelId),
 					w=innerP.get_width(),
 					h=innerP.get_height(),
-					confirmOldElm=innerP.__ConfirmElm(getOldPixelId),
 					rel={
 						x:0,
 						y:0,
-						getOldPixel:getOldPixel,
 						getOldPixelId:getOldPixelId,
-						confirmOldElm:confirmOldElm,
+						getOldPixel:innerP.__GetPixel(getOldPixelId),
+						whatIsOld:innerP.__WhatIs(getOldPixelId),
 						mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
 						wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
 					};
@@ -412,7 +408,7 @@
 				innerP.getPixelId=innerP.__GetPixelId(innerP.currentElements);
 				innerP.getPixel=innerP.__GetPixel(innerP.getPixelId);
 				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixelId);
-				innerP.whatIs=innerP.__WhatIs(innerP.confirmElm);
+				innerP.whatIs=innerP.__WhatIs(innerP.getPixelId);
 			},
 			canvasPrep:function(e ) {//Tells PixelManipulator what canvas(es) to use.
 				//             ({})
