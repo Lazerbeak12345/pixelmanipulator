@@ -322,11 +322,20 @@
 				x=Math.floor(x).toString()-0;//Fix any bad math done further up the line. Also remove bad math later
 				y=Math.floor(y).toString()-0;//...
 				loop=typeof loop!=="undefined"?loop:true;
+				var id,name;
 				if (typeof arry==="string") {
 					if (!innerP.presentElements.includes(arry)) innerP.presentElements.push(arry);
 					if(typeof innerP.elementTypeMap[arry]==="undefined")
 						throw new Error("Color name "+arry+" invalid!")
+					name=arry
 					arry=innerP.elementTypeMap[arry].color;
+				}else if(typeof arry==="number"){
+					id=arry
+					arry=innerP.idToColor(id)
+				}
+				if(typeof id==="undefined"){
+					if(typeof name==="undefined")id=innerP.colorToId(arry)
+					else id=innerP.elementTypeMap[name].number
 				}
 				while (arry.length<4) arry.push(255);//allows for arrays that are too small
 				var w=innerP.get_width(),
@@ -338,6 +347,7 @@
 					while (y>=h) y=y-h;
 				}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
 				for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
+				innerP.currentElements[(w*y)+x]=id
 			},
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
@@ -346,6 +356,7 @@
 				for (var i=0;i<innerP.imageData.data.length;i++) {
 					old[i]=innerP.imageData.data[i]-0;
 				}
+				var oldElements=new Uint32Array(innerP.currentElements);
 				var getOldPixel=innerP.__GetPixel(old),
 					getOldPixelId=innerP.__GetPixelId(getOldPixel);
 				var iterateThroughPresentElementsOnBlank=function(elm) {
@@ -391,7 +402,10 @@
 			},
 			updateData:function() {//defines the starting values of the library and is run on `p.reset();`
 				//console.log("updateData");
-				innerP.imageData=innerP.ctx.getImageData(0,0,innerP.get_width(),innerP.get_height());
+				var w=innerP.get_width(),
+					h=innerP.get_height();
+				innerP.imageData=innerP.ctx.getImageData(0,0,w,h);
+				innerP.currentElements=new Uint32Array(w*h);
 				innerP.ctx.imageSmoothingEnabled=false;
 				innerP.ctx.mozImageSmoothingEnabled=false;
 				innerP.ctx.webkitImageSmoothingEnabled=false;
