@@ -113,7 +113,7 @@
 				<div id="click-types">
 					<div class="click-type">
 						Normal click:
-						<select class="elmDrop" onchange="normalClick=this.value;"></select>
+						<select class="elmDrop" id="normalSelect"></select>
 						<div class="click-type-random">
 							<button id="normalFill">Randomly fill</button>
 							<input id="normalFillP" type="text" value="15" placeholder="15"/>%
@@ -121,7 +121,7 @@
 					</div>
 					<div class="click-type">
 						Ctrl click:
-						<select class="elmDrop" onchange="ctrlClick=this.value;"></select>
+						<select class="elmDrop" id="ctrlSelect"></select>
 						<div class="click-type-random">
 							<button id="ctrlFill">Randomly fill</button>
 							<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
@@ -129,7 +129,7 @@
 					</div>
 					<div class="click-type">
 						Alt click:
-						<select class="elmDrop" onchange="altClick=this.value"></select>
+						<select class="elmDrop" id="altSelect"></select>
 						<div class="click-type-random">
 							<button id="altFill">Randomly fill</button>
 							<input id="altFillP" type="text" value="15" placeholder="15"/>%
@@ -148,7 +148,7 @@
 						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 					</div>
 					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.26.0
+					Library v<span id="backendversion"></span>, Frontend v1.26.1
 				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
@@ -166,9 +166,6 @@
 				});
 			}
 			var //file = document.getElementById('file'),
-				normalClick="Conway's Game Of Life",
-				ctrlClick="Blocks",
-				altClick="Water",
 				timedebug=true,
 				//times=[],
 				//lasttime=NaN,
@@ -422,9 +419,10 @@
 				});
 				onZoomClick=function(e,rel) {//an event-like function that returns what should be set where the zoom ctx was clicked
 					//console.log("onZoomClick",arguments);
-					var active=normalClick//The default is normalClick.
-					if (e.ctrlKey) active=ctrlClick;
-					else if(e.altKey) active=altClick;
+					var active;
+					if (e.ctrlKey) active=document.getElementById("ctrlSelect").value;
+					else if(e.altKey) active=document.getElementById("altSelect").value;
+					else active=document.getElementById("normalSelect").value
 					if (p.confirmElm(rel.x,rel.y,active)) active="blank";
 					return active;
 				};
@@ -488,17 +486,17 @@
 				});
 				document.getElementById("normalFill").addEventListener('click',function() {
 					var pr=document.getElementById("normalFillP").value||15;
-					p.randomlyFill(pr,normalClick);
+					p.randomlyFill(pr,document.getElementById("normalSelect").value);
 					p.update();//needed after any changes are made
 				});
 				document.getElementById("ctrlFill").addEventListener('click',function() {
 					var pr=document.getElementById("ctrlFillP").value||15;
-					p.randomlyFill(pr,ctrlClick);
+					p.randomlyFill(pr,document.getElementById("ctrlSelect").value);
 					p.update();
 				});
 				document.getElementById("altFill").addEventListener('click',function() {
 					var pr=document.getElementById("altFillP").value||15;
-					p.randomlyFill(pr,altClick);
+					p.randomlyFill(pr,document.getElementById("altSelect").value);
 					p.update();
 				});
 				var elmdrops=document.getElementsByClassName("elmDrop")
@@ -509,9 +507,9 @@
 						elmdrops[i].appendChild(newElement)
 					}
 				}
-				elmdrops[0].value="Conway's Game Of Life"
-				elmdrops[1].value="Blocks"
-				elmdrops[2].value="Water"
+				document.getElementById("normalSelect").value="Conway's Game Of Life"
+				document.getElementById("ctrlSelect").value="Blocks"
+				document.getElementById("altSelect").value="Water"
 			});
 		</script>
 	</body>
