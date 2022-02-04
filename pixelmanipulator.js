@@ -230,13 +230,8 @@
 			},
 			colorToId:function(colors ){
 				//            ([#,#,#])->#
-				for(var arry,
-						i=0;
-					i<innerP.elementNumList.length;
-					i++
-				){
-					arry=innerP.elementTypeMap[innerP.elementNumList[i]].color
-					if(colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255)){
+				for(var i=0;i<innerP.elementNumList.length;i++){
+					if(innerP.compareColors(colors,innerP.elementTypeMap[innerP.elementNumList[i]].color)){
 						return i
 					}
 				}
@@ -272,15 +267,18 @@
 				innerP.ctx.putImageData(innerP.imageData,0,0);
 				if (typeof innerP.zoomelm!=="undefined") innerP.zoom();
 			},
-			__ConfirmElm:function(f ) {//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
+			compareColors:function(a        ,b        ){
+				//                ([#,#,#,#],[#,#,#,#])->bool
+				return (a[0]||0)==(b[0]||0)&&(a[1]||0)==(b[1]||0)&&(a[2]||0)==(b[2]||0)&&(a[3]||255)==(b[3]||255);
+			},
+			__ConfirmElm:function(f ){//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
 				//               (())
 				//console.log("ConfirmElm",f);
 				//loop=typeof loop!=="undefined"?loop:true;
 				return function confirmElmGeneric(x,y,name,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
 					//         (#,#,""  ,true?)
 					//console.log("confirmElm",x,y,name,loop);
-					var colors=f(x,y,loop), arry=innerP.elementTypeMap[name].color;
-					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
+					return innerP.compareColors(f(x,y,loop),innerP.elementTypeMap[name].color);
 				};
 			},
 			__MooreNearbyCounter:function(f ) {//Generate mooreNearbyCounter
