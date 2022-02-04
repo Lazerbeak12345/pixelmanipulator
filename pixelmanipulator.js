@@ -360,26 +360,24 @@
 						}
 					},
 					w=innerP.get_width(),
-					h=innerP.get_height();
+					h=innerP.get_height(),
+					confirmOldElm=innerP.__ConfirmElm(getOldPixel),
+					rel={
+						x:0,
+						y:0,
+						getOldPixel:getOldPixel,
+						getOldPixelId:getOldPixelId,
+						confirmOldElm:confirmOldElm,
+						mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
+						wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
+					};
 				innerP.pixelCounts={};
-				for (var xPos=0; xPos<w; xPos++) {
-					for (var yPos=0; yPos<h; yPos++) { //iterate through x and y
-						var confirmOldElm=innerP.__ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
-							rel={
-								x:xPos,
-								y:yPos,
-								getOldPixel:getOldPixel,
-								getOldPixelId:getOldPixelId,
-								confirmOldElm:confirmOldElm,
-								mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
-								wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
-							};
-						if (innerP.confirmElm(xPos,yPos,"blank")) {
-							//for (var elm in innerP.elementTypeMap) {
+				for(;rel.x<w;rel.x++){
+					for(rel.y=0;rel.y<h;rel.y++){ //iterate through x and y
+						if(innerP.confirmElm(rel.x,rel.y,"blank")){
 							innerP.presentElements.forEach(iterateThroughPresentElementsOnBlank);
-							//}
 						}else{
-							var currentPix=innerP.whatIs(xPos,yPos);
+							var currentPix=innerP.whatIs(rel.x,rel.y);
 							if (typeof innerP.elementTypeMap[currentPix].liveCell==="function") {
 								innerP.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
 							}
