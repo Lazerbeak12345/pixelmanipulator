@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.1.1";
+	var pxversion="2.2.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -53,8 +53,10 @@
 			elementTypeMap:{
 				"blank":{
 					color:[0,0,0,255],
+					number:0,//Index in innerP.elementNumList
 				},
 			},
+			elementNumList:["blank"],
 			mode:"paused",
 			zoomScaleFactor:20,
 			zoomctxStrokeStyle:"gray",
@@ -136,6 +138,7 @@
 					elm=undefined;
 				}
 				if (typeof elm==="undefined") elm=data.name;//name of the element
+				if (typeof elm==="undefined") throw new Error("Name is required for element");
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
 				while (data.color.length<4) data.color.push(255);
 				if (typeof data.pattern==="string") {
@@ -146,15 +149,17 @@
 						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
 					}
 				}
+				if(innerP.elementNumList.indexOf(elm)===-1){
+					data.number=innerP.elementNumList.length
+					innerP.elementNumList.push(elm)
+				}else data.number=innerP.elementTypeMap[elm].number // Copy from old
 				innerP.elementTypeMap[elm]=data;//for each element
 			},
-			__WhatIs:function(f ) {//Generator for whatIs
-				//           (())
+			__WhatIs:function(getPixelId) {//Generator for whatIs
+				//           (()        )
 				return (function whatIsGeneric(x,y,loop ) {//return the name of an element in a given location
 					//          (#,#,true?)
-					for (var i=0;i<innerP.presentElements.length;i++) {
-						if (f(x,y,innerP.presentElements[i],loop)) return innerP.presentElements[i];
-					}
+					return innerP.elementNumList[getPixelId(x,y,loop)]
 				});
 			},
 			play:function(canvasSizes) {//Start iterations on all of the elements on the canvas
@@ -222,12 +227,23 @@
 				}
 				innerP.zoomctx.stroke();
 			},
-			__GetPixel:function(d ) {//Generates getPixel and getOldPixel instances
-				//             ({})
-				//console.log("GetPixel");
-				return (function getPixelGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
+			colorToId:function(colors ){
+				//            ([#,#,#])->#
+				for(var i=0;i<innerP.elementNumList.length;i++){
+					if(innerP.compareColors(colors,innerP.idToColor(i))){
+						return i
+					}
+				}
+			},
+			idToColor:function(id){
+				//            (# )->false?[#,#,#,#]
+				return (innerP.elementTypeMap[innerP.elementNumList[id]]||{color:false}).color
+			},
+			__GetPixelId:function(d ) {//Generates getPixelId and getOldPixelId instances
+				//               ([])
+				//console.log("GetPixelId");
+				return (function getPixelIdGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
 					//           (#,#,true?)
-					//console.log("get(old?)Pixel");
 					var w=innerP.get_width(),
 						h=innerP.get_height();
 					loop=typeof loop!=="undefined"?loop:true;
@@ -237,7 +253,14 @@
 						while (x>=w) x-=w;
 						while (y>=h) y-=h;
 					}else if (x<0||x>=w||y<0||x>=h) return "Blocks";
-					return d.slice(((w*y)+x)*4,(((w*y)+x)*4)+4);
+					return d[(w*y)+x]
+				});
+			},
+			__GetPixel:function(getPixelId) {//Generates getPixel and getOldPixel instances
+				//             ((#,#,bool))
+				return (function getPixelGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
+					//           (#,#,true?)
+					return innerP.idToColor(getPixelId(x,y,loop))
 				});
 			},
 			update:function() {//applies changes made by setPixel to the graphical canvas(es)
@@ -245,15 +268,18 @@
 				innerP.ctx.putImageData(innerP.imageData,0,0);
 				if (typeof innerP.zoomelm!=="undefined") innerP.zoom();
 			},
-			__ConfirmElm:function(f ) {//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
-				//               (())
+			compareColors:function(a        ,b        ){
+				//                ([#,#,#,#],[#,#,#,#])->bool
+				return (a[0]||0)==(b[0]||0)&&(a[1]||0)==(b[1]||0)&&(a[2]||0)==(b[2]||0)&&(a[3]||255)==(b[3]||255);
+			},
+			__ConfirmElm:function(getPixelId){//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
+				//               (()        )
 				//console.log("ConfirmElm",f);
 				//loop=typeof loop!=="undefined"?loop:true;
 				return function confirmElmGeneric(x,y,name,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
 					//         (#,#,""  ,true?)
 					//console.log("confirmElm",x,y,name,loop);
-					var colors=f(x,y,loop), arry=innerP.elementTypeMap[name].color;
-					return colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255);
+					return getPixelId(x,y,loop)===innerP.elementTypeMap[name].number;
 				};
 			},
 			__MooreNearbyCounter:function(f ) {//Generate mooreNearbyCounter
@@ -292,141 +318,62 @@
 				x=Math.floor(x).toString()-0;//Fix any bad math done further up the line. Also remove bad math later
 				y=Math.floor(y).toString()-0;//...
 				loop=typeof loop!=="undefined"?loop:true;
+				var id,name;
 				if (typeof arry==="string") {
 					if (!innerP.presentElements.includes(arry)) innerP.presentElements.push(arry);
 					if(typeof innerP.elementTypeMap[arry]==="undefined")
 						throw new Error("Color name "+arry+" invalid!")
+					name=arry
 					arry=innerP.elementTypeMap[arry].color;
+				}else if(typeof arry==="number"){
+					id=arry
+					arry=innerP.idToColor(id)
+				}
+				if(typeof id==="undefined"){
+					if(typeof name==="undefined")id=innerP.colorToId(arry)
+					else id=innerP.elementTypeMap[name].number
 				}
 				while (arry.length<4) arry.push(255);//allows for arrays that are too small
-				//if (innerP.__oldDraw) {
 				var w=innerP.get_width(),
 					h=innerP.get_height();
-					if (loop) {
-						while (x<0) x=w+x;
-						while (y<0) y=h+y;
-						while (x>=w) x=x-w;
-						while (y>=h) y=y-h;
-					}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
-					for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
-				/*
-				}else{
-					var nth="#";
-					for (var i=0;i<4;i++) {
-						var ch1=0;
-						while (arry[i]>=16) {
-							ch1++;
-							arry[i]-=16;
-						}
-						switch (ch1) {
-							case 0:
-							case 1:
-							case 2:
-							case 3:
-							case 4:
-							case 5:
-							case 6:
-							case 7:
-							case 8:
-							case 9:
-								nth+=ch1;
-								break;
-							case 10:
-								nth+="A";
-								break;
-							case 11:
-								nth+="B";
-								break;
-							case 12:
-								nth+="C";
-								break;
-							case 13:
-								nth+="D";
-								break;
-							case 14:
-								nth+="E";
-								break;
-							case 15:
-								nth+="F";
-								break;
-							default:
-								throw "Number too high!";
-						}
-						switch (arry[i]) {
-							case 0:
-							case 1:
-							case 2:
-							case 3:
-							case 4:
-							case 5:
-							case 6:
-							case 7:
-							case 8:
-							case 9:
-								nth+=arry[i];
-								break;
-							case 10:
-								nth+="A";
-								break;
-							case 11:
-								nth+="B";
-								break;
-							case 12:
-								nth+="C";
-								break;
-							case 13:
-								nth+="D";
-								break;
-							case 14:
-								nth+="E";
-								break;
-							case 15:
-								nth+="F";
-								break;
-							default:
-								throw "Number too high!";
-						}
-					}
-					innerP.ctx.fillStyle=nth;
-					//throw innerP.ctx;
-					innerP.ctx.fillRect(x,y,1,1);
-					innerP.ctx.fill();
-				}//*/
+				if (loop) {
+					while (x<0) x=w+x;
+					while (y<0) y=h+y;
+					while (x>=w) x=x-w;
+					while (y>=h) y=y-h;
+				}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
+				for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
+				innerP.currentElements[(w*y)+x]=id
 			},
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
 				innerP.onIterate();
-				var old=[];
-				for (var i=0;i<innerP.imageData.data.length;i++) {
-					old[i]=innerP.imageData.data[i]-0;
-				}
-				var getOldPixel=innerP.__GetPixel(old);
-				var iterateThroughPresentElementsOnBlank=function(elm) {
-					if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
-						//console.log(xPos,yPos,"Thing");
-						innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
-					}
-				};
+				var getOldPixelId=innerP.__GetPixelId(new Uint32Array(innerP.currentElements)),
+					confirmOldElm=innerP.__ConfirmElm(getOldPixelId),
+					w=innerP.get_width(),
+					h=innerP.get_height(),
+					rel={
+						x:0,
+						y:0,
+						getOldPixelId:getOldPixelId,
+						getOldPixel:innerP.__GetPixel(getOldPixelId),
+						whatIsOld:innerP.__WhatIs(getOldPixelId),
+						mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
+						wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
+					};
 				innerP.pixelCounts={};
-				var w=innerP.get_width(),
-					h=innerP.get_height();
-				for (var xPos=0; xPos<w; xPos++) {
-					for (var yPos=0; yPos<h; yPos++) { //iterate through x and y
-						var confirmOldElm=innerP.__ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
-							rel={
-								x:xPos,
-								y:yPos,
-								getOldPixel:getOldPixel,
-								confirmOldElm:confirmOldElm,
-								mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
-								wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
-							};
-						if (innerP.confirmElm(xPos,yPos,"blank")) {
-							//for (var elm in innerP.elementTypeMap) {
-							innerP.presentElements.forEach(iterateThroughPresentElementsOnBlank);
-							//}
+				for(;rel.x<w;rel.x++){
+					for(rel.y=0;rel.y<h;rel.y++){ //iterate through x and y
+						if(innerP.confirmElm(rel.x,rel.y,"blank")){
+							for(var i=0,elm;i<innerP.presentElements.length;i++){
+								elm=innerP.presentElements[i];
+								if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
+									//console.log(xPos,yPos,"Thing");
+									innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
+								}
+							}
 						}else{
-							var currentPix=innerP.whatIs(xPos,yPos);
+							var currentPix=innerP.whatIs(rel.x,rel.y);
 							if (typeof innerP.elementTypeMap[currentPix].liveCell==="function") {
 								innerP.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
 							}
@@ -443,7 +390,10 @@
 			},
 			updateData:function() {//defines the starting values of the library and is run on `p.reset();`
 				//console.log("updateData");
-				innerP.imageData=innerP.ctx.getImageData(0,0,innerP.get_width(),innerP.get_height());
+				var w=innerP.get_width(),
+					h=innerP.get_height();
+				innerP.imageData=innerP.ctx.getImageData(0,0,w,h);
+				innerP.currentElements=new Uint32Array(w*h);
 				innerP.ctx.imageSmoothingEnabled=false;
 				innerP.ctx.mozImageSmoothingEnabled=false;
 				innerP.ctx.webkitImageSmoothingEnabled=false;
@@ -455,9 +405,10 @@
 					innerP.zoomctx.msImageSmoothingEnabled=false;
 					innerP.zoomctx.strokeStyle=innerP.zoomctxStrokeStyle;
 				}
-				innerP.getPixel=innerP.__GetPixel(innerP.imageData.data);
-				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixel);
-				innerP.whatIs=innerP.__WhatIs(innerP.confirmElm);
+				innerP.getPixelId=innerP.__GetPixelId(innerP.currentElements);
+				innerP.getPixel=innerP.__GetPixel(innerP.getPixelId);
+				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixelId);
+				innerP.whatIs=innerP.__WhatIs(innerP.getPixelId);
 			},
 			canvasPrep:function(e ) {//Tells PixelManipulator what canvas(es) to use.
 				//             ({})
@@ -471,7 +422,7 @@
 				innerP.updateData();
 				if (typeof e.zoom!=="undefined") {
 					innerP.zoom({//zoom at the center
-						x:Math.floor(innerP.get_width()/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
+						x:Math.floor(innerP.zoomelm.width/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
 						y:Math.floor(innerP.zoomelm.height/2)-(Math.floor(innerP.zoomelm.height/2)*innerP.zoomScaleFactor),
 					});
 				}
