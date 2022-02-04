@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.0.4";
+	var pxversion="2.1.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -36,6 +36,18 @@
 			//imageData:{},
 			zoomX:0,
 			zoomY:0,
+			get_width:function(){
+				return innerP.canvas.width
+			},
+			set_width:function(value){
+				innerP.canvas.width=value
+			},
+			get_height:function(){
+				return innerP.canvas.height
+			},
+			set_height:function(value){
+				innerP.canvas.height=value
+			},
 			row:0,
 			//__oldDraw:false,
 			elementTypeMap:{
@@ -103,8 +115,10 @@
 					pr=undefined;
 				}
 				pr=pr||15;
-				for (var xPos=0; xPos<innerP.canvas.width; xPos++) {
-					for (var yPos=0; yPos<innerP.canvas.height; yPos++) { //iterate through x and y
+				var w=innerP.get_width(),
+					h=innerP.get_height();
+				for (var xPos=0; xPos<w; xPos++) {
+					for (var yPos=0; yPos<h; yPos++) { //iterate through x and y
 						if (Math.random()*100<pr) innerP.setPixel(xPos,yPos,value);
 					}
 				}
@@ -155,15 +169,17 @@
 				//console.log("reset");
 				//clearInterval(innerP.loopint);
 				innerP.pause();
-				innerP.canvas.width=canvasSizes.canvasW||innerP.canvas.width;
-				innerP.canvas.height=canvasSizes.canvasH||innerP.canvas.height;
+				var w=innerP.get_width(),
+					h=innerP.get_height();
+				innerP.set_width(canvasSizes.canvasW||w)
+				innerP.set_height(canvasSizes.canvasH||h)
 				if (typeof innerP.zoomelm!=="undefined") {
 					innerP.zoomelm.width=(canvasSizes.zoomW||innerP.zoomelm.width/innerP.zoomScaleFactor)*innerP.zoomScaleFactor;
 					innerP.zoomelm.height=(canvasSizes.zoomH||innerP.zoomelm.height/innerP.zoomScaleFactor)*innerP.zoomScaleFactor;
 				}
 				innerP.updateData();
-				for (var x=0; x<innerP.canvas.width; x++) {
-					for (var y=0; y<innerP.canvas.height; y++) {
+				for (var x=0; x<w; x++) {
+					for (var y=0; y<h; y++) {
 						innerP.setPixel(x,y,innerP.defaultElm);
 					}
 				}
@@ -186,8 +202,8 @@
 					innerP.zoomX=e.x;
 					innerP.zoomY=e.y;
 				}
-				if (innerP.canvas.height<2) innerP.canvas.height=400;//it would be pointless to have a canvas this small
-				if (innerP.canvas.width<2) innerP.canvas.width=400;
+				if (innerP.get_height()<2) innerP.set_height(400);//it would be pointless to have a canvas this small
+				if (innerP.get_width()<2) innerP.set_width(400);
 				innerP.zoomctx.clearRect(0,0,innerP.zoomelm.width,innerP.zoomelm.height);//clear the screen
 				innerP.zoomctx.drawImage(innerP.canvas,//draw the selected section of the canvas onto the zoom canvas
 								(innerP.zoomX - Math.floor(innerP.zoomScaleFactor/2)),
@@ -212,14 +228,16 @@
 				return (function (x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
 					//           (#,#,true?)
 					//console.log("get(old?)Pixel");
+					var w=innerP.get_width(),
+						h=innerP.get_height();
 					loop=typeof loop!=="undefined"?loop:true;
 					if (loop) {
-						while (x<0) x=innerP.canvas.width+x;
-						while (y<0) y=innerP.canvas.height+y;
-						while (x>=innerP.canvas.width) x=x-innerP.canvas.width;
-						while (y>=innerP.canvas.height) y=y-innerP.canvas.height;
-					}else if (x<0||x>=innerP.canvas.width||y<0||x>=innerP.canvas.height) return "Blocks";
-					return d.slice(((innerP.canvas.width*y)+x)*4,(((innerP.canvas.width*y)+x)*4)+4);
+						while (x<0) x+=w;
+						while (y<0) y+=h;
+						while (x>=w) x-=w;
+						while (y>=h) y-=h;
+					}else if (x<0||x>=w||y<0||x>=h) return "Blocks";
+					return d.slice(((w*y)+x)*4,(((w*y)+x)*4)+4);
 				});
 			},
 			update:function() {//applies changes made by setPixel to the graphical canvas(es)
@@ -282,13 +300,15 @@
 				}
 				while (arry.length<4) arry.push(255);//allows for arrays that are too small
 				//if (innerP.__oldDraw) {
+				var w=innerP.get_width(),
+					h=innerP.get_height();
 					if (loop) {
-						while (x<0) x=innerP.canvas.width+x;
-						while (y<0) y=innerP.canvas.height+y;
-						while (x>=innerP.canvas.width) x=x-innerP.canvas.width;
-						while (y>=innerP.canvas.height) y=y-innerP.canvas.height;
-					}else if (x<0||x>=innerP.canvas.width||y<0||y>=innerP.canvas.height) return; //if it can't loop, and it's outside of the boundaries, exit
-					for (var i=0; i<4; i++) innerP.imageData.data[(((innerP.canvas.width*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
+						while (x<0) x=w+x;
+						while (y<0) y=h+y;
+						while (x>=w) x=x-w;
+						while (y>=h) y=y-h;
+					}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
+					for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
 				/*
 				}else{
 					var nth="#";
@@ -388,8 +408,10 @@
 					}
 				};
 				innerP.pixelCounts={};
-				for (var xPos=0; xPos<innerP.canvas.width; xPos++) {
-					for (var yPos=0; yPos<innerP.canvas.height; yPos++) { //iterate through x and y
+				var w=innerP.get_width(),
+					h=innerP.get_height();
+				for (var xPos=0; xPos<w; xPos++) {
+					for (var yPos=0; yPos<h; yPos++) { //iterate through x and y
 						var confirmOldElm=innerP.__ConfirmElm(getOldPixel),//initiallises a confirmElement(),that returns a bool of if this pixel is the inputted element
 							rel={
 								x:xPos,
@@ -415,13 +437,13 @@
 					}
 				}
 				innerP.row++;
-				if (innerP.row>innerP.canvas.height) innerP.row=0;
+				if (innerP.row>h) innerP.row=0;
 				innerP.update();
 				innerP.onAfterIterate();
 			},
 			updateData:function() {//defines the starting values of the library and is run on `p.reset();`
 				//console.log("updateData");
-				innerP.imageData=innerP.ctx.getImageData(0,0,innerP.canvas.width,innerP.canvas.height);
+				innerP.imageData=innerP.ctx.getImageData(0,0,innerP.get_width(),innerP.get_height());
 				innerP.ctx.imageSmoothingEnabled=false;
 				innerP.ctx.mozImageSmoothingEnabled=false;
 				innerP.ctx.webkitImageSmoothingEnabled=false;
@@ -449,7 +471,7 @@
 				innerP.updateData();
 				if (typeof e.zoom!=="undefined") {
 					innerP.zoom({//zoom at the center
-						x:Math.floor(innerP.canvas.width/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
+						x:Math.floor(innerP.get_width()/2)-(Math.floor(innerP.zoomelm.width/2)*innerP.zoomScaleFactor),
 						y:Math.floor(innerP.zoomelm.height/2)-(Math.floor(innerP.zoomelm.height/2)*innerP.zoomScaleFactor),
 					});
 				}
