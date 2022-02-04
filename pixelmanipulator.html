@@ -148,7 +148,7 @@
 						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 					</div>
 					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.25.2
+					Library v<span id="backendversion"></span>, Frontend v1.25.3
 				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
@@ -320,7 +320,7 @@
 							window.crypto.getRandomValues(rands_acid);
 							var newx=rel.x+(rands_acid[0]%3)-1,
 								newy=rel.y+rands_acid[1]%4
-							while((newy>=p.canvas.height||p.confirmElm(newx,newy,"Acid",false))&&newy-1>=rel.y)
+							while((newy>=p.get_height()||p.confirmElm(newx,newy,"Acid",false))&&newy-1>=rel.y)
 								newy--
 							if(!p.confirmElm(newx,newy,"Acid",false)){
 								p.setPixel(rel.x,rel.y,"blank",false);
@@ -406,7 +406,7 @@
 							window.crypto.getRandomValues(rands_water);
 							var newx=rel.x+(rands_water[0]%3)-1,
 								newy=rel.y+rands_water[1]%4
-							while((newy>=p.canvas.height||!p.confirmElm(newx,newy,"blank",false))&&newy-1>=rel.y)
+							while((newy>=p.get_height()||!p.confirmElm(newx,newy,"blank",false))&&newy-1>=rel.y)
 								newy--
 							if(p.confirmElm(newx,newy,"blank",false)){
 								p.setPixel(rel.x,rel.y,"blank",false);
@@ -443,7 +443,7 @@
 				}
 				p.onIterate=function() {
 					document.getElementById("workingLine").style.top=p.row+"px";
-					document.getElementById("workingLine").style.left=(p.canvas.width+1)+"px";
+					document.getElementById("workingLine").style.left=(p.get_width()+1)+"px";
 					if (timedebug) lasttime=performance.now();
 					frames++;
 				}
