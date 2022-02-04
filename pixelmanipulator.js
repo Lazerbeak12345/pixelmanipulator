@@ -226,6 +226,27 @@
 				}
 				innerP.zoomctx.stroke();
 			},
+			colorToId:function(colors ){
+				//            ([#,#,#])->#
+				for(var arry,
+						i=0;
+					i<innerP.elementNumList.length;
+					i++
+				){
+					arry=innerP.elementTypeMap[innerP.elementNumList[i]].color
+					if(colors[0]==(arry[0]||0)&&colors[1]==(arry[1]||0)&&colors[2]==(arry[2]||0)&&colors[3]==(arry[3]||255)){
+						return i
+					}
+				}
+			},
+			__GetPixelId:function(getPixel) {//Generates getPixelId and getOldPixelId instances
+				//               (())
+				//console.log("GetPixelId");
+				return (function getPixelIdGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
+					//           (#,#,true?)
+					return innerP.colorToId(getPixel(x,y,loop));
+				});
+			},
 			__GetPixel:function(d ) {//Generates getPixel and getOldPixel instances
 				//             ({})
 				//console.log("GetPixel");
@@ -320,7 +341,8 @@
 				for (var i=0;i<innerP.imageData.data.length;i++) {
 					old[i]=innerP.imageData.data[i]-0;
 				}
-				var getOldPixel=innerP.__GetPixel(old);
+				var getOldPixel=innerP.__GetPixel(old),
+					getOldPixelId=innerP.__GetPixelId(getOldPixel);
 				var iterateThroughPresentElementsOnBlank=function(elm) {
 					if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
 						//console.log(xPos,yPos,"Thing");
@@ -337,6 +359,7 @@
 								x:xPos,
 								y:yPos,
 								getOldPixel:getOldPixel,
+								getOldPixelId:getOldPixelId,
 								confirmOldElm:confirmOldElm,
 								mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
 								wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
@@ -376,6 +399,7 @@
 					innerP.zoomctx.strokeStyle=innerP.zoomctxStrokeStyle;
 				}
 				innerP.getPixel=innerP.__GetPixel(innerP.imageData.data);
+				innerP.getPixelId=innerP.__GetPixelId(innerP.getPixel);
 				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixel);
 				innerP.whatIs=innerP.__WhatIs(innerP.confirmElm);
 			},
