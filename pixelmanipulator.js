@@ -53,8 +53,10 @@
 			elementTypeMap:{
 				"blank":{
 					color:[0,0,0,255],
+					number:0,//Index in innerP.elementNumList
 				},
 			},
+			elementNumList:["blank"],
 			mode:"paused",
 			zoomScaleFactor:20,
 			zoomctxStrokeStyle:"gray",
@@ -146,7 +148,9 @@
 						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
 					}
 				}
+				data.number=innerP.elementNumList.length
 				innerP.elementTypeMap[elm]=data;//for each element
+				innerP.elementNumList.push(elm)
 			},
 			__WhatIs:function(f ) {//Generator for whatIs
 				//           (())
