@@ -231,10 +231,14 @@
 			colorToId:function(colors ){
 				//            ([#,#,#])->#
 				for(var i=0;i<innerP.elementNumList.length;i++){
-					if(innerP.compareColors(colors,innerP.elementTypeMap[innerP.elementNumList[i]].color)){
+					if(innerP.compareColors(colors,innerP.idToColor(i))){
 						return i
 					}
 				}
+			},
+			idToColor:function(id){
+				//            (# )->false?[#,#,#,#]
+				return (innerP.elementTypeMap[innerP.elementNumList[id]]||{color:false}).color
 			},
 			__GetPixelId:function(getPixel) {//Generates getPixelId and getOldPixelId instances
 				//               (())
