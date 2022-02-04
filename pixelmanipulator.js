@@ -274,14 +274,14 @@
 				//                ([#,#,#,#],[#,#,#,#])->bool
 				return (a[0]||0)==(b[0]||0)&&(a[1]||0)==(b[1]||0)&&(a[2]||0)==(b[2]||0)&&(a[3]||255)==(b[3]||255);
 			},
-			__ConfirmElm:function(f ){//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
-				//               (())
+			__ConfirmElm:function(getPixelId){//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
+				//               (()        )
 				//console.log("ConfirmElm",f);
 				//loop=typeof loop!=="undefined"?loop:true;
 				return function confirmElmGeneric(x,y,name,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
 					//         (#,#,""  ,true?)
 					//console.log("confirmElm",x,y,name,loop);
-					return innerP.compareColors(f(x,y,loop),innerP.elementTypeMap[name].color);
+					return getPixelId(x,y,loop)===innerP.elementTypeMap[name].number;
 				};
 			},
 			__MooreNearbyCounter:function(f ) {//Generate mooreNearbyCounter
@@ -361,7 +361,7 @@
 					},
 					w=innerP.get_width(),
 					h=innerP.get_height(),
-					confirmOldElm=innerP.__ConfirmElm(getOldPixel),
+					confirmOldElm=innerP.__ConfirmElm(getOldPixelId),
 					rel={
 						x:0,
 						y:0,
@@ -411,7 +411,7 @@
 				}
 				innerP.getPixelId=innerP.__GetPixelId(innerP.currentElements);
 				innerP.getPixel=innerP.__GetPixel(innerP.getPixelId);
-				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixel);
+				innerP.confirmElm=innerP.__ConfirmElm(innerP.getPixelId);
 				innerP.whatIs=innerP.__WhatIs(innerP.confirmElm);
 			},
 			canvasPrep:function(e ) {//Tells PixelManipulator what canvas(es) to use.
