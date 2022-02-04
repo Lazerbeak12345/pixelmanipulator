@@ -39,7 +39,18 @@
 			right:0;
 			z-index:999;
 			height:100%;
+			flex-direction:column;
+			display:flex;
+			border-left:1px solid lightgrey;
+		}
+		#scroll-box{
 			overflow-y:scroll;
+		}
+		#scroll-box>div{
+			padding-bottom:1em;
+		}
+		#actions-box{
+			border-bottom:1px solid lightgrey;
 		}
 		#selectorBox,/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
 		#smallxline,/*These are the lines that show where on the canvas the mouse cursor is hovering.*/
@@ -68,6 +79,9 @@
 		/*.outline{
 			/*border:1px solid metal;
 		}*/
+		.click-type-random{
+			padding-left:1em
+		}
 		</style>
 	</head>
 	<body>
@@ -78,54 +92,65 @@
 		<div id="selectorBox"></div>
 		<div id="workingLine"></div>
 		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
-			<canvas id="zoom" width="400" height="400"></canvas><br/><!--This is the zoomed-in box that the user can interact with-->
-			<div id="largexline" style="top:0px;"></div>
-			<div id="largeyline" style="right:0px;"></div>
-			<div id="largexline1" style="top:0px;"></div>
-			<div id="largeyline1" style="right:0px;"></div>
-			<button id="reset" alt="Reset" title="Reset">◄</button>
-			<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
-			<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
-			<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
-			<br/>
-			Width: <input id="width" type="text" value="100" title="Default:100"/>px<br/>
-			Height: <input id="height" type="text" value="100" title="Default:100"/>px<br/>
-			Zoom Width: <input id="zoomWidthElm" type="text" value="20" title="Default:20"/>px<br/>
-			Zoom Height: <input id="zoomHeightElm" type="text" value="20" title="Default:20"/>px<br/>
-			<br/>
-			Normal click:
-			<select class="elmDrop" onchange="normalClick=this.value;"></select>
-			<br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="normalFill">Randomly fill</button>
-			<input id="normalFillP" type="text"/>%
-			<br/>
-			Ctrl click:
-			<select class="elmDrop" onchange="ctrlClick=this.value;"></select>
-			<br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="ctrlFill">Randomly fill</button>
-			<input id="ctrlFillP" type="text"/>%
-			<br/>
-			Alt click:
-			<select class="elmDrop" onchange="altClick=this.value"></select>
-			<br/>
-			&nbsp;&nbsp;&nbsp;&nbsp;
-			<button id="altFill">Randomly fill</button>
-			<input id="altFillP" type="text"/>%<br/>
-			<br/>
-			<!--div class="outline">
-				Modify Custom Element<br/>
-				<input id="customElm"></input><br/>
-			</div><!-- -->
-			<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
-			<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
-			<br/>
-			<label><input id="pixelCounterT" type="checkbox" >Hide pixelCounter</label>
-			<br/>
-			<span style="position:absolute; right:0px;"><a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a><br/>
-				<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-				Library v<span id="backendversion"></span>, Frontend v1.24.0</span><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+			<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
+			<div id="actions-box">
+				<div id="largexline" style="top:0px;"></div>
+				<div id="largeyline" style="right:0px;"></div>
+				<div id="largexline1" style="top:0px;"></div>
+				<div id="largeyline1" style="right:0px;"></div>
+				<button id="reset" alt="Reset" title="Reset">◄</button>
+				<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
+				<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
+				<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+			</div>
+			<div id="scroll-box">
+				<div id="sizes-box">
+					<div>Width: <input id="width" type="text" value="100" title="Default:100"/>px</div>
+					<div>Height: <input id="height" type="text" value="100" title="Default:100"/>px</div>
+					<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" title="Default:20"/>px</div>
+					<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" title="Default:20"/>px</div>
+				</div>
+				<div id="click-types">
+					<div class="click-type">
+						Normal click:
+						<select class="elmDrop" onchange="normalClick=this.value;"></select>
+						<div class="click-type-random">
+							<button id="normalFill">Randomly fill</button>
+							<input id="normalFillP" type="text"/>%
+						</div>
+					</div>
+					<div class="click-type">
+						Ctrl click:
+						<select class="elmDrop" onchange="ctrlClick=this.value;"></select>
+						<div class="click-type-random">
+							<button id="ctrlFill">Randomly fill</button>
+							<input id="ctrlFillP" type="text"/>%
+						</div>
+					</div>
+					<div class="click-type">
+						Alt click:
+						<select class="elmDrop" onchange="altClick=this.value"></select>
+						<div class="click-type-random">
+							<button id="altFill">Randomly fill</button>
+							<input id="altFillP" type="text"/>%
+						</div>
+					</div>
+				</div>
+				<div>
+					<div>
+						<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
+						<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
+					</div>
+					<label><input id="pixelCounterT" type="checkbox" >Hide pixelCounter</label>
+				</div>
+				<div id="callout">
+					<div>
+						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
+					</div>
+					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
+					Library v<span id="backendversion"></span>, Frontend v1.24.0
+				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+			</div>
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
 		<script src="pixelmanipulator.js"></script>
