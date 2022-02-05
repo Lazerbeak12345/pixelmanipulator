@@ -83,7 +83,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by funciton documentation. (Updated last on version `3.1.0`)
+Function-by funciton documentation. (Updated last on version `3.2.0`)
 
 ### The global
 
@@ -310,6 +310,9 @@ in the following shape (in the source code, referred to as `rel`):
 {
 	x:0,
 	y:0,
+	// The ID number of the current pixel. Reccommended if performance profiling
+	// shows string comparision is a bottleneck.
+	oldId:0,
 	// Takes
 	// - the x and y position to center the counter around,
 	// - the identifer (passed to confirmOldElm and can take any value that can)

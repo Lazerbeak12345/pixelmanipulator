@@ -148,7 +148,7 @@
 						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 					</div>
 					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.27.0
+					Library v<span id="backendversion"></span>, Frontend v1.28.0
 				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
@@ -318,12 +318,12 @@
 							var newx=rel.x+(rands_acid[0]%3)-1,
 								newy=rel.y+rands_acid[1]%4,
 								h=p.get_height();
-							while((newy>=h||p.confirmElm(newx,newy,"Acid",false))&&newy-1>=rel.y)
+							while((newy>=h||p.confirmElm(newx,newy,rel.oldId,false))&&newy-1>=rel.y)
 								newy--
-							if(!p.confirmElm(newx,newy,"Acid",false)){
-								p.setPixel(rel.x,rel.y,"blank",false);
-								p.setPixel(newx,newy,"Acid",false)
-							}else if(rands_acid[2]%100===0)p.setPixel(newx,newy,"blank")
+							if(!p.confirmElm(newx,newy,rel.oldId,false)){
+								p.setPixel(rel.x,rel.y,p.defaultId,false);
+								p.setPixel(newx,newy,rel.oldId,false)
+							}else if(rands_acid[2]%100===0)p.setPixel(newx,newy,p.defaultId)
 						},
 					},
 					"Blocks":{//does nothing
@@ -332,7 +332,7 @@
 					"Brian's Brain (dying)":{
 						color:[254,254,254,255], //not quite white
 						liveCell:function(rel) {
-							p.setPixel(rel.x,rel.y,"blank",false);//Cells that were in the dying state go into the off state
+							p.setPixel(rel.x,rel.y,p.defaultId,false);//Cells that were in the dying state go into the off state
 						},
 					},
 					"Brian's Brain (on)":{
@@ -341,36 +341,36 @@
 							p.setPixel(rel.x,rel.y,"Brian's Brain (dying)",false);
 						},
 						pattern:"B2/S",//same pattern as seeds
-						//deadCell:function(rel) {// a cell turns on if it was off but had exactly two neighbors that were on, just like the birth rule for Seeds.
-						//	if (rel.mooreNearbyCounter(rel.x,rel.y,"Brian's Brain (on)")===2) p.setPixel(rel.x,rel.y,"Brian's Brain (on)");
-						//},
 					},
 					"Seeds":{
 						color:[194, 178, 128],
 						pattern:"B2/S",
 					},
-					"Wireworld Conductor":{
-						color:[67,75,77,255],
-						liveCell:function(rel) {
-							var conductorNearbyTotal=rel.mooreNearbyCounter(rel.x,rel.y,"Wireworld Electricity",false);
-							if(conductorNearbyTotal===1||conductorNearbyTotal===2) p.setPixel(rel.x,rel.y,"Wireworld Electricity");//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
-						},
-					},//*/
 					"Conway's Game Of Life":{
 						color:[0,255,0,255],
 						pattern:"B3/S23",//born on 3, survives on 2 or 3
 					},//*
+					"Wireworld Conductor":{
+						color:[67,75,77,255],
+						liveCell:function(rel) {
+							var num=p.elementTypeMap["Wireworld Electricity"].number;
+							var conductorNearbyTotal=rel.mooreNearbyCounter(rel.x,rel.y,num);
+							//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
+							if(conductorNearbyTotal===1||conductorNearbyTotal===2)
+								p.setPixel(rel.x,rel.y,num);
+						}
+					},
 					"Wireworld Electricity":{
 						color:[148,133,0,255],
 						liveCell:function(rel) {
 							p.setPixel(rel.x,rel.y,"Wireworld FadingElectricity",false);
-						},
+						}
 					},
 					"Wireworld FadingElectricity":{
 						color:[148,133,0,254],
 						liveCell:function(rel) {
 							p.setPixel(rel.x,rel.y,"Wireworld Conductor",false);
-						},
+						}
 					},
 					"Highlife":{
 						color:[0,255,128,255],
@@ -405,11 +405,11 @@
 							var newx=rel.x+(rands_water[0]%3)-1,
 								newy=rel.y+rands_water[1]%4,
 								h=p.get_height()
-							while((newy>=h||!p.confirmElm(newx,newy,"blank",false))&&newy-1>=rel.y)
+							while((newy>=h||!p.confirmElm(newx,newy,p.defaultId,false))&&newy-1>=rel.y)
 								newy--
-							if(p.confirmElm(newx,newy,"blank",false)){
-								p.setPixel(rel.x,rel.y,"blank",false);
-								p.setPixel(newx,newy,"Water",false)
+							if(p.confirmElm(newx,newy,p.defaultId,false)){
+								p.setPixel(rel.x,rel.y,p.defaultId,false);
+								p.setPixel(newx,newy,rel.oldId,false)
 							}
 						},
 					},//*/
@@ -420,7 +420,7 @@
 					if (e.ctrlKey) active=document.getElementById("ctrlSelect").value;
 					else if(e.altKey) active=document.getElementById("altSelect").value;
 					else active=document.getElementById("normalSelect").value
-					if (p.confirmElm(rel.x,rel.y,active)) active="blank";
+					if (p.confirmElm(rel.x,rel.y,active)) active=p.defaultId;
 					return active;
 				};
 				function zoomClick(e) {

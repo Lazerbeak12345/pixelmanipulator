@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="3.1.0";
+	var pxversion="3.2.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -172,18 +172,16 @@
 				if(typeof innerP.colorToId(data.color)!=="undefined")
 					throw new Error("The color "+data.color+" is already in use!")
 				while (data.color.length<4) data.color.push(255);
+				data.number=innerP.elementNumList.length
+				innerP.elementNumList.push(elm)
 				if (typeof data.pattern==="string") {
 					for (var tempNam in innerP.__templates) {
-						var out=innerP.__templates[tempNam].__index__(elm,data);
+						var out=innerP.__templates[tempNam].__index__(data.number,data);
 						if (out.length===0) continue;//if the output was [], then go on.
 						if (typeof data.liveCell==="undefined"&&typeof out[0]==="function") data.liveCell=out[0];
 						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
 					}
 				}
-				if(innerP.elementNumList.indexOf(elm)===-1){
-					data.number=innerP.elementNumList.length
-					innerP.elementNumList.push(elm)
-				}else data.number=innerP.elementTypeMap[elm].number // Copy from old
 				innerP.elementTypeMap[elm]=data;//for each element
 			},
 			__WhatIs:function(getPixelId) {//Generator for whatIs
@@ -404,6 +402,7 @@
 				for(;rel.x<w;rel.x++){
 					for(rel.y=0;rel.y<h;rel.y++){ //iterate through x and y
 						var currentPix=rel.getOldPixelId(rel.x,rel.y),elm;
+						rel.oldId=currentPix;
 						if(currentPix===innerP.defaultId){
 							for(var i=0;i<innerP.presentElements.length;i++){
 								elm=innerP.elementTypeMap[innerP.presentElements[i]]
