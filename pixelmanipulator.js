@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="2.3.0";
+	var pxversion="2.4.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -299,10 +299,14 @@
 				//               (()        )
 				//console.log("ConfirmElm",f);
 				//loop=typeof loop!=="undefined"?loop:true;
-				return function confirmElmGeneric(x,y,name,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
-					//         (#,#,""  ,true?)
+				return function confirmElmGeneric(x,y,id     ,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
+					//                           (#,#,"":#:[],true?)
 					//console.log("confirmElm",x,y,name,loop);
-					return getPixelId(x,y,loop)===innerP.elementTypeMap[name].number;
+					switch(typeof id){
+						case"string":id=innerP.elementTypeMap[id].number;break;
+						case"object":id=innerP.colorToId(id)
+					}
+					return getPixelId(x,y,loop)===id
 				};
 			},
 			__MooreNearbyCounter:function(f ) {//Generate mooreNearbyCounter
