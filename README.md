@@ -83,7 +83,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by funciton documentation. (Updated last on version `3.2.0`)
+Function-by funciton documentation. (Updated last on version `3.3.0`)
 
 ### The global
 
@@ -517,12 +517,17 @@ The coordinates of where the center of the zoomelm is windowed at.
 
 #### row
 
-The row that elements such as `Rule 90` are getting proccessed at.
+The row that elements such as `Rule 90` used to get proccessed at.
+
+For backward compatibility this has been kept (for this version), and still
+functions the same, though wolfram rules no longer require it.
+
 
 [bug23]: https://github.com/Lazerbeak12345/pixelmanipulator/issues/23
 
-> This is actually a symptom of [a bug][bug23]. A later major version release will have
-> the goal of removing this, and the associated bug.
+> This was actually a symptom of [a bug][bug23]. A later major version release will have the goal of removing `p.row` entirely as it is now **DEPRECATED**
+
+> The demo no longer indicates what row is in-use.
 
 #### elementTypeMap
 

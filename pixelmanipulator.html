@@ -66,12 +66,6 @@
 		#selectorBox:hover{
 			border:solid rgba(255,255,255,.5) 1px;
 		}
-		#workingLine{/*This is the line that says where the elements such as the wolfram elemnts are currently being rendered*/
-			width:4px;
-			height:1px;
-			background:red;
-			position:absolute;
-		}
 		input[type="text"]{
 			text-align:right;
 			width:3em;
@@ -90,7 +84,6 @@
 		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
 		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
 		<div id="selectorBox"></div>
-		<div id="workingLine"></div>
 		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
 			<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
 			<div id="actions-box">
@@ -148,7 +141,7 @@
 						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 					</div>
 					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.28.0
+					Library v<span id="backendversion"></span>, Frontend v1.29.0
 				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
@@ -439,8 +432,6 @@
 					});
 				}
 				p.onIterate=function() {
-					document.getElementById("workingLine").style.top=p.row+"px";
-					document.getElementById("workingLine").style.left=(p.get_width()+1)+"px";
 					if (timedebug) lasttime=performance.now();
 					frames++;
 				}

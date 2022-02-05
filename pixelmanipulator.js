@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="3.2.0";
+	var pxversion="3.3.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -126,7 +126,6 @@
 					},
 					__DEAD__:function(elm,binStates,loop) {//In order not to erase the spawner pixels (which are the pixels, usually in the top row that make the pattern appear), erasing on live shouldn't be done.
 						return (function wdead(rel) {
-							if (rel.y!==innerP.row) return;//if it is not in the active row, exit before anything happens
 							for (var binDex=0; binDex<8; binDex++) {//for every possible state
 								if((binStates&1<<binDex)>0){//if the state is "on". Use a bit mask and shift it
 									if(rel.wolframNearbyCounter(rel.x,rel.y,elm,binDex,loop)) {//if there is a wolfram match (wolfram code goes from 111 to 000)
