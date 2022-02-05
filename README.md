@@ -83,7 +83,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by funciton documentation. (Updated last on version `3.0.0`)
+Function-by funciton documentation. (Updated last on version `3.1.0`)
 
 ### The global
 
@@ -553,7 +553,17 @@ The color of the lines drawn on the zoom elm.
 
 #### defaultElm
 
-The elm that pixelmanipulator will fill the screen with upon initialization, and what elements should return to when they are "dead". Default value is `'blank'`, an element with the color `#000F`
+The elm that pixelmanipulator will fill the screen with upon initialization, and
+what elements should return to when they are "dead". Default value is `'blank'`,
+an element with the color `#000F`
+
+> This is using a getter and setter - and is slow anyway as it's a string. use 
+> `p.defaultId` instead.
+
+#### defaultId
+
+The elm that pixelmanipulator will fill the screen with upon initialization, and
+what elements should return to when they are "dead". Default value is `0`.
 
 #### presentElements
 

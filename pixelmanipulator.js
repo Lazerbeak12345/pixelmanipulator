@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="3.0.0";
+	var pxversion="3.1.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -60,7 +60,13 @@
 			mode:"paused",
 			zoomScaleFactor:20,
 			zoomctxStrokeStyle:"gray",
-			defaultElm:'blank',
+			get defaultElm(){
+				return this.elementNumList[this.defaultId]
+			},
+			set defaultElm(value){
+				this.defaultId=this.elementTypeMap[value].number
+			},
+			defaultId:0,
 			onIterate:function() {},//both of these need to be defined so the absence of either is suitiable.
 			onAfterIterate:function() {},
 			//pixelCounts:{},
@@ -98,7 +104,7 @@
 						];
 					},
 					__LIVE__:function(bfdie,loop,elm) {
-						return (function llive(rel) {12&1<<0
+						return (function llive(rel) {
 							if((bfdie&1<<rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))==0)
 								innerP.setPixel(rel.x,rel.y,innerP.defaultElm);// if any match (of how many moore are nearby) is found, it dies
 						});
@@ -397,22 +403,23 @@
 				innerP.pixelCounts={};
 				for(;rel.x<w;rel.x++){
 					for(rel.y=0;rel.y<h;rel.y++){ //iterate through x and y
-						if(innerP.confirmElm(rel.x,rel.y,"blank")){
-							for(var i=0,elm;i<innerP.presentElements.length;i++){
-								elm=innerP.presentElements[i];
-								if (typeof innerP.elementTypeMap[elm].deadCell==="function") {
-									//console.log(xPos,yPos,"Thing");
-									innerP.elementTypeMap[elm].deadCell(rel);//execute function-based externals (dead)
+						var currentPix=rel.getOldPixelId(rel.x,rel.y),elm;
+						if(currentPix===innerP.defaultId){
+							for(var i=0;i<innerP.presentElements.length;i++){
+								elm=innerP.elementTypeMap[innerP.presentElements[i]]
+								if (typeof elm.deadCell==="function") {
+									elm.deadCell(rel);//execute function-based externals (dead)
 								}
 							}
 						}else{
-							var currentPix=innerP.whatIs(rel.x,rel.y);
-							if (typeof innerP.elementTypeMap[currentPix].liveCell==="function") {
-								innerP.elementTypeMap[currentPix].liveCell(rel);//execute function-based externals (live)
+							var elmname=innerP.elementNumList[currentPix]
+							elm=innerP.elementTypeMap[elmname]
+							if (typeof elm.liveCell==="function") {
+								elm.liveCell(rel);//execute function-based externals (live)
 							}
-							if (typeof innerP.pixelCounts[currentPix]==="undefined") {
-								innerP.pixelCounts[currentPix]=1;
-							}else innerP.pixelCounts[currentPix]++;
+							if (typeof innerP.pixelCounts[elmname]==="undefined") {
+								innerP.pixelCounts[elmname]=1;
+							}else innerP.pixelCounts[elmname]++;
 						}
 					}
 				}
