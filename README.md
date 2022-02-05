@@ -10,7 +10,37 @@ web-browsers.
 
 [![View the Demo](https://img.shields.io/badge/view-the_demo-green.svg)][the demo]
 
-## Getting Started
+## About the demo
+
+The demo includes a full-view pixel array, with configurable size, along with a
+movable viewfinder - also with configurable size. Targeter lines - synced
+between the viewfinder and the full-view pixel array - are also equipped so you
+can line up your complicated large-scale builds. You can even disable the
+targeter lines, the "focus box;" a box indicating the location of the
+viewfinder, and the pixelCounter, a tool that lets you see how many of what
+pixel are present. Don't forget that the pixel placer menu lets you not only set
+a different element for alt, normal and control clicking, but lets you fill the
+full-view pixel array with a specified random percent of that element with only
+a button click.
+
+Pre-programmed cellular automata include:
+
+- [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) (with a non-looped variant as well)
+- [Brian's Brain](https://en.wikipedia.org/wiki/Brian%27s_Brain)
+- [Seeds](https://en.wikipedia.org/wiki/Seeds_%28cellular_automaton%29)
+- [Highlife](https://en.wikipedia.org/wiki/Highlife_%28cellular_automaton%29)
+- [Wireworld](https://en.wikipedia.org/wiki/Wireworld)
+- These Wolfram 2D rules
+  - [Rule 30](https://en.wikipedia.org/wiki/Rule_30)
+  - [Rule 90](https://en.wikipedia.org/wiki/Rule_90)
+  - [Rule 110](https://en.wikipedia.org/wiki/Rule_110)
+  - [Rule 184](https://en.wikipedia.org/wiki/Rule_184)
+- These custom elements
+  - Blocks (They do nothing but serve as a valuable obstacle)
+  - Water (Flows like water)
+  - Acid (Destroys everything it touches, including itself)
+
+## Getting Started with the library
 
 Download `pixelmanipulator.js` from [the repo][repo] and include this in your html:
 
