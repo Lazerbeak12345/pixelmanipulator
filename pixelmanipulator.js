@@ -54,6 +54,7 @@
 				"blank":{
 					color:[0,0,0,255],
 					number:0,//Index in innerP.elementNumList
+					hitbox:[],
 				},
 			},
 			elementNumList:["blank"],
@@ -71,6 +72,77 @@
 			onAfterIterate:function() {},
 			//pixelCounts:{},
 			presentElements:[],
+			neighborhoods:{
+				// Area is f(x)=2x-1
+				wolfram:function(radius,include_north){
+					if(typeof radius==="undefined")
+						radius=1
+					var output=[{x:0,y:-1}];
+					if(typeof include_north==="undefined"||include_north){
+						output.push({x:0,y:-1});
+					}
+					for(var i=radius;i>0;i--){
+						output.push({x:-1*i,y:-1})
+						output.push({x:i,y:-1})
+					}
+					return output
+				},
+				// Area is f(x)=(2r+1)^2
+				moore:function(radius,include_self){
+					if(typeof radius==="undefined")
+						radius=1
+					if(typeof include_self==="undefined")
+						include_self=false
+					var output=[];
+					// Note: no need to calculate the Chebyshev distance. All pixels in this
+					// range are "magically" within.
+					for(var x=-1*radius;x<=radius;x++)
+						for(var y=-1*radius;y<=radius;y++)
+							if(include_self||!(x===0&&y===0))
+								output.push({x:x,y:y}) 
+					return output
+					// And to think that this used to be hard... Perhaps they had a different
+					// goal? Or just weren't using higher-order algorithims?
+				},
+				// Area is f(x)=r^2+(r+1)^2
+				vonNeumann:function(radius){
+					if(typeof radius==="undefined")
+						radius=1
+					if(typeof include_self==="undefined")
+						include_self=false
+					var output=[];
+					// A Von Neumann neighborhood of a given distance always fits inside of a
+					// Moore neighborhood of the same. (This is a bit brute-force)
+					for(var x=-1*radius;x<=radius;x++)
+						for(var y=-1*radius;y<=radius;y++)
+							if(
+								(include_self||!(x===0&&y===0))
+								&&(Math.abs(x)+Math.abs(y)<=radius) // Taxicab distance
+							)
+								output.push({x:x,y:y})
+					return output
+				},
+				// Area is not quite that of a circle. TODO
+				euclidean:function(radius,include_self){
+					if(typeof radius==="undefined")
+						radius=1
+					if(typeof include_self==="undefined")
+						include_self=false
+					var output=[];
+					// A circle of a given diameter always fits inside of a square of the same
+					// side-length. (This is a bit brute-force)
+					for(var x=-1*radius;x<=radius;x++)
+						for(var y=-1*radius;y<=radius;y++)
+							if(
+								(include_self||!(x===0&&y===0))
+								&&(Math.sqrt(Math.pow(x,2)+Math.pow(y,2))<=radius) // Euclidean distance
+							)
+								output.push({x:x,y:y})
+					return output
+				}
+				//TODO https://www.npmjs.com/package/compute-minkowski-distance ?
+				//TODO Non-Euclidean distance algorithim?
+			},
 			__templates:{//an object containing the different templates that are currently in the system
 				__LIFE__:{//Things like Conway's Game of Life
 					_convertNumListToBf:function(nl){
@@ -89,6 +161,9 @@
 						if(data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1)return[];
 						var numbers=data.pattern.split(/\/?[a-z]/gi);//"B",born,die
 						data.loop=typeof data.loop!=="undefined"?data.loop:true;
+						data.hitbox=typeof data.hitbox!=="undefined"?
+							data.hitbox:
+							innerP.neighborhoods.moore();
 						console.log("Life Pattern found: ",elm,data);
 						return [
 							innerP.__templates.__LIFE__.__LIVE__(
@@ -121,6 +196,9 @@
 						if(data.pattern.search(/Rule \d*/gi)<=-1)return[];
 						var binStates=data.pattern.split(/Rule /gi)[1]-0;
 						data.loop=typeof data.loop!=="undefined"?data.loop:false;
+						data.hitbox=typeof data.hitbox!=="undefined"?
+							data.hitbox:
+							innerP.neighborhoods.wolfram();
 						console.log("Wolfram pattern found: ",elm,data);
 						return [undefined,innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
 					},
@@ -173,6 +251,9 @@
 				while (data.color.length<4) data.color.push(255);
 				data.number=innerP.elementNumList.length
 				innerP.elementNumList.push(elm)
+				data.hitbox=typeof data.hitbox!=="undefined"?
+					data.hitbox:
+					innerP.neighborhoods.moore();
 				if (typeof data.pattern==="string") {
 					for (var tempNam in innerP.__templates) {
 						var out=innerP.__templates[tempNam].__index__(data.number,data);
@@ -201,6 +282,8 @@
 				//        ({}?        )
 				//console.log("reset");
 				//clearInterval(innerP.loopint);
+				if(typeof canvasSizes==="undefined")
+					canvasSizes={}
 				innerP.pause();
 				var w=innerP.get_width(),
 					h=innerP.get_height();
@@ -392,32 +475,46 @@
 						x:0,
 						y:0,
 						getOldPixelId:getOldPixelId,
+						confirmOldElm:confirmOldElm,
 						getOldPixel:innerP.__GetPixel(getOldPixelId),
 						whatIsOld:innerP.__WhatIs(getOldPixelId),
 						mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
 						wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
-					};
+					},
+					//updatedDeadPixel=new Uint8Array(Math.ceil((w*h)/8));
+					updatedDeadPixel=new Uint8Array(w*h);
 				innerP.pixelCounts={};
-				for(;rel.x<w;rel.x++){
-					for(rel.y=0;rel.y<h;rel.y++){ //iterate through x and y
-						var currentPix=rel.getOldPixelId(rel.x,rel.y),elm;
-						rel.oldId=currentPix;
-						if(currentPix===innerP.defaultId){
-							for(var i=0;i<innerP.presentElements.length;i++){
-								elm=innerP.elementTypeMap[innerP.presentElements[i]]
-								if (typeof elm.deadCell==="function") {
-									elm.deadCell(rel);//execute function-based externals (dead)
+				for(var x=0;x<w;x++){
+					rel.x=x
+					for(var y=0;y<h;y++){ //iterate through x and y
+						rel.y=y
+						var currentPixId=rel.getOldPixelId(x,y),
+							currentPix=innerP.elementNumList[currentPixId],
+							elm=innerP.elementTypeMap[currentPix];
+						rel.oldId=currentPixId;
+						if(typeof elm.liveCell==="function") {
+							elm.liveCell(rel);
+						}
+						if(typeof innerP.pixelCounts[currentPix]==="undefined") {
+							innerP.pixelCounts[currentPix]=1;
+						}else innerP.pixelCounts[currentPix]++;
+						if (typeof elm.deadCell==="function") {
+							for(var hi=0;hi<elm.hitbox.length;hi++){
+								var pixel=elm.hitbox[hi];
+								rel.x=(x+pixel.x)%w;
+								rel.y=(y+pixel.y)%h;
+								if(!rel.confirmOldElm(rel.x,rel.y,innerP.defaultElm))
+									continue
+								//var index=(w*rel.y)+Math.floor(rel.x/8),
+								var index=(w*rel.y)+rel.x,
+									oldValue=updatedDeadPixel[index]/*,
+									bitMask=1<<(rel.x%8)*/;
+								if((oldValue/*&bitMask*/)>0){
+									continue
 								}
+								elm.deadCell(rel);
+								updatedDeadPixel[index]=1//oldValue|bitMask
 							}
-						}else{
-							var elmname=innerP.elementNumList[currentPix]
-							elm=innerP.elementTypeMap[elmname]
-							if (typeof elm.liveCell==="function") {
-								elm.liveCell(rel);//execute function-based externals (live)
-							}
-							if (typeof innerP.pixelCounts[elmname]==="undefined") {
-								innerP.pixelCounts[elmname]=1;
-							}else innerP.pixelCounts[elmname]++;
 						}
 					}
 				}
