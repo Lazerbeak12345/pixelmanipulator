@@ -1,114 +1,55 @@
 # ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator
 
-A super powerful library for cellular automation on html5 canvas elements, inspired by the [The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for web-browsers.
+PixelManipulator is a JavaScript library that can run any cellular automata on
+an html5 canvas, such as "Conway's Game of Life," and "Rule 90." Inspired by the
+[The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for
+web-browsers.
 
-[![View the Demo](https://img.shields.io/badge/view-the_demo-green.svg)](https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html)
-Scroll down for docs.
+[repo]: https://github.com/lazerbeak12345/pixelmanipulator
+[the demo]: https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html
 
-## PixelManipulator documentation
+[![View the Demo](https://img.shields.io/badge/view-the_demo-green.svg)][the demo]
 
-This is the official Documentation for `PixelManipulator v2.0`.
-Hopefully, it will serve you well.
+## Getting Started
 
-> Most likely you are using the latest version. As PM now uses semver, you can
-> rely on version 2 maintaining compatibility, though version 2.1 and later
-> includes some new features and speed changes not documented below. In
-> particular, some functions documented to be fast, or to be slow, might not be
-> so fast or slow in 2.2 and later, once I release that version. **I do have
-> plans to update documentation in the future.**
+Download `pixelmanipulator.js` from [the repo][repo] and include this in your html:
 
-### What is PixelManipulator
+```html
+<!doctype html>
+<html>
+	<head>
+		...
+		<!-- Replace this with the proper location of the file. -->
+		<script src="pixelmanipulator.js"></script>
+		...
+	</head>
+	<body>
+		...
+		<!-- The canvas element to render to. -->
+		<canvas id="myCanvas"></canvas>>
+		...
+		<!-- Near the end of the code to ensure pixelmanipulator.js loaded -->
+		<script>
+			//Get the canvas element and tell PixelManipulator to use it
+			p.canvasPrep({
+				canvas:document.getElementById("myCanvas"),
+			});
+			// An example element to get you started.
+			p.addElement("Conway's Game Of Life",{
+				color:[0,255,0],//what rgb color it is
+				pattern:"B3/S23",//born on 3, survives on 2 or 3
+			});
+			p.play({}); // Final initialization, and play
+			// Randomly fill 15% of the canvas with this element.
+			p.randomlyFill(15,"Conway's Game Of Life");
+		</script>
+	</body>
+</html>
+```
 
-PixelManipulator is a JavaScript library, written by Nathan Fritzler that allows for people
-to run cellular automata, such as "Conway's Game of Life," and "Rule 90."
-I can also run pixel simulations entirely of your design, as
-demonstrated by the simulation of WireWorld in
-[the demo](https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html).
+Pixelmanipulator supports various browser-side module loaders.
 
-### Getting Started
-
-Ok, you you've heard enough.
-You want to get started.
-Like, now.
-
-#### Downloading unminified PixelManipulator
-
-We don't have a CDN service hosting us yet, so you'll have to download it.
-But don't worry, it's super small!
-
-First, navigate to
-[PixelManipulator's GitHub repo](https://lazerbeak12345.github.io/pixelmanipulator)
-
-When you are there, you can download `pixelmanipulator.js`.
-
-Then, include this in your html:
-
-    <script src="pixelmanipulator.js"></script>
-
-#### Downloading (or compiling) minified PixelManipulator
-
-Not supported. Minify it yourself.
-
-##### Compiling for the latest version
-
-Not supported. Minify it yourself.
-
-### Running your first simulation
-
-Wow!
-That was easy!
-
-But before we get too far ahead of ourselves, lets review how your document
-should look thus far:
-
-    <!doctype html>
-    <html>
-        <head>
-            <title>My first PixelManipulator Instance</title>
-            <meta charset="utf-8">
-            <!--Replace the below line with where you are getting
-    		pixelmanipualator-->
-            <script src="pixelmanipulator.js"></script>
-        </head>
-        <body>
-            <script>
-                //This is where we will be putting our JavaScript code
-            </script>
-        </body>
-    </html>
-
-#### Adding the canvas element
-
-Ok, so we got that, but now what?
-
-We need to add in your canvas element just before the script tags:
-`<canvas id="myCanvas"></canvas>>`.
-
-What is this, you may ask?
-It is the image-like html element that PixelManipulator will allow you to
-display your latest tests with cellular automata on.
-
-Note its id tags of "myCanvas" That will be important later.
-
-#### Telling PixelManipulator where to find our canvas
-
-Right now, PixelManipulator has no idea what canvas it has to work with, so we
-need to tell it just that.
-To do this, insert the following line of JavaScript code into the labeled
-location:
-
-    //Get the canvas element
-    var canvas=document.getElementById("myCanvas");
-    //Tell PixelManipulator to use it
-    p.canvasPrep({
-        canvas:canvas,
-    });
-
-#### Telling PixelManipulator what cellular automata to use
-
-Before we add Conway's game of Life (aka "Life"), let's review what it is.
-
-##### What is Conway's game of Life
+## What is Conway's game of Life
 
 Conway's game of life is a cellular automata with a few simple rules.
 All of these rules use a distance formula where it counts the both the pixels
@@ -127,144 +68,154 @@ A cell will remain alive if there are exactly two(2) or three(3) living cells
 nearby.
 Elsewise, the cell either remains dead, or becomes dead.
 
-##### Adding a basic life-type cellular automata
+### Adding a basic life-type cellular automata
 
 For life-type cellular automata (cellular automata that are like Conway's game
 of Life, but have different rules), there is a specific syntax for how to
 specify them: `B3/S23`. This syntax literally means "born on three(3), survive
 on two(2) or three(3)."
 
-To test this out, insert the following JavaScript:
+The example code above included `B2/S23` (AKA "Conway's game of Life") as an example. Feel free to try out other patterns, like
 
-    p.addElement("Conway's Game Of Life",{//add the element
-        color:[0,255,0],//what rgb color it is
-        pattern:"B3/S23",//born on 3, survives on 2 or 3
-    });
-    p.play({});//final initialisation, and play
-    //fill 15% of the canvas with this element
-    p.randomlyFill(15,"Conway's Game Of Life");
+- Seeds `B2/S`
+- Highlife `B36/S23`
+- And more! (262144 combinations, `2^(9+9)`) 
 
-#### What your code should look like now
+## Documentation
 
-    <!doctype html>
-    <html>
-        <head>
-            <title>My first PixelManipulator Instance</title>
-            <meta charset="utf-8">
-            <!--Replace the below line with where you are getting
-    		pixelmanipualator-->
-            <script src="pixelmanipulator.js"></script>
-        </head>
-        <body>
-            <canvas id="myCanvas"></canvas>
-            <script>
-                //This is where we will be putting our JavaScript code
-                //Get the canvas element
-                var canvas=document.getElementById("myCanvas");
-                //Tell PixelManipulator to use it
-                p.canvasPrep({
-                    canvas:canvas,
-                });
-                p.addElement("Conway's Game Of Life",{
-                    color:[0,255,0],
-                    pattern:"B3/S23",//born on 3, survives on 2 or 3
-                });
-                p.play({});//final initialisation, and play
-                //fill 15% of the canvas with this element
-                p.randomlyFill(15,"Conway's Game Of Life");
-            </script>
-        </body>
-    </html>
+Function-by funciton documentation. (Updated last on version `3.0.0`)
 
-Wow, only 29 lines of code!
+### The global
 
-> This can also be done using a library such as require.js
+While everything here is in the scope of `window.p`, there is also
+`window.pixelmanipulator`.
 
-.
-
-> From here on, this will be less of a tutorial and more of documenatation.
+If a module-loader is detected, this library will use that instead of polluting
+the global namespace.
 
 ### Media Controls
 
-Let's give the user some control, shall we?
+Pause, play, reset, and iterate.
 
 #### Pause
 
-`p.pause();` is a useful function to know if you want your users to be able to pause the canvas.
+`p.pause()`
 
-To pause, simply run without any arguments;
+Takes no arguments, returns nothing.
+
+Sets `p.mode` to `"paused"` and clears the interval represented by `innerP.loopint`.
 
 #### Play
 
-Plays the canvas.
+`p.play()`
 
-`p.play();` is basically the same idea as `p.pause();`, however when any arguments are passed in, they are forworded to `p.reset();`. If no arguments are passed in, `p.reset();` is not called.
+Takes one optional argument, passed to `p.reset`.
+If no arguments are passed in, `p.reset()` is not called.
+
+Returns nothing.
+
+Sets `p.mode` to `"playing"`, and sets a new interval, saving it in `innerP.loopint`.
 
 #### Reset
 
 `p.reset();` resets/initializes the canvas.
 
-It only accepts one argument, an object with the following syntax (each individual value is optional)
+It only accepts one optional argument, an object with the following properties
 
-    {
-        canvasW:100,//width of the canvas
-        canvasH:100,//height of the canvas
-        zoomW:10,//width of the zoom canvas (size in zoomed pixels)
-        zoomH:10,//height of the zoom canvas (size in zoomed pixels)
-    }
+```js
+{
+	//width of the canvas (optional)
+	canvasW:100,
+	//height of the canvas (optional)
+	canvasH:100,
+	//width of the zoom canvas (size in zoomed pixels) (optional)
+	zoomW:10,
+	//height of the zoom canvas (size in zoomed pixels) (optional)
+	zoomH:10
+}
+```
+
+Returns nothing.
+
+Calls `p.pause` `p.updateData` `p.update` and resets all internal state,
+excluding the element definitions.
 
 #### Iterate
 
-`p.iterate();` is the function that the media commands (pause, play etc) pass into the setIterval function. Calling this will, thus, trigger a single frame of animation.
+`p.iterate();` is the function that is passed into the setIterval function.
+Calling this will trigger a single frame of animation.
 
-### Cellular Automata
+> Be careful! Calling this while `p.mode` is `"playing"` might cause two
+> concurrent calls to this function. If any of your automata have "hidden state"
+> - that is they don't represent every detail about themselves as data within
+> the pixels - it might cause conflicts. I haven't seen any issues caused by
+> this thus far, but it still bears a warning.
 
-A Cellular Automata is a program where different states of cells have different behavor based on different surroundings. In PixelManipulator, the only cell type supported is square cells on a grid, however there are other programs that may have support for such things as hexagon cells or other things like that.
+### Element registration
 
-There are actually two functions in PixelManipulator that allow for the creation of Cellular automata.
-`p.addElement` and `p.addMultipleElements`.
+There are two functions in PixelManipulator that allow for the creation of
+Cellular automata. `p.addElement` and `p.addMultipleElements`.
 
 #### addElement
 
-As explained before, the syntax for `p.addElement` is usually something like this:
+As the syntax for `p.addElement` is usually something like this:
 
-    p.addElement("Conway's Game Of Life",{
-        color:[0,255,0],
-        pattern:"B3/S23",
-    });
+```js
+p.addElement("Conway's Game Of Life",{
+	color:[0,255,0],
+	pattern:"B3/S23",
+});
+```
 
 However, it is possible to do this with the same result:
 
-    p.addElement({
-        name:"Conway's Game Of Life",
-        color:[0,255,0],
-        pattern:"B3/S23",
-    });
+```js
+p.addElement({
+	name:"Conway's Game Of Life",
+	color:[0,255,0],
+	pattern:"B3/S23",
+});
+```
 
 All of the properties that this object can accept are these:
 
-    {
-        name:"Name",//The name of the element. Gets overrulled by the first argument to addElement
-        color:[255,255,255,255],//the rgba color of the element. If there is less than 4 values in this array, the end of the array is padded with the number 255. (if missing entirely, the color is white) NOTE THAT NO TWO ELEMENTS MAY HAVE EXACTLY THE SAME COLOR
-        pattern:"B3/S23",//See more about the pattern value in "About The Pre-built classes"  This is an optional value
-        liveCell:function() {},//See more about liveCell and deadCell in "Custom Cellular Automata". Both of these are optional, but when present, overrules what pattern may have applied to it
-        deadCell:function() {},
-    }
+```js
+{
+	// The name of the element. Gets overrulled by the first argument to addElement
+	name:"Name",
+	// The rgba color of the element. If there is less than 4 values in this array,
+	// the end of the array is padded with the number 255. (if missing entirely,
+	// the color is white) NOTE THAT NO TWO ELEMENTS MAY HAVE EXACTLY THE SAME
+	// COLOR (Starting in version 3 this will throw an error)
+	color:[255,255,255,255],
+	// See more about the pattern value in "About The Pre-built classes"  This is
+	// an optional value
+	pattern:"B3/S23",
+	// See more about `liveCell` and `deadCell` in "Custom Cellular Automata". Both
+	// of these are optional, but when present, overrules what `pattern` may have
+	// applied to it.
+	liveCell:function() {},
+	deadCell:function() {},
+}
+```
 
 #### addMultipleElements
 
-`p.addMultipleElements` makes your code more readable and passes in the input value you give it to `p.addElement`. Its' syntax is as follows (and is most usefull with more than five elements):
+`p.addMultipleElements` can make your code more readable and passes in the input
+value you give it to `p.addElement`. Its syntax is as follows:
 
-    p.addMultipleElements({
-        "Conway's Game of Life":{
-            color:[0,255,0],
-            pattern:"B3/S23",
-        }
-        "Highlife":{
-            color:[0,255,128,255],
-            pattern:"B36/S23"//born on 3 or 6, survives on 2 or 3
-        },
-    });
+```js
+p.addMultipleElements({
+	"Conway's Game of Life":{
+		color:[0,255,0],
+		pattern:"B3/S23",
+	}
+	"Highlife":{
+		color:[0,255,128,255],
+		pattern:"B36/S23"//born on 3 or 6, survives on 2 or 3
+	},
+});
+```
 
 #### About The Pre-built classes
 
@@ -279,175 +230,202 @@ As shown above, one can initialize an instance of Conway's Game of Life by doing
         pattern:"B3/S23",
     });
 
-This uses the moore distance formula (see above) to calculate the quantity of nearby cells of this same type. The non-case sensative pattern you see above can be read as "A cell is born (or switches from an off state to an on state) if there are exactly three nearby neibors of this same cell type, and it will survive (or continue to stay as an on state) if there are exactly two or exactly three cells of this same type nearby." Note that by cell type I mean other instances of "Conway's Game Of Life."
+This uses the moore distance formula (see above) to calculate the quantity of
+nearby cells of this same type. The non-case sensative pattern you see above can
+be read as "A cell is born (or switches from an off state to an on state) if
+there are exactly three nearby neighbors of this same cell type, and it will
+survive (or continue to stay as an on state) if there are exactly two or exactly
+three cells of this same type nearby."
 
-This can accept any number of numbers for either input, as long as they are whole numbers from zero(0) to eight(8), due to the fact that that is the physical limit.
+This can accept any number of numbers for either input, as long as they are
+whole numbers from zero(0) to eight(8), due to the fact that that is the
+physical limit.
 
-> Note that the presence of the number 9 will fail silently, and act as if that didget is not present.
+> Note that the presence of the number 9 will fail silently, and act as if that
+> digit is not present.
 
 ##### Wolfram
 
 Wolfram definitions are rather interesting. Here's an example of one:
 
-    p.addElement("Rule 30",{
-        color:[255,0,255,255],
-        pattern:"Rule 30",
-    });
+```js
+p.addElement("Rule 30",{
+	color:[255,0,255,255],
+	pattern:"Rule 30",
+});
+```
 
-The pattern must start with the word (not case sensitive) "Rule" followed by a space. It then must be followed by a number from 0 to 255.
+The pattern must start with the word (not case sensitive) "Rule" followed by a
+space. It then must be followed by a number from 0 to 255.
 
-This number will be transalated into a binary string. In the case of the example above, "`00011110`."
+This number will be transalated into a binary string. In the case of the example
+above, "`00011110`."
 
-Wolfram Rules don't use the Moore area formula, they use the Wolfram area formula.
+Wolfram Rules don't use the Moore area formula, they use the Wolfram area
+formula.
 
     XXX
      O
 
-This remarkably different formula relies that per each frame, only one line changes at a time. Each cell, as shown above, depends on the 1(same cell present) or 0(same cell not present) state of the cells directly, and to either side above this cell.
+This remarkably different formula relies that per each frame, only one line
+changes at a time. Each cell, as shown above, depends on the 1(same cell
+present) or 0(same cell not present) state of the cells directly, and to either
+side above this cell.
 
-We then iterate through each didget of the above number, while counting up from `000` in binary. (For example, `000` and `0`, `001` and `0`, `010` and `0`, `011` and `1`, etc).
+We then iterate through each digit of the above number, while counting up from
+`000` in binary. (For example, `000` and `0`, `001` and `0`, `010` and `0`,
+`011` and `1`, etc).
 
-If the three-didget binary number correctly matches the state of the cells above this one, then the state of this cell becomes the value of the corrosponding didget in the long binary string. (for example, if it matches in a `000` pattern than it remains dead., but if it matches in a `011` pattern, then the cell becomes alive.)
+If the three-digit binary number correctly matches the state of the cells above
+this one, then the state of this cell becomes the value of the corrosponding
+digit in the long binary string. (for example, if it matches in a `000` pattern
+than it remains dead., but if it matches in a `011` pattern, then the cell
+becomes alive.)
 
 ### Custom Cellular Automata
 
 #### liveCell, deadCell
 
-`liveCell` and `deadCell` are properties of an element that is passed into the addElement function.
+`liveCell` and `deadCell` are properties of an element that is passed into the
+addElement function.
 
-Each frame of animation pixelmanipulator iterates through each and every pixel on screen.
-When it comes to either the default pixel (usually `"blank"`) or this pixel, it calls the respective live or dead cell function.
+Each frame of animation pixelmanipulator iterates through each and every pixel
+on screen.
+When it comes to either the default pixel (usually `"blank"`) or this pixel, it
+calls the respective live or dead cell function.
 
-> If you want to do something once each frame, instead of once per pixel, see "other usefull things"
+> If you want to do something once each frame, instead of once per pixel, see
+> `onIterate` and `onAfterIterate`
 
-When defining a custom element, it is needed to decide upon which, if not both, of these two functions will be needed.
-Will your automata be doing something when it detects that the current cell is blank, or when it detects that the current cell is a specific element type?
+When defining a custom element, it is needed to decide upon which, if not both,
+of these two functions will be needed.
+Will your automata be doing something when it detects that the current cell is
+blank, or when it detects that the current cell is a specific element type?
 For the former, use `deadCell`, and for the latter, use `liveCell`.
 
-Lastly, there is a single callback to these two functions, and it has the following attributes: `x`,`y`,`getOldPixel`,`confirmOldElm`,`mooreNearbyCounter` and,`wolframNearby`.
+Lastly, there is a single callback to these two functions, and it is an object
+in the following shape (in the source code, referred to as `rel`):
 
-#### setPixel, getPixel, getOldPixel, confirmElm, whatIs, mooreNearbyCounter, wolframNearby
+```js
+{
+	x:0,
+	y:0,
+	// Takes
+	// - the x and y position to center the counter around,
+	// - the identifer (passed to confirmOldElm and can take any value that can)
+	// - and an optional boolean of wether to loop or not (passed to confirmOldElm).
+	// 
+	// Returns the number of nearby cells.
+	mooreNearbyCounter:function(x,y,name,loop){},
+	// Takes
+	// - the x and y position to center the counter around,
+	// - the identifer (passed to confirmOldElm and can take any value that can)
+	// - a string (made of `"1"` and `"0"`) or number, used as a bit field,
+	//   representing the desired match.
+	// - and an optional boolean of wether to loop or not (passed to confirmOldElm)
+	// 
+	// Returns a boolean if the bitfield matches.
+	wolframNearby:function(){}
+	// These each take the same arguments and return the same values as the
+	// corresponding function in `p` but returns the value from the last frame.
+	getOldPixel:function(x,y,loop){},
+	getOldPixelId:function(x,y,loop){},
+	confirmOldElm:function(x,y,id,loop){},
+	whatIsOld:function(x,y,loop){},
+}
+```
 
-`setPixel` and `getPixel` is the basis around what PixelManipulator works.
-All of the other functions in the name of this header are all based upon adding functionallity to these two functions.
+#### Pixel interaction
+
+`setPixel` and `getPixelId` is the basis around what PixelManipulator works.
+All of the other functions in the name of this header are all based upon adding
+functionallity to these two functions.
 
 ##### Looping
 
 Looping is the behavior where if a corordinate is out of bounds, it is corrected.
 
-For example, if you place a pixel 100px left of the screen, and looping is on, the x-position, assuming that the width of the screen is <= 100, will be 100
+For example, if you place a pixel 100px left of the screen, and looping is on,
+the x-position, assuming that the width of the screen is <= 100, will be 100.
 
 ##### setPixel
 
-`setPixel`, as can be inferred by it's name, sets a pixel in a given location.
-The syntax is like this:
+`setPixel`, as can be inferred by its name, sets a pixel in a given location.
 
-    p.setPixel(10,5,"blank");//basic usage, place blank elm at 10,5
-    p.setPixel(2000,2000,"otherElementName",true);//boolean at end signifies "no-loop" mode to be `true`. Defaults to `false`.
-    p.setPixel(20,30,[255,0,0,255]);//Pass in an rgb(a) color. If four values are not passed in, the missing end values will be assumed to be 255. Using this feature will cause problems if there is not an element defined of the exact color that is passed in. Furthermore, if this is the first instance of this element, this element will _not_ be added to the list of present elements, and pixelmanipulator _will_ crash once it happens upon the pixel, as it is not in it's list of elements that it expected to see.
+Arguments:
 
-##### __GetPixel
+- `x` x position. number
+- `y` y position. number
+- `ident` Value to identify the element.
+  - If a string, it assumes it's an element name.
+  - If a number, it assumes it's an element ID
+  - If an array, it assumes it's an 4-long color array.
+- `loop`. Optional. Wraps `x` and `y` around canvas borders.
 
-This is a constructor function where you pass in the image data that you want to generate a pixel-getter for. You shouldn't need to interact with this yourself, as the library auto-generates two of these, one for the current frame of animation `getPixel`, and one for the last frame of animation `getOldPixel`.
+Returns nothing.
 
-###### getPixel
+##### getPixelId
 
-Return the rgba value of the cell at the given corordinates. `p.getPixel(x,y,loop)`
+Return a number uniquely identifying this element type of the cell at the given
+coordinates. `p.getPixelId(x,y,loop)`
 
-> This is the cell that isn't visible to the user yet, see the next one for the one they can see right now.
+Arguments:
 
-###### getOldPixel
+- `x` x position. number
+- `y` y position. number
+- `loop`. Optional. Wraps `x` and `y` around canvas borders.
 
-Return the rgba value of the cell at the given corordinates, as it was in the frame that the player can currently see. `rel.getPixel(x,y,loop)`
+Returns number
 
-__IMPORTANT__: `getOldPixel` can only be accesed via the callback to `liveCell` and `deadCell`
+> This is effected by `setPixel` in the current frame.
 
-##### __ConfirmElm
+##### getPixel
 
-Constructor function that makes `confirmElm` and `confirmOldElm`.
-A pixel getter is passed into this constructor (such as `getOldPixel`)
+Return the current rgba value of the cell at the given corordinates. `p.getPixel(x,y,loop)`
 
-###### confirmElm
+Arguments:
 
-`confirmElm` returns a boolean stating wether the cell at the x and y position is the passed-in element name. `p.confirmElm(x,y,"Name of element to query")`
-One can also append a boolean at the end to indicate the loop state (default true)
+- `x` x position. number
+- `y` y position. number
+- `loop`. Optional. Wraps `x` and `y` around canvas borders.
 
-> This function is the result of `p.__ConfirmElm(p.getPixel)`
+Returns array of 4 numbers
 
-###### confirmOldElm
+> This is effected by `setPixel` in the current frame.
 
-`confirmOldElm` returns a boolean stating wether the cell at the x and y position is the passed-in element name. `rel.confirmOldElm(x,y,"Name of element to query")`
-One can also append a boolean at the end to indicate the loop state (default true)
+##### confirmElm
 
-__IMPORTANT__: `confirmOldElm` can only be accesed via the callback to `liveCell` and `deadCell`
+`confirmElm` returns a boolean stating wether the cell at the x and y position
+is the passed-in element name. `p.confirmElm(x,y,"Name of element to query")`
 
-> This function is the result of `p.__ConfirmElm(p.getOldPixel)`
+Arguments:
 
-##### __WhatIs
+- `x` x position. number
+- `y` y position. number
+- `ident` Value to identify the element.
+  - If a string, it assumes it's an element name.
+  - If a number, it assumes it's an element ID
+  - If an array, it assumes it's an 4-long color array.
+- `loop`. Optional. Wraps `x` and `y` around canvas borders.
 
-Generator for `whatIs`.
+> This is effected by `setPixel` in the current frame.
 
-> __Warning!__ all instances of `p.__WhatIs` are _very_ slow, and should be avoided, if possible. For example, instead of comparing to the output of `whatIs`, compare using `confirmElm` instead.
-
-###### whatIs
+##### whatIs
 
 Returns name of element at passed-in location. `p.whatIs(6,5);`
-Append a boolean as the third argument, and it will set the loop state. (default true)
 
-> __Warning!__ all instances of `p.__WhatIs` are _very_ slow, and should be avoided, if possible. For example, instead of comparing to the output of `whatIs`, compare using `confirmElm` instead.
+Arguments:
 
-##### __MooreNearbyCounter
+- `x` x position. number
+- `y` y position. number
+- `loop`. Optional. Wraps `x` and `y` around canvas borders.
 
-Generator for `mooreNearbyCounter`. Takes in the an instance of `__ConfirmElm`.
+Returns string
 
-###### mooreNearbyCounter
+> Not very slow anymore, but it's still a string. Much slower than comparing an 
+> ID number
 
-`mooreNearbyCounter` is a function that returns the number of matching cells around a cell, including corners. `rel.mooreNearbyCounter(2,2,"Conway's Game Of Life")`
-Append a boolean as the third argument, and it will set the loop state. (default true)
-
-__IMPORTANT__: `mooreNearbyCounter` can only be accesed via the callback to `liveCell` and `deadCell`
-
-##### __WolframNearbyCounter
-
-Generator for wolframNearbyCounter. Takes in instance of `__ConfirmElm`.
-
-###### wolframNearbyCounter
-
-Determines if a string such as `"101"` describes the state of the cells above a given cell. `rel.wolframNearbyCounter(4,7,"Rule 90","011")`
-Append a boolean as the fifth argument, and it will set the loop state. (default false)
-
-__IMPORTANT__: `wolframNearbyCounter` can only be accesed via the callback to `liveCell` and `deadCell`
-
-> You may have noticed that the default loop state is by default false. This is because most one-dimentional cellular automata don't loop around edges.
-
-#### Making your own pre-built class
-
-You may have noticed that when using `addElement` and `addMultipleElements`, you can add elements without the need to define the `liveCell` and `deadCell` functions.
-This is because in those instances, there is a template that detects (usually through the pattern that was supplied) that it can create the `liveCell` and `deadCell` functions you will need, and does so.
-
-This, naturally, may raise the question: "Can I make one of those?"
-The answer, as you may have guessed, is a strong, encouraging "_YES!_"
-
-##### p._templates
-
-`_templates` is an object containing the different templates that are currently in the system.
-The name of the template doesn't really matter, as long as you understand that it is what you will be using internally.
-
-###### p.__templates.__index__
-
-To create a template, you create an object that contains the function `__index__`.
-There are two values that are passed into this function:
-
-1. A string, representing the name of the element that was passed in using any tactic of either `addElement` or `addMutipleElements`.
-2. An object, containing details about the element, including something that is usually a string: `pattern`. This string's syntax (as the template maker) you define yourself, but it must not conflict with the syntax of any of the other templates, because this most likely will cause a conflict of some sort.
-
-> I have never tried to see what will happen if you have two templates expecting the same syntax, but I think that what will happen is that the alphabetically last of the two that share a template will be the one that lays claim on the element. This, however may end up being different across browsers.
-
-The return value must be one of two things:
-
-* An empty array
-* An array with exactly two function values, the first, the `liveCell` function, and the second, `deadCell`.
-* A mixed version of the above, where the missing value is `undefined` (an array with one value, being a function, would go here)
+> This is effected by `setPixel` in the current frame.
 
 ### Other
 
@@ -455,28 +433,52 @@ This is the rest of the library
 
 #### p.canvasPrep
 
-A function where you pass in an object that must contain the key `canvas`, whith a html5 canvas as the key.
-This is where the logic and rendering will take place, but it will all be 1:1, so you may want a zoom elm.
-
 Another value, this one optional, is the key `zoom`, and it must be a html5 canvas.
 This is a movable, scaled viewport.
 In the demo, this is where a user clicks to mannually place cells.
 
-> `canvasPrep` currently calls `updateData` automatically
+One required argument, an object in this format:
+
+```js
+{
+	// An html5 canvas to render on. (To scale)
+	canvas:canvas,
+	// An html5 canvas. (Optional). Zoomed-in
+	zoom:zoom
+}
+```
+
+> `canvasPrep` calls `updateData` automatically
 
 #### p.update
 
-Not to be confused with `p.updateData`, `update` applies any changes made (typically via `setPixel`) to the canvas, and shows them on the zoomElm if it is present.
+Not to be confused with `p.updateData`, `update` applies any changes made
+with `setPixel` to the canvas, and shows them on the zoomElm if it is
+present.
 
-In the demo, this is used to show changes the users make when they click on the zoomElm.
+In the demo, this is used to show changes the users make when they click on the
+zoomElm.
 
-> `p.update` currently calls `p.zoom` automatically
+Takes no arguments, returns nothing.
+
+> `p.update` calls `p.zoom` automatically, but only if there is a zoom elm
 
 #### p.zoom
 
-Initially a click envent handler from mid to late version 0 all the way to early version 1, zoom takes in an object that contains `x` and `y`. If these values are missing, the last values (saved at `p.zoomX` and `p.zoomY`, respectivly).
+Initially a click envent handler from mid to late version 0 all the way to early
+version 1, zoom takes in an object that contains `x` and `y`. If these values
+are missing, the last values (saved at `p.zoomX` and `p.zoomY`, respectivly) are
+used.
+
+Arguments:
+
+- Optional object with these keys:
+  - `x` Optional position to center the zoom elm on. (If absent, uses `p.zoomX`)
+  - `y` Optional position to center the zoom elm on. (If absent, uses `p.zoomY`)
 
 This tells pixelmanipulator where to focus the center of the zoomElm (or zoom-box).
+
+Also renders a grid on the zoom element.
 
 #### p.updateData
 
@@ -488,7 +490,7 @@ These functions get called before and after the `iterate` function does it's wor
 
 #### version
 
-This is a string indicating the version of the library. Formatting info can be found in [CONTRIBUTING.md](CONTRIBUTING.md).
+This is a string indicating the version of the library. Follows [semver](https://semver.org).
 
 #### licence
 
@@ -504,15 +506,34 @@ This is the number that indicates what interval the iterate function is being ca
 
 The coordinates of where the center of the zoomelm is windowed at.
 
+#### get and set width an height
+
+`get_width` and `get_height` take no args and return the width or height, respectively.
+
+`set_width` and `set_height` take one arg (the width or height, respectively) and return nothing.
+
 #### row
 
 The row that elements such as `Rule 90` are getting proccessed at.
+
+[bug23]: https://github.com/Lazerbeak12345/pixelmanipulator/issues/23
+
+> This is actually a symptom of [a bug][bug23]. A later major version release will have
+> the goal of removing this, and the associated bug.
 
 #### elementTypeMap
 
 A low-level listing of the availiable elements.
 
 > This has been around since late version 0!
+
+Format is much like the argument to `p.addMultipleElements`, but is sanitized.
+
+Includes a `number` value that serves as the element's ID number
+
+#### elementNumList
+
+A list of all string-names in `p.elementTypeMap`, in order of ID number.
 
 #### mode
 
@@ -537,4 +558,5 @@ The elm that pixelmanipulator will fill the screen with upon initialization, and
 #### presentElements
 
 An array of any elements that should be on screen.
-This is appended to by `setPixel`, and read from with `whatIs`
+This is appended to by `setPixel`, and is currently the limiter that `iterate`
+uses. `iterate` will only call deadCell for elements in this list.
