@@ -549,20 +549,6 @@ The coordinates of where the center of the zoomelm is windowed at.
 
 `set_width` and `set_height` take one arg (the width or height, respectively) and return nothing.
 
-#### row
-
-The row that elements such as `Rule 90` used to get proccessed at.
-
-For backward compatibility this has been kept (for this version), and still
-functions the same, though wolfram rules no longer require it.
-
-
-[bug23]: https://github.com/Lazerbeak12345/pixelmanipulator/issues/23
-
-> This was actually a symptom of [a bug][bug23]. A later major version release will have the goal of removing `p.row` entirely as it is now **DEPRECATED**
-
-> The demo no longer indicates what row is in-use.
-
 #### elementTypeMap
 
 A low-level listing of the availiable elements.
