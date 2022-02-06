@@ -5,6 +5,5 @@
   "main": "pixelmanipulator.js",
   "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
   "author": "Nathan Fritzler <nfblaster@live.com>",
-  "license": "GPL-3.0-or-later",
-  "files:":[]
+  "license": "GPL-3.0-or-later"
 }

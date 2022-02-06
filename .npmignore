@@ -1,0 +1,7 @@
+*.html
+.github
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+todo.md
+*.png
+*.ico
