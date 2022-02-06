@@ -299,7 +299,6 @@
 				}
 				innerP.update();
 				innerP.ctx.putImageData(innerP.imageData,0,0);
-				innerP.row=0;
 			},
 			pause:function() {//pause canvas iterations
 				innerP.mode="paused";
@@ -515,8 +514,6 @@
 						}
 					}
 				}
-				innerP.row++;
-				if (innerP.row>h) innerP.row=0;
 				innerP.update();
 				innerP.onAfterIterate();
 			},
