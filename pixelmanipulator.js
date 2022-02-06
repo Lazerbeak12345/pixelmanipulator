@@ -73,13 +73,13 @@
 			//pixelCounts:{},
 			neighborhoods:{
 				// Area is f(x)=2x-1
-				wolfram:function(radius,yval,include_north){
+				wolfram:function(radius,yval,include_self){
 					if(typeof radius==="undefined")
 						radius=1
 					if(typeof yval==="undefined")
 						yval=1
 					var output=[{x:0,y:yval}];
-					if(typeof include_north==="undefined"||include_north){
+					if(typeof include_self==="undefined"||include_self){
 						output.push({x:0,y:yval});
 					}
 					for(var i=radius;i>0;i--){
@@ -91,55 +91,55 @@
 				// Area is f(x)=(2r+1)^2
 				moore:function(radius,include_self){
 					if(typeof radius==="undefined")
-						radius=1
+						radius=1;
 					if(typeof include_self==="undefined")
-						include_self=false
+						include_self=false;
 					var output=[];
 					// Note: no need to calculate the Chebyshev distance. All pixels in this
 					// range are "magically" within.
 					for(var x=-1*radius;x<=radius;x++)
 						for(var y=-1*radius;y<=radius;y++)
 							if(include_self||!(x===0&&y===0))
-								output.push({x:x,y:y}) 
-					return output
+								output.push({x:x,y:y});
+					return output;
 					// And to think that this used to be hard... Perhaps they had a different
 					// goal? Or just weren't using higher-order algorithims?
 				},
 				// Area is f(x)=r^2+(r+1)^2
 				vonNeumann:function(radius){
 					if(typeof radius==="undefined")
-						radius=1
+						radius=1;
 					if(typeof include_self==="undefined")
-						include_self=false
+						include_self=false;
 					var output=[];
 					// A Von Neumann neighborhood of a given distance always fits inside of a
 					// Moore neighborhood of the same. (This is a bit brute-force)
 					for(var x=-1*radius;x<=radius;x++)
 						for(var y=-1*radius;y<=radius;y++)
 							if(
-								(include_self||!(x===0&&y===0))
-								&&(Math.abs(x)+Math.abs(y)<=radius) // Taxicab distance
+								(include_self||!(x===0&&y===0))&&
+								(Math.abs(x)+Math.abs(y)<=radius) // Taxicab distance
 							)
-								output.push({x:x,y:y})
-					return output
+								output.push({x:x,y:y});
+					return output;
 				},
 				// Area is not quite that of a circle. TODO
 				euclidean:function(radius,include_self){
 					if(typeof radius==="undefined")
-						radius=1
+						radius=1;
 					if(typeof include_self==="undefined")
-						include_self=false
+						include_self=false;
 					var output=[];
 					// A circle of a given diameter always fits inside of a square of the same
 					// side-length. (This is a bit brute-force)
 					for(var x=-1*radius;x<=radius;x++)
 						for(var y=-1*radius;y<=radius;y++)
 							if(
-								(include_self||!(x===0&&y===0))
-								&&(Math.sqrt(Math.pow(x,2)+Math.pow(y,2))<=radius) // Euclidean distance
+								(include_self||!(x===0&&y===0))&&
+								(Math.sqrt(Math.pow(x,2)+Math.pow(y,2))<=radius) // Euclidean distance
 							)
-								output.push({x:x,y:y})
-					return output
+								output.push({x:x,y:y});
+					return output;
 				}
 				//TODO https://www.npmjs.com/package/compute-minkowski-distance ?
 				//TODO Non-Euclidean distance algorithim?
@@ -281,7 +281,7 @@
 				//console.log("reset");
 				//clearInterval(innerP.loopint);
 				if(typeof canvasSizes==="undefined")
-					canvasSizes={}
+					canvasSizes={};
 				innerP.pause();
 				var w=innerP.get_width(),
 					h=innerP.get_height();
@@ -483,7 +483,7 @@
 				for(var x=0;x<w;x++){
 					for(var y=0;y<h;y++){ //iterate through x and y
 						var currentPixId=rel.getOldPixelId(x,y);
-						if(currentPixId===innerP.defaultId)continue
+						if(currentPixId===innerP.defaultId)continue;
 						var currentPix=innerP.elementNumList[currentPixId],
 							elm=innerP.elementTypeMap[currentPix];
 						if(typeof elm.liveCell==="function") {
