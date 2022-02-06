@@ -75,18 +75,18 @@
 				// Area is f(x)=2x-1
 				wolfram:function(radius,yval,include_self){
 					if(typeof radius==="undefined")
-						radius=1
+						radius=1;
 					if(typeof yval==="undefined")
-						yval=1
+						yval=1;
 					var output=[{x:0,y:yval}];
 					if(typeof include_self==="undefined"||include_self){
 						output.push({x:0,y:yval});
 					}
 					for(var i=radius;i>0;i--){
-						output.push({x:-1*i,y:yval})
-						output.push({x:i,y:yval})
+						output.push({x:-1*i,y:yval});
+						output.push({x:i,y:yval});
 					}
-					return output
+					return output;
 				},
 				// Area is f(x)=(2r+1)^2
 				moore:function(radius,include_self){
@@ -487,8 +487,8 @@
 						var currentPix=innerP.elementNumList[currentPixId],
 							elm=innerP.elementTypeMap[currentPix];
 						if(typeof elm.liveCell==="function") {
-							rel.y=y
-							rel.x=x
+							rel.y=y;
+							rel.x=x;
 							rel.oldId=currentPixId;
 							elm.liveCell(rel);
 						}
@@ -504,13 +504,13 @@
 									oldValue=updatedDeadPixel[index],
 									bitMask=1<<(rel.x%8);
 								if((oldValue&bitMask)>0)
-									continue
+									continue;
 								// I timed it, and confirmOldElm is slower than all the math above.
 								if(!rel.confirmOldElm(rel.x,rel.y,innerP.defaultElm))
-									continue
-								rel.oldId=innerP.defaultElm
+									continue;
+								rel.oldId=innerP.defaultElm;
 								elm.deadCell(rel);
-								updatedDeadPixel[index]=oldValue|bitMask
+								updatedDeadPixel[index]=oldValue|bitMask;
 							}
 						}
 					}
