@@ -1,0 +1,10 @@
+{
+  "name": "pixelmanipulator",
+  "version": "4.0.0",
+  "description": "Run any cellular automata on an html5 canvas.",
+  "main": "pixelmanipulator.js",
+  "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
+  "author": "Nathan Fritzler <nfblaster@live.com>",
+  "license": "GPL-3.0-or-later",
+  "files:":[]
+}
