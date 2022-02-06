@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="3.3.0";
+	var pxversion="4.0.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -71,19 +71,20 @@
 			onIterate:function() {},//both of these need to be defined so the absence of either is suitiable.
 			onAfterIterate:function() {},
 			//pixelCounts:{},
-			presentElements:[],
 			neighborhoods:{
 				// Area is f(x)=2x-1
-				wolfram:function(radius,include_north){
+				wolfram:function(radius,yval,include_north){
 					if(typeof radius==="undefined")
 						radius=1
-					var output=[{x:0,y:-1}];
+					if(typeof yval==="undefined")
+						yval=1
+					var output=[{x:0,y:yval}];
 					if(typeof include_north==="undefined"||include_north){
-						output.push({x:0,y:-1});
+						output.push({x:0,y:yval});
 					}
 					for(var i=radius;i>0;i--){
-						output.push({x:-1*i,y:-1})
-						output.push({x:i,y:-1})
+						output.push({x:-1*i,y:yval})
+						output.push({x:i,y:yval})
 					}
 					return output
 				},
@@ -161,9 +162,8 @@
 						if(data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1)return[];
 						var numbers=data.pattern.split(/\/?[a-z]/gi);//"B",born,die
 						data.loop=typeof data.loop!=="undefined"?data.loop:true;
-						data.hitbox=typeof data.hitbox!=="undefined"?
-							data.hitbox:
-							innerP.neighborhoods.moore();
+						if(typeof data.hitbox!=="undefined")
+							data.hitbox=innerP.neighborhoods.moore();
 						console.log("Life Pattern found: ",elm,data);
 						return [
 							innerP.__templates.__LIFE__.__LIVE__(
@@ -196,9 +196,8 @@
 						if(data.pattern.search(/Rule \d*/gi)<=-1)return[];
 						var binStates=data.pattern.split(/Rule /gi)[1]-0;
 						data.loop=typeof data.loop!=="undefined"?data.loop:false;
-						data.hitbox=typeof data.hitbox!=="undefined"?
-							data.hitbox:
-							innerP.neighborhoods.wolfram();
+						if(typeof data.hitbox==="undefined")
+							data.hitbox=innerP.neighborhoods.wolfram();
 						console.log("Wolfram pattern found: ",elm,data);
 						return [undefined,innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
 					},
@@ -251,9 +250,6 @@
 				while (data.color.length<4) data.color.push(255);
 				data.number=innerP.elementNumList.length
 				innerP.elementNumList.push(elm)
-				data.hitbox=typeof data.hitbox!=="undefined"?
-					data.hitbox:
-					innerP.neighborhoods.moore();
 				if (typeof data.pattern==="string") {
 					for (var tempNam in innerP.__templates) {
 						var out=innerP.__templates[tempNam].__index__(data.number,data);
@@ -262,6 +258,8 @@
 						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
 					}
 				}
+				if(typeof data.hitbox==="undefined")
+					data.hitbox=innerP.neighborhoods.moore();
 				innerP.elementTypeMap[elm]=data;//for each element
 			},
 			__WhatIs:function(getPixelId) {//Generator for whatIs
@@ -439,7 +437,6 @@
 				loop=typeof loop!=="undefined"?loop:true;
 				var id,name;
 				if (typeof arry==="string") {
-					if (!innerP.presentElements.includes(arry)) innerP.presentElements.push(arry);
 					if(typeof innerP.elementTypeMap[arry]==="undefined")
 						throw new Error("Color name "+arry+" invalid!")
 					name=arry
@@ -481,18 +478,18 @@
 						mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
 						wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
 					},
-					//updatedDeadPixel=new Uint8Array(Math.ceil((w*h)/8));
-					updatedDeadPixel=new Uint8Array(w*h);
+					updatedDeadPixel=new Uint8Array(Math.ceil((w*h)/8));
 				innerP.pixelCounts={};
 				for(var x=0;x<w;x++){
-					rel.x=x
 					for(var y=0;y<h;y++){ //iterate through x and y
-						rel.y=y
-						var currentPixId=rel.getOldPixelId(x,y),
-							currentPix=innerP.elementNumList[currentPixId],
+						var currentPixId=rel.getOldPixelId(x,y);
+						if(currentPixId===innerP.defaultId)continue
+						var currentPix=innerP.elementNumList[currentPixId],
 							elm=innerP.elementTypeMap[currentPix];
-						rel.oldId=currentPixId;
 						if(typeof elm.liveCell==="function") {
+							rel.y=y
+							rel.x=x
+							rel.oldId=currentPixId;
 							elm.liveCell(rel);
 						}
 						if(typeof innerP.pixelCounts[currentPix]==="undefined") {
@@ -503,17 +500,17 @@
 								var pixel=elm.hitbox[hi];
 								rel.x=(x+pixel.x)%w;
 								rel.y=(y+pixel.y)%h;
+								var index=(w*rel.y)+Math.floor(rel.x/8),
+									oldValue=updatedDeadPixel[index],
+									bitMask=1<<(rel.x%8);
+								if((oldValue&bitMask)>0)
+									continue
+								// I timed it, and confirmOldElm is slower than all the math above.
 								if(!rel.confirmOldElm(rel.x,rel.y,innerP.defaultElm))
 									continue
-								//var index=(w*rel.y)+Math.floor(rel.x/8),
-								var index=(w*rel.y)+rel.x,
-									oldValue=updatedDeadPixel[index]/*,
-									bitMask=1<<(rel.x%8)*/;
-								if((oldValue/*&bitMask*/)>0){
-									continue
-								}
+								rel.oldId=innerP.defaultElm
 								elm.deadCell(rel);
-								updatedDeadPixel[index]=1//oldValue|bitMask
+								updatedDeadPixel[index]=oldValue|bitMask
 							}
 						}
 					}

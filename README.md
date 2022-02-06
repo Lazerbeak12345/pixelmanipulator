@@ -113,7 +113,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by funciton documentation. (Updated last on version `3.3.0`)
+Function-by funciton documentation. (Updated last on version `4.0.0`)
 
 ### The global
 
@@ -221,6 +221,10 @@ All of the properties that this object can accept are these:
 	// See more about the pattern value in "About The Pre-built classes"  This is
 	// an optional value
 	pattern:"B3/S23",
+	// `deadCell` below will only be called on empty pixels within the hitbox of a
+	// live cell. Array of relative coordinate pairs. Optional, defaults to the
+	// result of `p.neighborhoods.moore()`.
+	hitbox:[{x:0,y:0}],
 	// See more about `liveCell` and `deadCell` in "Custom Cellular Automata". Both
 	// of these are optional, but when present, overrules what `pattern` may have
 	// applied to it.
@@ -603,8 +607,74 @@ an element with the color `#000F`
 The elm that pixelmanipulator will fill the screen with upon initialization, and
 what elements should return to when they are "dead". Default value is `0`.
 
-#### presentElements
+#### neighborhoods
 
-An array of any elements that should be on screen.
-This is appended to by `setPixel`, and is currently the limiter that `iterate`
-uses. `iterate` will only call deadCell for elements in this list.
+An object containing several functions to generate lists of relative positions
+for a neighborhood hitbox.
+
+They each return an array of objects in this pattern:
+
+```js
+{
+	// X and Y relative position. Added to the current position during hitbox
+	// comparison
+	x:0,
+	y:0,
+}
+```
+
+#### neighborhoods.wolfram
+
+```txt
+ O
+XXX
+```
+
+Arguments
+
+- radius, a number. Count of how many to the right and left to include.
+  (optional. defaults to 1)
+- yval, a number. Relative Y-value. (optional. defaults to 1 for the purpose of
+  generating hitboxes)
+- include_self, a boolean. Should this include the center pixel? (optional.
+  defaults to true)
+
+#### neighborhoods.moore
+
+```txt
+XXX
+XOX
+XXX
+```
+Arguments
+
+- radius, a number. Count of how many rings around the center to include.
+  (optional. defaults to 1)
+- include_self, a boolean. Should this include the center pixel? (optional.
+  defaults to true)
+
+#### neighborhoods.vonNeumann
+
+```txt
+ X
+XOX
+ X
+```
+Arguments
+
+- radius, a number. Count of how many rings around the center to include.
+  (optional. defaults to 1)
+- include_self, a boolean. Should this include the center pixel? (optional.
+  defaults to true)
+
+#### neighborhoods.euclidean
+
+Shape is all pixels that fit within a circle of the given radius, where the
+precise euclidean distance is <= the radias.
+
+Arguments
+
+- radius, a number. Count of how many rings around the center to include.
+  (optional. defaults to 1)
+- include_self, a boolean. Should this include the center pixel? (optional.
+  defaults to true)
