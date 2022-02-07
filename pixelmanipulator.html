@@ -33,15 +33,22 @@
 			top:0;
 			left:0;
 		}
-		#zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
+		#menu-box{
 			position:fixed;
 			top:0;
 			right:0;
 			z-index:999;
 			height:100%;
+			flex-direction:row;
+			display:flex;
+		}
+		#menu-box>div{
+			border-left:1px solid lightgrey;
+		}
+		#zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
+			height:100%;
 			flex-direction:column;
 			display:flex;
-			border-left:1px solid lightgrey;
 		}
 		#scroll-box{
 			overflow-y:scroll;
@@ -70,11 +77,11 @@
 			text-align:right;
 			width:3em;
 		}
-		/*.outline{
-			/*border:1px solid metal;
-		}*/
 		.click-type-random{
 			padding-left:1em
+		}
+		.hidden{
+			display:none;
 		}
 		</style>
 	</head>
@@ -84,65 +91,93 @@
 		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
 		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
 		<div id="selectorBox"></div>
-		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
-			<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
-			<div id="actions-box">
-				<div id="largexline" style="top:0px;"></div>
-				<div id="largeyline" style="right:0px;"></div>
-				<div id="largexline1" style="top:0px;"></div>
-				<div id="largeyline1" style="right:0px;"></div>
-				<button id="reset" alt="Reset" title="Reset">◄</button>
-				<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
-				<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
-				<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
-			</div>
-			<div id="scroll-box">
-				<div id="sizes-box">
-					<div>Width: <input id="width" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
-					<div>Height: <input id="height" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
-					<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
-					<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+		<div id="menu-box">
+			<div id="customizer" class="hidden"></div>
+			<div id="zoom-box">
+				<div id="zoom-container">
+					<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
+					<div id="largexline"></div>
+					<div id="largeyline"></div>
+					<div id="largexline1"></div>
+					<div id="largeyline1"></div>
 				</div>
-				<div id="click-types">
-					<div class="click-type">
-						Normal click:
-						<select class="elmDrop" id="normalSelect"></select>
-						<div class="click-type-random">
-							<button id="normalFill">Randomly fill</button>
-							<input id="normalFillP" type="text" value="15" placeholder="15"/>%
+				<div id="actions-box">
+					<button id="reset" alt="Reset" title="Reset">◄</button>
+					<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
+					<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
+					<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+				</div>
+				<div id="scroll-box">
+					<div id="sizes-box">
+						<div>Width: <input id="width" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+						<div>Height: <input id="height" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+						<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+						<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+					</div>
+					<div id="click-types">
+						<div class="click-type">
+							Normal click:
+							<select class="elmDrop" id="normalSelect"></select>
+							<div class="click-type-random">
+								<button id="normalFill">Randomly fill</button>
+								<input id="normalFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+						<div class="click-type">
+							Ctrl click:
+							<select class="elmDrop" id="ctrlSelect"></select>
+							<div class="click-type-random">
+								<button id="ctrlFill">Randomly fill</button>
+								<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+						<div class="click-type">
+							Alt click:
+							<select class="elmDrop" id="altSelect"></select>
+							<div class="click-type-random">
+								<button id="altFill">Randomly fill</button>
+								<input id="altFillP" type="text" value="15" placeholder="15"/>%
+							</div>
 						</div>
 					</div>
-					<div class="click-type">
-						Ctrl click:
-						<select class="elmDrop" id="ctrlSelect"></select>
-						<div class="click-type-random">
-							<button id="ctrlFill">Randomly fill</button>
-							<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
+					<table>
+						<tr>
+							<td>
+								<label>
+									<input id="shtargeter" type="checkbox">
+									Hide targeter lines
+								</label>
+							</td>
+							<td>
+								<label>
+									<input id="shfocusbox" type="checkbox">
+									Hide focus box
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label>
+									<input id="pixelCounterT" type="checkbox">
+									Hide pixelCounter
+								</label>
+							</td>
+							<td>
+								<label>
+									<input id="customizeT" type="checkbox">
+									Show element customizer
+								</label>
+							</td>
+						</tr>
+					</table>
+					<div id="callout">
+						<div>
+							<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 						</div>
-					</div>
-					<div class="click-type">
-						Alt click:
-						<select class="elmDrop" id="altSelect"></select>
-						<div class="click-type-random">
-							<button id="altFill">Randomly fill</button>
-							<input id="altFillP" type="text" value="15" placeholder="15"/>%
-						</div>
-					</div>
+						<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
+						Library v<span id="backendversion"></span>, Frontend v1.29.0
+					</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 				</div>
-				<div>
-					<div>
-						<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
-						<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
-					</div>
-					<label><input id="pixelCounterT" type="checkbox" >Hide pixelCounter</label>
-				</div>
-				<div id="callout">
-					<div>
-						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
-					</div>
-					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.29.0
-				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
@@ -185,11 +220,15 @@
 
 			}
 			function updateLargeLinesX(x,y) {
-				var h=(p.zoomelm.height-((1+y)*p.zoomScaleFactor)),
-					t=p.zoomScaleFactor*(y+1),
-					h2=(y*p.zoomScaleFactor);
-				if (y<0||y>(p.zoomelm.height/p.zoomScaleFactor)) {
-					h=p.zoomelm.height;
+				var zh=p.zoomelm.height,
+					zw=p.zoomelm.width,
+					zsf=p.zoomScaleFactor,
+					h=(zh-((1+y)*zsf)),
+					t=zsf*(y+1),
+					h2=(y*zsf),
+					rightVal=zw-zsf*(x+1);
+				if (y<0||y>(zh/zsf)) {
+					h=zh;
 					t=0;
 					h2=0;
 				}
@@ -197,20 +236,24 @@
 				var largexlinesty=document.getElementById("largexline").style;
 				largexlinesty.width=p.zoomScaleFactor+"px";
 				largexlinesty.height=h+"px";
-				largexlinesty.left=p.zoomScaleFactor*x+"px";
+				largexlinesty.right=rightVal+"px";
 				largexlinesty.top=t+"px";
 
 				var largexline1sty=document.getElementById("largexline1").style;
 				largexline1sty.width=p.zoomScaleFactor+"px";
 				largexline1sty.height=h2+"px";
-				largexline1sty.left=p.zoomScaleFactor*x+"px";
+				largexline1sty.right=rightVal+"px";
+				largexline1sty.top=0;
 			}
 			function updateLargeLinesY(x,y) {
-				var w=(p.zoomelm.width-((1+x)*p.zoomScaleFactor)),
-					l=p.zoomScaleFactor*(x+1),
-					w2=(x*p.zoomScaleFactor);
-				if (x<0||x>(p.zoomelm.width/p.zoomScaleFactor)) {
-					w=p.zoomelm.width;
+				var zh=p.zoomelm.height,
+					zw=p.zoomelm.width,
+					zsf=p.zoomScaleFactor,
+					w=zw-((1+x)*zsf),
+					l=zw-zsf*x,
+					w2=(x*zsf);
+				if (x<0||x>(zw/zsf)) {
+					w=zw;
 					l=0;
 					w2=0;
 				}
@@ -219,13 +262,13 @@
 				largeylinesty.height=p.zoomScaleFactor+"px";
 				largeylinesty.width=w+"px";
 				largeylinesty.top=p.zoomScaleFactor*y+"px";
-				largeylinesty.left=l+"px";
+				largeylinesty.right=0;
 
 				var largeyline1sty=document.getElementById("largeyline1").style;
 				largeyline1sty.height=p.zoomScaleFactor+"px";
 				largeyline1sty.width=w2+"px";
 				largeyline1sty.top=p.zoomScaleFactor*y+"px";
-				largeyline1sty.left="0px";
+				largeyline1sty.right=l+"px";
 			}
 			function selectorClicked(e) {
 				p.zoom({
