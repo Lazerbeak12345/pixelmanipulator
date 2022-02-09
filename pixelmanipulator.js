@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="4.0.0";
+	var pxversion="4.0.1";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -356,10 +356,10 @@
 						h=innerP.get_height();
 					loop=typeof loop!=="undefined"?loop:true;
 					if (loop) {
-						while (x<0) x+=w;
-						while (y<0) y+=h;
-						while (x>=w) x-=w;
-						while (y>=h) y-=h;
+						x%=w;
+						if(x<0)x+=w;
+						y%=h;
+						if(y<0)y+=h;
 					}else if (x<0||x>=w||y<0||x>=h) return "Blocks";
 					return d[(w*y)+x]
 				});
@@ -452,10 +452,10 @@
 				var w=innerP.get_width(),
 					h=innerP.get_height();
 				if (loop) {
-					while (x<0) x=w+x;
-					while (y<0) y=h+y;
-					while (x>=w) x=x-w;
-					while (y>=h) y=y-h;
+					x%=w;
+					if(x<0)x+=w;
+					y%=h;
+					if(y<0)y+=h;
 				}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
 				for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
 				innerP.currentElements[(w*y)+x]=id
