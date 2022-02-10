@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="4.0.1";
+	var pxversion="4.0.2";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -106,7 +106,7 @@
 					// goal? Or just weren't using higher-order algorithims?
 				},
 				// Area is f(x)=r^2+(r+1)^2
-				vonNeumann:function(radius){
+				vonNeumann:function(radius,include_self){
 					if(typeof radius==="undefined")
 						radius=1;
 					if(typeof include_self==="undefined")
@@ -498,8 +498,10 @@
 							for(var hi=0;hi<elm.hitbox.length;hi++){
 								var pixel=elm.hitbox[hi];
 								rel.x=(x+pixel.x)%w;
+								if(rel.x<0)rel.x+=w;
 								rel.y=(y+pixel.y)%h;
-								var index=(w*rel.y)+Math.floor(rel.x/8),
+								if(rel.y<0)rel.y+=h;
+								var index=Math.floor((w*rel.y+rel.x)/8),
 									oldValue=updatedDeadPixel[index],
 									bitMask=1<<(rel.x%8);
 								if((oldValue&bitMask)>0)
