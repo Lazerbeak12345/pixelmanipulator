@@ -303,6 +303,52 @@
 				p.zoomX=10;
 				p.zoomY=10;
 				p.addMultipleElements({//*
+					"Wa-Tor Fish":{
+						color:[96,241,151],
+						hitbox:p.neighborhoods.vonNeumann(),
+						liveCell:function(rel){
+							var pixel,
+								remainingHB=p.neighborhoods.vonNeumann(),
+								fish_rands=new Uint8Array(remainingHB.length),
+								index;
+							window.crypto.getRandomValues(fish_rands);
+							do{
+								if(remainingHB.length<=0)
+									return;
+								index=fish_rands[remainingHB.length-1]%remainingHB.length
+								pixel=remainingHB[index]
+								remainingHB=remainingHB.filter((v,i)=>i!==index)
+							}while(!(
+								rel.confirmOldElm(rel.x+pixel.x,rel.y+pixel.y,p.defaultId)&&
+								p.confirmElm(rel.x+pixel.x,rel.y+pixel.y,p.defaultId)
+							))
+							p.setPixel(rel.x,rel.y,p.defaultId)
+							p.setPixel(rel.x+pixel.x,rel.y+pixel.y,rel.oldId)
+						}
+					},
+					"Wa-Tor Shark":{
+						color:[55,204,226],
+						hitbox:p.neighborhoods.vonNeumann(),
+						liveCell:function(rel){
+							var pixel,
+								remainingHBshark=p.neighborhoods.vonNeumann(),
+								shark_rands=new Uint8Array(remainingHBshark.length),
+								index;
+							window.crypto.getRandomValues(shark_rands);
+							do{
+								if(remainingHBshark.length<=0)
+									return p.elementTypeMap["Wa-Tor Fish"].liveCell(rel);// Act like a fish
+								index=shark_rands[remainingHBshark.length-1]%remainingHBshark.length
+								pixel=remainingHBshark[index]
+								remainingHBshark=remainingHBshark.filter((v,i)=>i!==index)
+							}while(
+								(!rel.confirmOldElm(rel.x+pixel.x,rel.y+pixel.y,"Wa-Tor Fish"))||
+								p.confirmElm(rel.x+pixel.x,rel.y+pixel.y,rel.oldId)
+							)
+							p.setPixel(rel.x,rel.y,p.defaultId)
+							p.setPixel(rel.x+pixel.x,rel.y+pixel.y,rel.oldId)
+						}
+					},
 					"Acid":{
 						color:[110,162,10,255],
 						liveCell:function(rel) {//current Pixel Matches
