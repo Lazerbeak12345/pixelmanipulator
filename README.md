@@ -243,11 +243,11 @@ p.addMultipleElements({
 	"Conway's Game of Life":{
 		color:[0,255,0],
 		pattern:"B3/S23",
-	}
+	},
 	"Highlife":{
 		color:[0,255,128,255],
 		pattern:"B36/S23"//born on 3 or 6, survives on 2 or 3
-	},
+	}
 });
 ```
 
