@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="4.0.2";
+	var pxversion="4.1.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -199,7 +199,23 @@
 						if(typeof data.hitbox==="undefined")
 							data.hitbox=innerP.neighborhoods.wolfram();
 						console.log("Wolfram pattern found: ",elm,data);
-						return [undefined,innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)];
+						return [
+							innerP.__templates.__WOLFRAM__.__LIVE__(elm,binStates,data.loop),
+							innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)
+						];
+					},
+					__LIVE__:function(elm,binStates,loop) {
+						return (function wdead(rel) {
+							if(rel.y===0)return;
+							for (var binDex=0; binDex<8; binDex++) {//for every possible state
+								if((binStates&1<<binDex)===0){//if the state is "off". Use a bit mask and shift it
+									if(rel.wolframNearbyCounter(rel.x,rel.y,elm,binDex,loop)) {//if there is a wolfram match (wolfram code goes from 111 to 000)
+										innerP.setPixel(rel.x,rel.y,innerP.defaultId,loop);
+										return;//No more logic needed, it is done.
+									}
+								}
+							}
+						});
 					},
 					__DEAD__:function(elm,binStates,loop) {//In order not to erase the spawner pixels (which are the pixels, usually in the top row that make the pattern appear), erasing on live shouldn't be done.
 						return (function wdead(rel) {

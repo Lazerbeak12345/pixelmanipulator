@@ -113,7 +113,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by funciton documentation. (Updated last on version `4.0.0`)
+Function-by funciton documentation. (Updated last for version `4.1`)
 
 ### The global
 
@@ -298,8 +298,10 @@ above, "`00011110`."
 Wolfram Rules don't use the Moore area formula, they use the Wolfram area
 formula.
 
-    XXX
-     O
+```txt
+XXX
+ O
+```
 
 This remarkably different formula relies that per each frame, only one line
 changes at a time. Each cell, as shown above, depends on the 1(same cell
