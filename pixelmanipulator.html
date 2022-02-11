@@ -315,7 +315,8 @@
 					largeylineElm=document.getElementById('largeyline'),
 					largeyline1Elm=document.getElementById('largeyline1'),
 					shtargeterElm=document.getElementById('shtargeter'),
-					shfocusboxElm=document.getElementById('shfocusbox');
+					shfocusboxElm=document.getElementById('shfocusbox'),
+					customizer=document.getElementById('customizer');
 				p.canvas.addEventListener('click', updateBox);
 				selectorBoxElm.addEventListener('click',selectorClicked);
 				p.canvas.addEventListener('mousemove', updateSmallLines);
@@ -342,6 +343,13 @@
 				shfocusboxElm.addEventListener('click',function() {
 					var state=shfocusboxElm.checked?"hidden":"visible";
 					selectorBoxElm.style.visibility=state;
+				});
+				document.getElementById('customizeT').addEventListener('click',function() {
+					if(this.checked){
+						customizer.classList=[];
+					}else{
+						customizer.classList=["hidden"]
+					}
 				});
 				p.zoomX=10;
 				p.zoomY=10;
