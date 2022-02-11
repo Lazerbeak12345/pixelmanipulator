@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="4.1.0";
+	var pxversion="4.2.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -479,7 +479,8 @@
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
 				//console.log("iterate");
 				innerP.onIterate();
-				var getOldPixelId=innerP.__GetPixelId(new Uint32Array(innerP.currentElements)),
+				innerP.oldElements.set(innerP.currentElements)
+				var getOldPixelId=innerP.__GetPixelId(innerP.oldElements),
 					confirmOldElm=innerP.__ConfirmElm(getOldPixelId),
 					w=innerP.get_width(),
 					h=innerP.get_height(),
@@ -541,6 +542,7 @@
 					h=innerP.get_height();
 				innerP.imageData=innerP.ctx.getImageData(0,0,w,h);
 				innerP.currentElements=new Uint32Array(w*h);
+				innerP.oldElements=new Uint32Array(w*h);
 				innerP.ctx.imageSmoothingEnabled=false;
 				innerP.ctx.mozImageSmoothingEnabled=false;
 				innerP.ctx.webkitImageSmoothingEnabled=false;

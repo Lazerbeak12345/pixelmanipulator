@@ -113,7 +113,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by funciton documentation. (Updated last for version `4.1`)
+Function-by function documentation. (Updated last for version `4.2`)
 
 ### The global
 
@@ -611,7 +611,7 @@ They each return an array of objects in this pattern:
 }
 ```
 
-#### neighborhoods.wolfram
+##### neighborhoods.wolfram
 
 ```txt
  O
@@ -627,7 +627,7 @@ Arguments
 - include_self, a boolean. Should this include the center pixel? (optional.
   defaults to true)
 
-#### neighborhoods.moore
+##### neighborhoods.moore
 
 ```txt
 XXX
@@ -641,7 +641,7 @@ Arguments
 - include_self, a boolean. Should this include the center pixel? (optional.
   defaults to true)
 
-#### neighborhoods.vonNeumann
+##### neighborhoods.vonNeumann
 
 ```txt
  X
@@ -655,7 +655,7 @@ Arguments
 - include_self, a boolean. Should this include the center pixel? (optional.
   defaults to true)
 
-#### neighborhoods.euclidean
+##### neighborhoods.euclidean
 
 Shape is all pixels that fit within a circle of the given radius, where the
 precise euclidean distance is <= the radias.
@@ -666,3 +666,11 @@ Arguments
   (optional. defaults to 1)
 - include_self, a boolean. Should this include the center pixel? (optional.
   defaults to true)
+
+#### `currentElements`
+
+A `Uint32Array` that is the length of width times height of the canvas. Holds the element id of each element on screen, from left to right, top to bottom.
+
+#### `oldElements`
+
+A `Uint32Array` that is the length of width times height of the canvas. Holds the **last frames** element id of each element on screen, from left to right, top to bottom.
