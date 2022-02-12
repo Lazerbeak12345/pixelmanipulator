@@ -262,22 +262,61 @@
 				if (typeof elm==="undefined") throw new Error("Name is required for element");
 				if (typeof data.name==="undefined") data.name=elm;
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
-				if(typeof innerP.colorToId(data.color)!=="undefined")
-					throw new Error("The color "+data.color+" is already in use!")
-				while (data.color.length<4) data.color.push(255);
 				data.number=innerP.elementNumList.length
 				innerP.elementNumList.push(elm)
-				if (typeof data.pattern==="string") {
-					for (var tempNam in innerP.__templates) {
-						var out=innerP.__templates[tempNam].__index__(data.number,data);
-						if (out.length===0) continue;//if the output was [], then go on.
-						if (typeof data.liveCell==="undefined"&&typeof out[0]==="function") data.liveCell=out[0];
-						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
-					}
+				// Must be this value exactly for modifyElement to work
+				innerP.elementTypeMap[elm]={number:data.number,color:data.color};
+				innerP.modifyElement(data.number,data)
+			},
+			modifyElement:function(id,data) {
+				//                (# ,{}  )
+				var oldData=innerP.elementTypeMap[innerP.elementNumList[id]];
+				if(typeof data.name!=="undefined"&&(innerP.elementTypeMap[data.name]||{number:id}).number!==id)
+					throw new Error("The name "+data.name+" is already in use!");
+				if(typeof data.color!=="undefined"){
+					while (data.color.length<4)
+						data.color.push(255);
+					if(innerP.colorToId(data.color)!==id)
+						throw new Error("The color "+data.color+" is already in use!")
 				}
-				if(typeof data.hitbox==="undefined")
-					data.hitbox=innerP.neighborhoods.moore();
-				innerP.elementTypeMap[elm]=data;//for each element
+				for(var di in data)
+					if(data.hasOwnProperty(di))
+						oldData[di]=data[di];
+				if(typeof data.pattern==="string"){
+					var hb=oldData.hitbox,
+						lc=oldData.liveCell,
+						dc=oldData.deadCell;
+					// Even if it's undefined. If it's undefined the template will fill it.
+					oldData.hitbox=data.hitbox;
+					oldData.liveCell=data.liveCell;
+					oldData.deadCell=data.deadCell;
+					for (var tempNam in innerP.__templates) {
+						var out=innerP.__templates[tempNam].__index__(id,oldData);
+						if (out.length===0) continue;//if the output was [], then go on.
+						// Checking if `data` has the cell update functions because we _want_ to
+						// override the ones in `oldData`
+						if (typeof data.liveCell==="undefined"&&typeof out[0]==="function")
+							oldData.liveCell=out[0];
+						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function")
+							oldData.deadCell=out[1];
+					}
+					// In case nothing matches the pattern
+					if(typeof oldData.hitbox==="undefined"&&typeof hb!=="undefined")
+						oldData.hitbox=hb;
+					// These functions come in pairs. If either are defined, don't use the old
+					// ones.
+					if(
+						typeof oldData.liveCell==="undefined"&&
+						typeof oldData.deadCell==="undefined"
+					)
+						if(typeof lc!=="undefined")
+							oldData.liveCell=lc;
+						if(typeof dc!=="undefined")
+							oldData.deadCell=dc;
+				}
+				if(typeof oldData.hitbox==="undefined")
+					oldData.hitbox=innerP.neighborhoods.moore();
+				innerP.elementTypeMap[oldData.name]=oldData;
 			},
 			__WhatIs:function(getPixelId) {//Generator for whatIs
 				//           (()        )
