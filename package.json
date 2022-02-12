@@ -6,5 +6,32 @@
   "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
   "homepage": "https://lazerbeak12345.github.io/pixelmanipulator",
   "author": "Nathan Fritzler <nfblaster@live.com>",
-  "license": "GPL-3.0-or-later"
+  "license": "GPL-3.0-or-later",
+  "keywords":[
+	  "cellular automata",
+	  "game of life",
+	  "highlife",
+	  "brians brain",
+	  "wireworld",
+	  "wolfram",
+	  "rule 30",
+	  "rule 90",
+	  "rule 110",
+	  "rule 184",
+	  "grid",
+	  "engine",
+	  "conway",
+	  "pixel",
+	  "game",
+	  "life",
+	  "cellular",
+	  "automata",
+	  "automaton",
+	  "gameoflife",
+	  "gol",
+	  "brian's brain",
+	  "canvas",
+	  "particle physics",
+	  "simulation"
+  ]
 }
