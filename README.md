@@ -113,7 +113,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by function documentation. (Updated last for version `4.2`)
+Function-by function documentation. (Updated last for version `4.3`)
 
 ### The global
 
@@ -559,7 +559,8 @@ A low-level listing of the availiable elements.
 
 Format is much like the argument to `p.addMultipleElements`, but is sanitized.
 
-Includes a `number` value that serves as the element's ID number
+Includes a `number` value that serves as the element's ID number and a `name`
+value for convenience in making general components of elements.
 
 #### elementNumList
 

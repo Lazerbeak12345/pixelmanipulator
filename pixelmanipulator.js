@@ -164,7 +164,7 @@
 						data.loop=typeof data.loop!=="undefined"?data.loop:true;
 						if(typeof data.hitbox!=="undefined")
 							data.hitbox=innerP.neighborhoods.moore();
-						console.log("Life Pattern found: ",elm,data);
+						console.log("Life Pattern found: ",data.name,data);
 						return [
 							innerP.__templates.__LIFE__.__LIVE__(
 								innerP.__templates.__LIFE__._convertNumListToBf(numbers[2]),
@@ -198,7 +198,7 @@
 						data.loop=typeof data.loop!=="undefined"?data.loop:false;
 						if(typeof data.hitbox==="undefined")
 							data.hitbox=innerP.neighborhoods.wolfram();
-						console.log("Wolfram pattern found: ",elm,data);
+						console.log("Wolfram pattern found: ",data.name,data);
 						return [
 							innerP.__templates.__WOLFRAM__.__LIVE__(elm,binStates,data.loop),
 							innerP.__templates.__WOLFRAM__.__DEAD__(elm,binStates,data.loop)
@@ -260,6 +260,7 @@
 				}
 				if (typeof elm==="undefined") elm=data.name;//name of the element
 				if (typeof elm==="undefined") throw new Error("Name is required for element");
+				if (typeof data.name==="undefined") data.name=elm;
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
 				if(typeof innerP.colorToId(data.color)!=="undefined")
 					throw new Error("The color "+data.color+" is already in use!")
