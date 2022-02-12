@@ -95,6 +95,12 @@
 			<div id="customizer" class="hidden">
 				<div>Customize element:</div>
 				<select class="elmDrop" id="customSelect"></select>
+				<div id="customizePatternSection">
+					<label>
+						<input id="customizeLoop" type="checkbox">
+						Loop around screen edges.
+					</label>
+				</div>
 			</div>
 			<div id="zoom-box">
 				<div id="zoom-container">
@@ -296,6 +302,16 @@
 				updateLargeLinesX(e.offsetX,e.offsetY);
 				updateLargeLinesY(e.offsetX,e.offsetY);
 			};
+			function updateCustomizer(value){
+				var elm=p.elementTypeMap[value],
+						customizeSection=document.getElementById("customizePatternSection");
+				if(typeof elm.pattern==="string"){
+					customizeSection.classList.remove("hidden");
+					document.getElementById("customizeLoop").checked=elm.loop||false;
+				}else{
+					customizeSection.classList.add("hidden");
+				}
+			}
 			ready(function() {
 				document.getElementById("backendversion").innerText=p.version
 				p.canvasPrep({
@@ -319,7 +335,8 @@
 					largeyline1Elm=document.getElementById('largeyline1'),
 					shtargeterElm=document.getElementById('shtargeter'),
 					shfocusboxElm=document.getElementById('shfocusbox'),
-					customizer=document.getElementById('customizer');
+					customizer=document.getElementById('customizer'),
+					customizerS=document.getElementById("customSelect");
 				p.canvas.addEventListener('click', updateBox);
 				selectorBoxElm.addEventListener('click',selectorClicked);
 				p.canvas.addEventListener('mousemove', updateSmallLines);
@@ -347,11 +364,15 @@
 					var state=shfocusboxElm.checked?"hidden":"visible";
 					selectorBoxElm.style.visibility=state;
 				});
+				customizerS.addEventListener('change',function(){
+					updateCustomizer(this.value)
+				})
 				document.getElementById('customizeT').addEventListener('click',function() {
 					if(this.checked){
-						customizer.classList=[];
+						customizer.classList.remove("hidden")
+						updateCustomizer(customizerS.value)
 					}else{
-						customizer.classList=["hidden"]
+						customizer.classList.add("hidden")
 					}
 				});
 				p.zoomX=10;
@@ -552,7 +573,7 @@
 				document.getElementById("normalSelect").value="Conway's Game Of Life"
 				document.getElementById("ctrlSelect").value="Blocks"
 				document.getElementById("altSelect").value="Water"
-				document.getElementById("customSelect").value="Conway's Game Of Life"
+				customizerS.value="Conway's Game Of Life"
 			});
 		</script>
 	</body>
