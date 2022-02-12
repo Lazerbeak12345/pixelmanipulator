@@ -266,7 +266,7 @@
 				innerP.elementNumList.push(elm)
 				// Must be this value exactly for modifyElement to work
 				innerP.elementTypeMap[elm]={number:data.number,color:data.color};
-				innerP.modifyElement(data.number,data)
+				innerP.modifyElement(data.number,data);
 			},
 			modifyElement:function(id,data) {
 				//                (# ,{}  )
@@ -277,7 +277,7 @@
 					while (data.color.length<4)
 						data.color.push(255);
 					if(innerP.colorToId(data.color)!==id)
-						throw new Error("The color "+data.color+" is already in use!")
+						throw new Error("The color "+data.color+" is already in use!");
 				}
 				for(var di in data)
 					if(data.hasOwnProperty(di))
