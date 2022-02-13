@@ -353,11 +353,12 @@
 				largeylineElm.addEventListener('mousemove',bigLineGotHovered);
 				largeyline1Elm.addEventListener('mousemove',bigLineGotHovered);
 				customizeLoop.addEventListener('change',function(){
-					console.log("change",this.checked);
+					console.group("change loop",this.checked);
 					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
 						loop:this.checked
 					});
 					updateCustomizer(customizerS.value);
+					console.groupEnd("change loop");
 				});
 				shtargeterElm.addEventListener('click',function() {
 					var state=shtargeterElm.checked?"hidden":"visible";
