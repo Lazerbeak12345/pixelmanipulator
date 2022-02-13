@@ -336,7 +336,8 @@
 					shtargeterElm=document.getElementById('shtargeter'),
 					shfocusboxElm=document.getElementById('shfocusbox'),
 					customizer=document.getElementById('customizer'),
-					customizerS=document.getElementById("customSelect");
+					customizerS=document.getElementById("customSelect"),
+					customizeLoop=document.getElementById("customizeLoop");
 				p.canvas.addEventListener('click', updateBox);
 				selectorBoxElm.addEventListener('click',selectorClicked);
 				p.canvas.addEventListener('mousemove', updateSmallLines);
@@ -351,6 +352,13 @@
 				largexline1Elm.addEventListener('mousemove',bigLineGotHovered);
 				largeylineElm.addEventListener('mousemove',bigLineGotHovered);
 				largeyline1Elm.addEventListener('mousemove',bigLineGotHovered);
+				customizeLoop.addEventListener('change',function(){
+					console.log("change",this.checked);
+					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+						loop:this.checked
+					});
+					updateCustomizer(customizerS.value);
+				});
 				shtargeterElm.addEventListener('click',function() {
 					var state=shtargeterElm.checked?"hidden":"visible";
 					smallxlineElm.style.visibility=state;

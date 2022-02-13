@@ -279,6 +279,8 @@
 					if(innerP.colorToId(data.color)!==id)
 						throw new Error("The color "+data.color+" is already in use!");
 				}
+				if(typeof data.loop!=="undefined"&&typeof data.pattern==="undefined")
+					data.pattern=oldData.pattern;
 				for(var di in data)
 					if(data.hasOwnProperty(di))
 						oldData[di]=data[di];
