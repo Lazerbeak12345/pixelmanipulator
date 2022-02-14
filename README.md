@@ -113,7 +113,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by function documentation. (Updated last for version `4.3`)
+Function-by function documentation. (Updated last for version `4.4`)
 
 ### The global
 
@@ -402,6 +402,16 @@ Arguments:
 - `loop`. Optional. Wraps `x` and `y` around canvas borders.
 
 Returns nothing.
+
+##### Low Level Pixel Interaction with `renderPixel`
+
+Draws a pixel to a given location **without adding it to `currentElements`**.
+
+The sole purpose of this function is to allow future seperation between what the render target is, and the current enviroment.
+
+> If you want to try somethin' real hacky, overriding this function *might* be
+> enough to change what the render target _is_. I'd love to see if anyone give
+> this a try.
 
 ##### getPixelId
 
