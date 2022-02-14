@@ -390,6 +390,13 @@
 			},
 			update:function() {//applies changes made by setPixel to the graphical canvas(es)
 				//console.log("update");
+				var w=innerP.get_width(),
+					h=innerP.get_height();
+				for(var x=0;x<w;x++){
+					for(var y=0;y<h;y++){
+						innerP.renderPixel(x,y,innerP.currentElements[(w*y)+x]);
+					}
+				}
 				innerP.ctx.putImageData(innerP.imageData,0,0);
 				if (typeof innerP.zoomelm!=="undefined") innerP.zoom();
 			},
@@ -450,9 +457,11 @@
 					w=innerP.get_width(),
 					//arry.length is always going to be 4. Checking wastes time.
 					pixelOffset=((w*y)+x)*4;
+				innerP._dirtyPixels[Math.floor((w*y+x)/8)]&=~(1<<(x%8));//Zero the bit
 				for(var i=0;i<4;++i)
 					innerP.imageData.data[pixelOffset+i]=color[i];
 			},
+			_dirtyPixels:undefined,
 			setPixel:function(x,y,arry ,loop ) {//places given pixel at the x and y position, handling for loop (default loop is true)
 				//           (#,#,[]:"",true?)
 				//console.log("rawSetPixel",x,y,name,loop);
@@ -478,7 +487,7 @@
 					y%=h;
 					if(y<0)y+=h;
 				}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
-				innerP.renderPixel(x,y,id);
+				innerP._dirtyPixels[Math.floor((w*y+x)/8)]|=1<<(x%8);
 				innerP.currentElements[(w*y)+x]=id
 			},
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
@@ -548,6 +557,7 @@
 				innerP.imageData=innerP.ctx.getImageData(0,0,w,h);
 				innerP.currentElements=new Uint32Array(w*h);
 				innerP.oldElements=new Uint32Array(w*h);
+				innerP._dirtyPixels=new Uint8Array(Math.ceil((w*h)/8));
 				innerP.ctx.imageSmoothingEnabled=false;
 				innerP.ctx.mozImageSmoothingEnabled=false;
 				innerP.ctx.webkitImageSmoothingEnabled=false;
