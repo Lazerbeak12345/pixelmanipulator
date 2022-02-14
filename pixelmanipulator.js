@@ -445,26 +445,30 @@
 						f(x+1,y-1,name,loop)===(binDex&1<<0)>0;
 				});
 			},
+			renderPixel:function(x,y,id){
+				var color=innerP.idToColor(id),
+					w=innerP.get_width(),
+					//arry.length is always going to be 4. Checking wastes time.
+					pixelOffset=((w*y)+x)*4;
+				for(var i=0;i<4;++i)
+					innerP.imageData.data[pixelOffset+i]=color[i];
+			},
 			setPixel:function(x,y,arry ,loop ) {//places given pixel at the x and y position, handling for loop (default loop is true)
 				//           (#,#,[]:"",true?)
 				//console.log("rawSetPixel",x,y,name,loop);
 				x=Math.floor(x).toString()-0;//Fix any bad math done further up the line. Also remove bad math later
 				y=Math.floor(y).toString()-0;//...
 				loop=typeof loop!=="undefined"?loop:true;
-				var id,name;
+				var id;
 				if (typeof arry==="string") {
 					if(typeof innerP.elementTypeMap[arry]==="undefined")
 						throw new Error("Color name "+arry+" invalid!")
-					name=arry
-					arry=innerP.elementTypeMap[arry].color;
-				}else if(typeof arry==="number"){
+					id=innerP.elementTypeMap[arry].number;
+				}else if(typeof arry==="number")
 					id=arry
-					arry=innerP.idToColor(id)
-				}
-				if(typeof id==="undefined"){
-					if(typeof name==="undefined")id=innerP.colorToId(arry)
-					else id=innerP.elementTypeMap[name].number
-				}
+				else if(typeof arry==="object")
+					id=innerP.colorToId(arry);
+				else throw new Error("Color type "+(typeof arry)+" is invalid!");
 				while (arry.length<4) arry.push(255);//allows for arrays that are too small
 				var w=innerP.get_width(),
 					h=innerP.get_height();
@@ -474,7 +478,7 @@
 					y%=h;
 					if(y<0)y+=h;
 				}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
-				for (var i=0; i<4; i++) innerP.imageData.data[(((w*y)+x)*4)+i]=arry[i];//arry.length is alwase going to be 4. Checking wastes time.
+				innerP.renderPixel(x,y,id);
 				innerP.currentElements[(w*y)+x]=id
 			},
 			iterate:function() {//single frame of animation. Media functions pass this into setInterval
