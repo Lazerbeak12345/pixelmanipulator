@@ -105,7 +105,8 @@
 					<div>
 						<label>
 							Alpha (Opacity)
-							<input type="range" min="0" max="255" id="customColorAlpha">
+							<span id="customColorAlphaText"></span>
+							<input type="range" min="0" max="255" step="1" id="customColorAlpha">
 						</label>
 					</div>
 				</div>
@@ -316,9 +317,31 @@
 				updateLargeLinesX(e.offsetX,e.offsetY);
 				updateLargeLinesY(e.offsetX,e.offsetY);
 			};
+			function rgb2hex(color){
+				return "#"+
+					color[0].toString(16).padStart(2,"0")+
+					color[1].toString(16).padStart(2,"0")+
+					color[2].toString(16).padStart(2,"0")
+			}
+			function hex2rgba(hex,alpha){
+				var matches=hex.match(/#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i);
+				if(!matches) return matches;
+				var output=[
+						// The 0th is just the whole string
+						parseInt(matches[1],16), 
+						parseInt(matches[2],16),
+						parseInt(matches[3],16)
+					];
+				if(typeof alpha!=="undefined")
+					output.push(alpha);
+				return output;
+			}
 			function updateCustomizer(value){
 				var elm=p.elementTypeMap[value],
 						customizeSection=document.getElementById("customizePatternSection");
+				document.getElementById("customizeColor").value=rgb2hex(elm.color);
+				document.getElementById("customColorAlpha").value=elm.color[3];// Raw alpha value
+				document.getElementById("customColorAlphaText").innerText=elm.color[3];
 				if(typeof elm.pattern==="string"){
 					customizeSection.classList.remove("hidden");
 					document.getElementById("customizeLoop").checked=elm.loop||false;
@@ -351,7 +374,9 @@
 					shfocusboxElm=document.getElementById('shfocusbox'),
 					customizer=document.getElementById('customizer'),
 					customizerS=document.getElementById("customSelect"),
-					customizeLoop=document.getElementById("customizeLoop");
+					customizeLoop=document.getElementById("customizeLoop"),
+					customizeColor=document.getElementById("customizeColor"),
+					customizeColorAlpha=document.getElementById("customColorAlpha");
 				p.canvas.addEventListener('click', updateBox);
 				selectorBoxElm.addEventListener('click',selectorClicked);
 				p.canvas.addEventListener('mousemove', updateSmallLines);
@@ -366,6 +391,15 @@
 				largexline1Elm.addEventListener('mousemove',bigLineGotHovered);
 				largeylineElm.addEventListener('mousemove',bigLineGotHovered);
 				largeyline1Elm.addEventListener('mousemove',bigLineGotHovered);
+				function changeColor(){
+					console.log("change color");
+					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+						color:hex2rgba(customizeColor.value,parseInt(customizeColorAlpha.value))
+					});
+					updateCustomizer(customizerS.value);
+				}
+				customizeColor.addEventListener('change',changeColor);
+				customizeColorAlpha.addEventListener('change',changeColor);
 				customizeLoop.addEventListener('change',function(){
 					console.group("change loop",this.checked);
 					p.modifyElement(p.elementTypeMap[customizerS.value].number,{

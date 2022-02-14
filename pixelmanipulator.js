@@ -270,13 +270,15 @@
 			},
 			modifyElement:function(id,data) {
 				//                (# ,{}  )
-				var oldData=innerP.elementTypeMap[innerP.elementNumList[id]];
+				var name=innerP.elementNumList[id],
+					oldData=innerP.elementTypeMap[name];
+				delete innerP.elementTypeMap[name]; // Needs to be gone for color check
 				if(typeof data.name!=="undefined"&&(innerP.elementTypeMap[data.name]||{number:id}).number!==id)
 					throw new Error("The name "+data.name+" is already in use!");
 				if(typeof data.color!=="undefined"){
 					while (data.color.length<4)
 						data.color.push(255);
-					if(innerP.colorToId(data.color)!==id)
+					if(typeof innerP.colorToId(data.color)!=="undefined")
 						throw new Error("The color "+data.color+" is already in use!");
 				}
 				if(typeof data.loop!=="undefined"&&typeof data.pattern==="undefined")
@@ -318,7 +320,7 @@
 				}
 				if(typeof oldData.hitbox==="undefined")
 					oldData.hitbox=innerP.neighborhoods.moore();
-				innerP.elementTypeMap[oldData.name]=oldData;
+				innerP.elementTypeMap[name]=oldData;
 			},
 			__WhatIs:function(getPixelId) {//Generator for whatIs
 				//           (()        )
