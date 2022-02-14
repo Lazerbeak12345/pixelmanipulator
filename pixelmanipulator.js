@@ -55,9 +55,11 @@
 					color:[0,0,0,255],
 					number:0,//Index in innerP.elementNumList
 					hitbox:[],
+					name:"blank",
 				},
 			},
 			elementNumList:["blank"],
+			nameAliases:{},
 			mode:"paused",
 			zoomScaleFactor:20,
 			zoomctxStrokeStyle:"gray",
@@ -273,8 +275,10 @@
 				var name=innerP.elementNumList[id],
 					oldData=innerP.elementTypeMap[name];
 				delete innerP.elementTypeMap[name]; // Needs to be gone for color check
-				if(typeof data.name!=="undefined"&&(innerP.elementTypeMap[data.name]||{number:id}).number!==id)
-					throw new Error("The name "+data.name+" is already in use!");
+				if(typeof data.name!=="undefined"&&data.name!==oldData.name){
+					innerP.aliasElements(oldData,data);
+					innerP.elementNumList[id]=data.name
+				}
 				if(typeof data.color!=="undefined"){
 					while (data.color.length<4)
 						data.color.push(255);
@@ -320,7 +324,21 @@
 				}
 				if(typeof oldData.hitbox==="undefined")
 					oldData.hitbox=innerP.neighborhoods.moore();
-				innerP.elementTypeMap[name]=oldData;
+				innerP.elementTypeMap[oldData.name]=oldData;
+			},
+			aliasElements:function(oldData,newData){
+				if(typeof innerP.elementTypeMap[newData.name]!=="undefined")
+					throw new Error("The name "+newData.name+" is already in use!");
+				delete innerP.nameAliases[newData.name]
+				innerP.nameAliases[oldData.name]=newData.name
+			},
+			getElementByName:function(name){
+				var unaliased=name;
+				while(typeof unaliased!=="undefined"){
+					name=unaliased;
+					unaliased=innerP.nameAliases[name];
+				}
+				return innerP.elementTypeMap[name]
 			},
 			__WhatIs:function(getPixelId) {//Generator for whatIs
 				//           (()        )
@@ -405,7 +423,7 @@
 			},
 			idToColor:function(id){
 				//            (# )->false?[#,#,#,#]
-				return (innerP.elementTypeMap[innerP.elementNumList[id]]||{color:false}).color
+				return (innerP.getElementByName(innerP.elementNumList[id])||{color:false}).color
 			},
 			__GetPixelId:function(d ) {//Generates getPixelId and getOldPixelId instances
 				//               ([])
@@ -448,7 +466,7 @@
 					//                           (#,#,"":#:[],true?)
 					//console.log("confirmElm",x,y,name,loop);
 					switch(typeof id){
-						case"string":id=innerP.elementTypeMap[id].number;break;
+						case"string":id=innerP.getElementByName(id).number;break;
 						case"object":id=innerP.colorToId(id)
 					}
 					return getPixelId(x,y,loop)===id
@@ -504,9 +522,9 @@
 				loop=typeof loop!=="undefined"?loop:true;
 				var id;
 				if (typeof arry==="string") {
-					if(typeof innerP.elementTypeMap[arry]==="undefined")
+					if(typeof innerP.getElementByName(arry)==="undefined")
 						throw new Error("Color name "+arry+" invalid!")
-					id=innerP.elementTypeMap[arry].number;
+					id=innerP.getElementByName(arry).number;
 				}else if(typeof arry==="number")
 					id=arry
 				else if(typeof arry==="object")
@@ -549,7 +567,7 @@
 						var currentPixId=rel.getOldPixelId(x,y);
 						if(currentPixId===innerP.defaultId)continue;
 						var currentPix=innerP.elementNumList[currentPixId],
-							elm=innerP.elementTypeMap[currentPix];
+							elm=innerP.getElementByName(currentPix);
 						if(typeof elm.liveCell==="function") {
 							rel.y=y;
 							rel.x=x;

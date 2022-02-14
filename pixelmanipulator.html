@@ -478,7 +478,7 @@
 					"Wireworld Conductor":{
 						color:[67,75,77,255],
 						liveCell:function(rel) {
-							var num=p.elementTypeMap["Wireworld Electricity"].number;
+							var num=p.getElementByName("Wireworld Electricity").number;
 							var conductorNearbyTotal=rel.mooreNearbyCounter(rel.x,rel.y,num);
 							//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
 							if(conductorNearbyTotal===1||conductorNearbyTotal===2)
