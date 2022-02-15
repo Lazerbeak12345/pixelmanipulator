@@ -619,19 +619,37 @@
 					p.randomlyFill(pr,document.getElementById("altSelect").value);
 					p.update();
 				});
-				var elmdrops=document.getElementsByClassName("elmDrop")
+				document.getElementById("normalSelect").value="Conway's Game Of Life"
+				document.getElementById("ctrlSelect").value="Blocks"
+				document.getElementById("altSelect").value="Water"
+				customizerS.value="Conway's Game Of Life"
+			});
+			p.onElementModified=function(){
+				// Super ineficient but It's probabbly fine.
+				var elmdrops=document.getElementsByClassName("elmDrop"),
+					nsve=document.getElementById("normalSelect"),
+					csve=document.getElementById("ctrlSelect"),
+					asve=document.getElementById("altSelect"),
+					cusve=document.getElementById("customSelect");
+					// Save the current selection for later
+					nsv=nsve.value,
+					csv=csve.value,
+					asv=asve.value,
+					cusv=cusve.value;
 				for (var i=0;i<elmdrops.length;i++){
+					elmdrops[i].innerHTML="";
 					for (var elementName in p.elementTypeMap) {
 						var newElement=document.createElement("option")
 						newElement.innerText=elementName
 						elmdrops[i].appendChild(newElement)
 					}
 				}
-				document.getElementById("normalSelect").value="Conway's Game Of Life"
-				document.getElementById("ctrlSelect").value="Blocks"
-				document.getElementById("altSelect").value="Water"
-				customizerS.value="Conway's Game Of Life"
-			});
+				// Restore that selection
+				nsve.value=nsv;
+				csve.value=csv;
+				asve.value=asv;
+				cusve.value=cusv;
+			};
 		</script>
 	</body>
 </html>

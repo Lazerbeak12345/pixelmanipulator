@@ -270,6 +270,7 @@
 				innerP.elementTypeMap[elm]={number:data.number,color:data.color};
 				innerP.modifyElement(data.number,data);
 			},
+			onElementModified:function(){},
 			modifyElement:function(id,data) {
 				//                (# ,{}  )
 				var name=innerP.elementNumList[id],
@@ -325,6 +326,7 @@
 				if(typeof oldData.hitbox==="undefined")
 					oldData.hitbox=innerP.neighborhoods.moore();
 				innerP.elementTypeMap[oldData.name]=oldData;
+				innerP.onElementModified(id);
 			},
 			aliasElements:function(oldData,newData){
 				if(typeof innerP.elementTypeMap[newData.name]!=="undefined")
