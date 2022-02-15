@@ -278,7 +278,7 @@
 				delete innerP.elementTypeMap[name]; // Needs to be gone for color check
 				if(typeof data.name!=="undefined"&&data.name!==oldData.name){
 					innerP.aliasElements(oldData,data);
-					innerP.elementNumList[id]=data.name
+					innerP.elementNumList[id]=data.name;
 				}
 				if(typeof data.color!=="undefined"){
 					while (data.color.length<4)
@@ -331,8 +331,8 @@
 			aliasElements:function(oldData,newData){
 				if(typeof innerP.elementTypeMap[newData.name]!=="undefined")
 					throw new Error("The name "+newData.name+" is already in use!");
-				delete innerP.nameAliases[newData.name]
-				innerP.nameAliases[oldData.name]=newData.name
+				delete innerP.nameAliases[newData.name];
+				innerP.nameAliases[oldData.name]=newData.name;
 			},
 			getElementByName:function(name){
 				var unaliased=name;
@@ -340,7 +340,7 @@
 					name=unaliased;
 					unaliased=innerP.nameAliases[name];
 				}
-				return innerP.elementTypeMap[name]
+				return innerP.elementTypeMap[name];
 			},
 			__WhatIs:function(getPixelId) {//Generator for whatIs
 				//           (()        )
@@ -425,7 +425,7 @@
 			},
 			idToColor:function(id){
 				//            (# )->false?[#,#,#,#]
-				return (innerP.getElementByName(innerP.elementNumList[id])||{color:false}).color
+				return (innerP.getElementByName(innerP.elementNumList[id])||{color:false}).color;
 			},
 			__GetPixelId:function(d ) {//Generates getPixelId and getOldPixelId instances
 				//               ([])
