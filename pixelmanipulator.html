@@ -56,6 +56,10 @@
 		#scroll-box>div{
 			padding-bottom:1em;
 		}
+		#scroll-box input[type="text"]{
+			text-align:right;
+			width:3em;
+		}
 		#actions-box{
 			border-bottom:1px solid lightgrey;
 		}
@@ -72,10 +76,6 @@
 		}
 		#selectorBox:hover{
 			border:solid rgba(255,255,255,.5) 1px;
-		}
-		input[type="text"]{
-			text-align:right;
-			width:3em;
 		}
 		.click-type-random{
 			padding-left:1em
@@ -107,6 +107,12 @@
 							Alpha (Opacity)
 							<span id="customColorAlphaText"></span>
 							<input type="range" min="0" max="255" step="1" id="customColorAlpha">
+						</label>
+					</div>
+					<div>
+						<label>
+							Change Name:
+							<input type="text" id="customizeName">
 						</label>
 					</div>
 				</div>
@@ -342,6 +348,7 @@
 				document.getElementById("customizeColor").value=rgb2hex(elm.color);
 				document.getElementById("customColorAlpha").value=elm.color[3];// Raw alpha value
 				document.getElementById("customColorAlphaText").innerText=elm.color[3];
+				document.getElementById("customizeName").value=elm.name;
 				if(typeof elm.pattern==="string"){
 					customizeSection.classList.remove("hidden");
 					document.getElementById("customizeLoop").checked=elm.loop||false;
