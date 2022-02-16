@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="4.5.0";
+	var pxversion="4.5.1";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -564,7 +564,7 @@
 						mooreNearbyCounter:innerP.__MooreNearbyCounter(confirmOldElm),
 						wolframNearbyCounter:innerP.__WolframNearbyCounter(confirmOldElm),
 					},
-					updatedDeadPixel=new Uint8Array(Math.ceil((w*h)/8));
+					typedUpdatedDead=new Array(innerP.elementNumList.length);
 				innerP.pixelCounts={};
 				for(var x=0;x<w;x++){
 					for(var y=0;y<h;y++){ //iterate through x and y
@@ -582,6 +582,8 @@
 							innerP.pixelCounts[currentPix]=1;
 						}else innerP.pixelCounts[currentPix]++;
 						if (typeof elm.deadCell==="function") {
+							if(!typedUpdatedDead[currentPixId])
+								typedUpdatedDead[currentPixId]=new Uint8Array(Math.ceil((w*h)/8));
 							for(var hi=0;hi<elm.hitbox.length;hi++){
 								var pixel=elm.hitbox[hi];
 								rel.x=(x+pixel.x)%w;
@@ -589,7 +591,7 @@
 								rel.y=(y+pixel.y)%h;
 								if(rel.y<0)rel.y+=h;
 								var index=Math.floor((w*rel.y+rel.x)/8),
-									oldValue=updatedDeadPixel[index],
+									oldValue=typedUpdatedDead[currentPixId][index],
 									bitMask=1<<(rel.x%8);
 								if((oldValue&bitMask)>0)
 									continue;
@@ -598,7 +600,7 @@
 									continue;
 								rel.oldId=innerP.defaultElm;
 								elm.deadCell(rel);
-								updatedDeadPixel[index]=oldValue|bitMask;
+								typedUpdatedDead[currentPixId][index]=oldValue|bitMask;
 							}
 						}
 					}
