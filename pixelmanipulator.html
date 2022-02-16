@@ -398,6 +398,14 @@
 				largexline1Elm.addEventListener('mousemove',bigLineGotHovered);
 				largeylineElm.addEventListener('mousemove',bigLineGotHovered);
 				largeyline1Elm.addEventListener('mousemove',bigLineGotHovered);
+				document.getElementById('customizeName').addEventListener('change',function(){
+					console.log("change name",this.value);
+					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+						name:this.value
+					});
+					customizerS.value=this.value;
+					updateCustomizer(customizerS.value);
+				});
 				function changeColor(){
 					console.log("change color");
 					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
@@ -626,10 +634,6 @@
 					p.randomlyFill(pr,document.getElementById("altSelect").value);
 					p.update();
 				});
-				document.getElementById("normalSelect").value="Conway's Game Of Life"
-				document.getElementById("ctrlSelect").value="Blocks"
-				document.getElementById("altSelect").value="Water"
-				customizerS.value="Conway's Game Of Life"
 			});
 			p.onElementModified=function(){
 				// Super ineficient but It's probabbly fine.
@@ -643,6 +647,14 @@
 					csv=csve.value,
 					asv=asve.value,
 					cusv=cusve.value;
+				if(nsv.length===0)
+					nsv="Conway's Game Of Life";
+				if(csv.length===0)
+					csv="Blocks";
+				if(asv.length===0)
+					asv="Water";
+				if(cusv.length===0)
+					cusv="Conway's Game Of Life";
 				for (var i=0;i<elmdrops.length;i++){
 					elmdrops[i].innerHTML="";
 					for (var elementName in p.elementTypeMap) {
@@ -651,11 +663,11 @@
 						elmdrops[i].appendChild(newElement)
 					}
 				}
-				// Restore that selection
-				nsve.value=nsv;
-				csve.value=csv;
-				asve.value=asv;
-				cusve.value=cusv;
+				// Restore that selection, accounting for aliases
+				nsve.value=(p.getElementByName(nsv)||{name:""}).name;
+				csve.value=(p.getElementByName(csv)||{name:""}).name;
+				asve.value=(p.getElementByName(asv)||{name:""}).name;
+				cusve.value=(p.getElementByName(cusv)||{name:""}).name;
 			};
 		</script>
 	</body>

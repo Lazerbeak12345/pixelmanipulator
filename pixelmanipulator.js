@@ -529,10 +529,12 @@
 					id=innerP.getElementByName(arry).number;
 				}else if(typeof arry==="number")
 					id=arry
-				else if(typeof arry==="object")
+				else if(typeof arry==="object"){
 					id=innerP.colorToId(arry);
-				else throw new Error("Color type "+(typeof arry)+" is invalid!");
-				while (arry.length<4) arry.push(255);//allows for arrays that are too small
+					//allows for arrays that are too small
+					while(arry.length<4)
+						arry.push(255);
+				}else throw new Error("Color type "+(typeof arry)+" is invalid!");
 				var w=innerP.get_width(),
 					h=innerP.get_height();
 				if (loop) {
