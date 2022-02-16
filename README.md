@@ -18,10 +18,11 @@ between the viewfinder and the full-view pixel array - are also equipped so you
 can line up your complicated large-scale builds. You can even disable the
 targeter lines, the "focus box;" a box indicating the location of the
 viewfinder, and the pixelCounter, a tool that lets you see how many of what
-pixel are present. Don't forget that the pixel placer menu lets you not only set
-a different element for alt, normal and control clicking, but lets you fill the
-full-view pixel array with a specified random percent of that element with only
-a button click.
+pixel are present. Don't forget that the pixel placer menu lets you not only
+set a different element for alt, normal and control clicking, but lets you fill
+the full-view pixel array with a specified random percent of that element with
+only a button click. All this, and a newly added element customizer, allowing
+one to edit the color, name and loop attributes of an element.
 
 Pre-programmed cellular automata include:
 
@@ -113,7 +114,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by function documentation. (Updated last for version `4.4`)
+Function-by function documentation. (Updated last for version `4.5`)
 
 ### The global
 
@@ -233,6 +234,17 @@ All of the properties that this object can accept are these:
 }
 ```
 
+#### modifyElement
+
+Takes the element ID number and an object (same syntax as above).
+
+Any values present in the object will be applied to the pre-existing element.
+
+Automatically calls `aliasElements` if `name` is present in the object.
+
+If `pattern` is present, it will intelegently replace the `liveCell` and
+`deadCell` callbacks.
+
 #### addMultipleElements
 
 `p.addMultipleElements` can make your code more readable and passes in the input
@@ -250,6 +262,16 @@ p.addMultipleElements({
 	}
 });
 ```
+
+#### aliasElements
+
+Takes the old data object and the new one. (currently only accesses the "name" property)
+
+Adds element to `nameAliases`, and ensures no alias loops are present.
+
+#### getElementByName
+
+Returns the element from `elementTypeMap`, respecting aliases in `nameAliases`.
 
 #### About The Pre-built classes
 
@@ -537,6 +559,10 @@ A function that sets things such as `imageSmoothinEnabled` to be `false`, and de
 
 These functions get called before and after the `iterate` function does it's work (respectfully).
 
+#### onElementModified
+
+Gets called after a call to `modifyElement`. The ID is passed as the only argument.
+
 #### version
 
 This is a string indicating the version of the library. Follows [semver](https://semver.org).
@@ -572,9 +598,17 @@ Format is much like the argument to `p.addMultipleElements`, but is sanitized.
 Includes a `number` value that serves as the element's ID number and a `name`
 value for convenience in making general components of elements.
 
+> Warning! Does not respect the `nameAliases` object!
+
 #### elementNumList
 
 A list of all string-names in `p.elementTypeMap`, in order of ID number.
+
+#### nameAliases
+
+A mapping from old names for element to new names to for elements.
+
+Allows a user to modify the name of an element at runtime.
 
 #### mode
 

@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="4.4.0";
+	var pxversion="4.5.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -55,9 +55,11 @@
 					color:[0,0,0,255],
 					number:0,//Index in innerP.elementNumList
 					hitbox:[],
+					name:"blank",
 				},
 			},
 			elementNumList:["blank"],
+			nameAliases:{},
 			mode:"paused",
 			zoomScaleFactor:20,
 			zoomctxStrokeStyle:"gray",
@@ -262,22 +264,83 @@
 				if (typeof elm==="undefined") throw new Error("Name is required for element");
 				if (typeof data.name==="undefined") data.name=elm;
 				if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
-				if(typeof innerP.colorToId(data.color)!=="undefined")
-					throw new Error("The color "+data.color+" is already in use!")
-				while (data.color.length<4) data.color.push(255);
 				data.number=innerP.elementNumList.length
 				innerP.elementNumList.push(elm)
-				if (typeof data.pattern==="string") {
-					for (var tempNam in innerP.__templates) {
-						var out=innerP.__templates[tempNam].__index__(data.number,data);
-						if (out.length===0) continue;//if the output was [], then go on.
-						if (typeof data.liveCell==="undefined"&&typeof out[0]==="function") data.liveCell=out[0];
-						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function") data.deadCell=out[1];
-					}
+				// Must be this value exactly for modifyElement to work
+				innerP.elementTypeMap[elm]={number:data.number,color:data.color};
+				innerP.modifyElement(data.number,data);
+			},
+			onElementModified:function(){},
+			modifyElement:function(id,data) {
+				//                (# ,{}  )
+				var name=innerP.elementNumList[id],
+					oldData=innerP.elementTypeMap[name];
+				delete innerP.elementTypeMap[name]; // Needs to be gone for color check
+				if(typeof data.name!=="undefined"&&data.name!==oldData.name){
+					innerP.aliasElements(oldData,data);
+					innerP.elementNumList[id]=data.name;
 				}
-				if(typeof data.hitbox==="undefined")
-					data.hitbox=innerP.neighborhoods.moore();
-				innerP.elementTypeMap[elm]=data;//for each element
+				if(typeof data.color!=="undefined"){
+					while (data.color.length<4)
+						data.color.push(255);
+					if(typeof innerP.colorToId(data.color)!=="undefined")
+						throw new Error("The color "+data.color+" is already in use!");
+				}
+				if(typeof data.loop!=="undefined"&&typeof data.pattern==="undefined")
+					data.pattern=oldData.pattern;
+				for(var di in data)
+					if(data.hasOwnProperty(di))
+						oldData[di]=data[di];
+				if(typeof data.pattern==="string"){
+					var hb=oldData.hitbox,
+						lc=oldData.liveCell,
+						dc=oldData.deadCell;
+					// Even if it's undefined. If it's undefined the template will fill it.
+					oldData.hitbox=data.hitbox;
+					oldData.liveCell=data.liveCell;
+					oldData.deadCell=data.deadCell;
+					for (var tempNam in innerP.__templates) {
+						var out=innerP.__templates[tempNam].__index__(id,oldData);
+						if (out.length===0) continue;//if the output was [], then go on.
+						// Checking if `data` has the cell update functions because we _want_ to
+						// override the ones in `oldData`
+						if (typeof data.liveCell==="undefined"&&typeof out[0]==="function")
+							oldData.liveCell=out[0];
+						if (typeof data.deadCell==="undefined"&&typeof out[1]==="function")
+							oldData.deadCell=out[1];
+					}
+					// In case nothing matches the pattern
+					if(typeof oldData.hitbox==="undefined"&&typeof hb!=="undefined")
+						oldData.hitbox=hb;
+					// These functions come in pairs. If either are defined, don't use the old
+					// ones.
+					if(
+						typeof oldData.liveCell==="undefined"&&
+						typeof oldData.deadCell==="undefined"
+					)
+						if(typeof lc!=="undefined")
+							oldData.liveCell=lc;
+						if(typeof dc!=="undefined")
+							oldData.deadCell=dc;
+				}
+				if(typeof oldData.hitbox==="undefined")
+					oldData.hitbox=innerP.neighborhoods.moore();
+				innerP.elementTypeMap[oldData.name]=oldData;
+				innerP.onElementModified(id);
+			},
+			aliasElements:function(oldData,newData){
+				if(typeof innerP.elementTypeMap[newData.name]!=="undefined")
+					throw new Error("The name "+newData.name+" is already in use!");
+				delete innerP.nameAliases[newData.name];
+				innerP.nameAliases[oldData.name]=newData.name;
+			},
+			getElementByName:function(name){
+				var unaliased=name;
+				while(typeof unaliased!=="undefined"){
+					name=unaliased;
+					unaliased=innerP.nameAliases[name];
+				}
+				return innerP.elementTypeMap[name];
 			},
 			__WhatIs:function(getPixelId) {//Generator for whatIs
 				//           (()        )
@@ -362,7 +425,7 @@
 			},
 			idToColor:function(id){
 				//            (# )->false?[#,#,#,#]
-				return (innerP.elementTypeMap[innerP.elementNumList[id]]||{color:false}).color
+				return (innerP.getElementByName(innerP.elementNumList[id])||{color:false}).color;
 			},
 			__GetPixelId:function(d ) {//Generates getPixelId and getOldPixelId instances
 				//               ([])
@@ -405,7 +468,7 @@
 					//                           (#,#,"":#:[],true?)
 					//console.log("confirmElm",x,y,name,loop);
 					switch(typeof id){
-						case"string":id=innerP.elementTypeMap[id].number;break;
+						case"string":id=innerP.getElementByName(id).number;break;
 						case"object":id=innerP.colorToId(id)
 					}
 					return getPixelId(x,y,loop)===id
@@ -461,15 +524,17 @@
 				loop=typeof loop!=="undefined"?loop:true;
 				var id;
 				if (typeof arry==="string") {
-					if(typeof innerP.elementTypeMap[arry]==="undefined")
+					if(typeof innerP.getElementByName(arry)==="undefined")
 						throw new Error("Color name "+arry+" invalid!")
-					id=innerP.elementTypeMap[arry].number;
+					id=innerP.getElementByName(arry).number;
 				}else if(typeof arry==="number")
 					id=arry
-				else if(typeof arry==="object")
+				else if(typeof arry==="object"){
 					id=innerP.colorToId(arry);
-				else throw new Error("Color type "+(typeof arry)+" is invalid!");
-				while (arry.length<4) arry.push(255);//allows for arrays that are too small
+					//allows for arrays that are too small
+					while(arry.length<4)
+						arry.push(255);
+				}else throw new Error("Color type "+(typeof arry)+" is invalid!");
 				var w=innerP.get_width(),
 					h=innerP.get_height();
 				if (loop) {
@@ -506,7 +571,7 @@
 						var currentPixId=rel.getOldPixelId(x,y);
 						if(currentPixId===innerP.defaultId)continue;
 						var currentPix=innerP.elementNumList[currentPixId],
-							elm=innerP.elementTypeMap[currentPix];
+							elm=innerP.getElementByName(currentPix);
 						if(typeof elm.liveCell==="function") {
 							rel.y=y;
 							rel.x=x;

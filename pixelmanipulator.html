@@ -33,21 +33,32 @@
 			top:0;
 			left:0;
 		}
-		#zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
+		#menu-box{
 			position:fixed;
 			top:0;
 			right:0;
 			z-index:999;
 			height:100%;
+			flex-direction:row;
+			display:flex;
+		}
+		#menu-box>div{
+			border-left:1px solid lightgrey;
+		}
+		#zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
+			height:100%;
 			flex-direction:column;
 			display:flex;
-			border-left:1px solid lightgrey;
 		}
 		#scroll-box{
 			overflow-y:scroll;
 		}
 		#scroll-box>div{
 			padding-bottom:1em;
+		}
+		#scroll-box input[type="text"]{
+			text-align:right;
+			width:3em;
 		}
 		#actions-box{
 			border-bottom:1px solid lightgrey;
@@ -66,15 +77,11 @@
 		#selectorBox:hover{
 			border:solid rgba(255,255,255,.5) 1px;
 		}
-		input[type="text"]{
-			text-align:right;
-			width:3em;
-		}
-		/*.outline{
-			/*border:1px solid metal;
-		}*/
 		.click-type-random{
 			padding-left:1em
+		}
+		.hidden{
+			display:none;
 		}
 		</style>
 	</head>
@@ -84,65 +91,123 @@
 		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
 		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
 		<div id="selectorBox"></div>
-		<div id="zoom-box"><!--This is the container for the zoomed-in box that the user can interact with-->
-			<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
-			<div id="actions-box">
-				<div id="largexline" style="top:0px;"></div>
-				<div id="largeyline" style="right:0px;"></div>
-				<div id="largexline1" style="top:0px;"></div>
-				<div id="largeyline1" style="right:0px;"></div>
-				<button id="reset" alt="Reset" title="Reset">◄</button>
-				<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
-				<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
-				<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
-			</div>
-			<div id="scroll-box">
-				<div id="sizes-box">
-					<div>Width: <input id="width" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
-					<div>Height: <input id="height" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
-					<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
-					<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
-				</div>
-				<div id="click-types">
-					<div class="click-type">
-						Normal click:
-						<select class="elmDrop" id="normalSelect"></select>
-						<div class="click-type-random">
-							<button id="normalFill">Randomly fill</button>
-							<input id="normalFillP" type="text" value="15" placeholder="15"/>%
-						</div>
-					</div>
-					<div class="click-type">
-						Ctrl click:
-						<select class="elmDrop" id="ctrlSelect"></select>
-						<div class="click-type-random">
-							<button id="ctrlFill">Randomly fill</button>
-							<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
-						</div>
-					</div>
-					<div class="click-type">
-						Alt click:
-						<select class="elmDrop" id="altSelect"></select>
-						<div class="click-type-random">
-							<button id="altFill">Randomly fill</button>
-							<input id="altFillP" type="text" value="15" placeholder="15"/>%
-						</div>
-					</div>
-				</div>
+		<div id="menu-box">
+			<div id="customizer" class="hidden">
+				<div>Customize element:</div>
+				<select class="elmDrop" id="customSelect"></select>
 				<div>
 					<div>
-						<label><input id="shtargeter" type="checkbox" >Hide targeter lines</label>
-						<label><input id="shfocusbox" type="checkbox" >Hide focus box</label>
+						<label>
+							Element Color
+							<input type="color" id="customizeColor">
+						</label>
 					</div>
-					<label><input id="pixelCounterT" type="checkbox" >Hide pixelCounter</label>
-				</div>
-				<div id="callout">
 					<div>
-						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
+						<label>
+							Alpha (Opacity)
+							<span id="customColorAlphaText"></span>
+							<input type="range" min="0" max="255" step="1" id="customColorAlpha">
+						</label>
 					</div>
-					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.29.0
-				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+					<div>
+						<label>
+							Change Name:
+							<input type="text" id="customizeName">
+						</label>
+					</div>
+				</div>
+				<div id="customizePatternSection">
+					<label>
+						<input id="customizeLoop" type="checkbox">
+						Loop around screen edges.
+					</label>
+				</div>
+			</div>
+			<div id="zoom-box">
+				<div id="zoom-container">
+					<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
+					<div id="largexline"></div>
+					<div id="largeyline"></div>
+					<div id="largexline1"></div>
+					<div id="largeyline1"></div>
+				</div>
+				<div id="actions-box">
+					<button id="reset" alt="Reset" title="Reset">◄</button>
+					<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
+					<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
+					<button id="oneFrameAtATime" onclick="p.iterate();" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+				</div>
+				<div id="scroll-box">
+					<div id="sizes-box">
+						<div>Width: <input id="width" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+						<div>Height: <input id="height" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+						<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+						<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+					</div>
+					<div id="click-types">
+						<div class="click-type">
+							Normal click:
+							<select class="elmDrop" id="normalSelect"></select>
+							<div class="click-type-random">
+								<button id="normalFill">Randomly fill</button>
+								<input id="normalFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+						<div class="click-type">
+							Ctrl click:
+							<select class="elmDrop" id="ctrlSelect"></select>
+							<div class="click-type-random">
+								<button id="ctrlFill">Randomly fill</button>
+								<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+						<div class="click-type">
+							Alt click:
+							<select class="elmDrop" id="altSelect"></select>
+							<div class="click-type-random">
+								<button id="altFill">Randomly fill</button>
+								<input id="altFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+					</div>
+					<table>
+						<tr>
+							<td>
+								<label>
+									<input id="shtargeter" type="checkbox">
+									Hide targeter lines
+								</label>
+							</td>
+							<td>
+								<label>
+									<input id="shfocusbox" type="checkbox">
+									Hide focus box
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label>
+									<input id="pixelCounterT" type="checkbox">
+									Hide pixelCounter
+								</label>
+							</td>
+							<td>
+								<label>
+									<input id="customizeT" type="checkbox">
+									Show element customizer
+								</label>
+							</td>
+						</tr>
+					</table>
+					<div id="callout">
+						<div>
+							<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
+						</div>
+						<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
+						Library v<span id="backendversion"></span>, Frontend v1.30.0
+					</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				</div>
 			</div>
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
@@ -185,11 +250,15 @@
 
 			}
 			function updateLargeLinesX(x,y) {
-				var h=(p.zoomelm.height-((1+y)*p.zoomScaleFactor)),
-					t=p.zoomScaleFactor*(y+1),
-					h2=(y*p.zoomScaleFactor);
-				if (y<0||y>(p.zoomelm.height/p.zoomScaleFactor)) {
-					h=p.zoomelm.height;
+				var zh=p.zoomelm.height,
+					zw=p.zoomelm.width,
+					zsf=p.zoomScaleFactor,
+					h=(zh-((1+y)*zsf)),
+					t=zsf*(y+1),
+					h2=(y*zsf),
+					rightVal=zw-zsf*(x+1);
+				if (y<0||y>(zh/zsf)) {
+					h=zh;
 					t=0;
 					h2=0;
 				}
@@ -197,20 +266,24 @@
 				var largexlinesty=document.getElementById("largexline").style;
 				largexlinesty.width=p.zoomScaleFactor+"px";
 				largexlinesty.height=h+"px";
-				largexlinesty.left=p.zoomScaleFactor*x+"px";
+				largexlinesty.right=rightVal+"px";
 				largexlinesty.top=t+"px";
 
 				var largexline1sty=document.getElementById("largexline1").style;
 				largexline1sty.width=p.zoomScaleFactor+"px";
 				largexline1sty.height=h2+"px";
-				largexline1sty.left=p.zoomScaleFactor*x+"px";
+				largexline1sty.right=rightVal+"px";
+				largexline1sty.top=0;
 			}
 			function updateLargeLinesY(x,y) {
-				var w=(p.zoomelm.width-((1+x)*p.zoomScaleFactor)),
-					l=p.zoomScaleFactor*(x+1),
-					w2=(x*p.zoomScaleFactor);
-				if (x<0||x>(p.zoomelm.width/p.zoomScaleFactor)) {
-					w=p.zoomelm.width;
+				var zh=p.zoomelm.height,
+					zw=p.zoomelm.width,
+					zsf=p.zoomScaleFactor,
+					w=zw-((1+x)*zsf),
+					l=zw-zsf*x,
+					w2=(x*zsf);
+				if (x<0||x>(zw/zsf)) {
+					w=zw;
 					l=0;
 					w2=0;
 				}
@@ -219,13 +292,13 @@
 				largeylinesty.height=p.zoomScaleFactor+"px";
 				largeylinesty.width=w+"px";
 				largeylinesty.top=p.zoomScaleFactor*y+"px";
-				largeylinesty.left=l+"px";
+				largeylinesty.right=0;
 
 				var largeyline1sty=document.getElementById("largeyline1").style;
 				largeyline1sty.height=p.zoomScaleFactor+"px";
 				largeyline1sty.width=w2+"px";
 				largeyline1sty.top=p.zoomScaleFactor*y+"px";
-				largeyline1sty.left="0px";
+				largeyline1sty.right=l+"px";
 			}
 			function selectorClicked(e) {
 				p.zoom({
@@ -250,6 +323,39 @@
 				updateLargeLinesX(e.offsetX,e.offsetY);
 				updateLargeLinesY(e.offsetX,e.offsetY);
 			};
+			function rgb2hex(color){
+				return "#"+
+					color[0].toString(16).padStart(2,"0")+
+					color[1].toString(16).padStart(2,"0")+
+					color[2].toString(16).padStart(2,"0")
+			}
+			function hex2rgba(hex,alpha){
+				var matches=hex.match(/#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i);
+				if(!matches) return matches;
+				var output=[
+						// The 0th is just the whole string
+						parseInt(matches[1],16), 
+						parseInt(matches[2],16),
+						parseInt(matches[3],16)
+					];
+				if(typeof alpha!=="undefined")
+					output.push(alpha);
+				return output;
+			}
+			function updateCustomizer(){
+				var elm=p.elementTypeMap[document.getElementById("customSelect").value],
+						customizeSection=document.getElementById("customizePatternSection");
+				document.getElementById("customizeColor").value=rgb2hex(elm.color);
+				document.getElementById("customColorAlpha").value=elm.color[3];// Raw alpha value
+				document.getElementById("customColorAlphaText").innerText=elm.color[3];
+				document.getElementById("customizeName").value=elm.name;
+				if(typeof elm.pattern==="string"){
+					customizeSection.classList.remove("hidden");
+					document.getElementById("customizeLoop").checked=elm.loop||false;
+				}else{
+					customizeSection.classList.add("hidden");
+				}
+			}
 			ready(function() {
 				document.getElementById("backendversion").innerText=p.version
 				p.canvasPrep({
@@ -272,7 +378,12 @@
 					largeylineElm=document.getElementById('largeyline'),
 					largeyline1Elm=document.getElementById('largeyline1'),
 					shtargeterElm=document.getElementById('shtargeter'),
-					shfocusboxElm=document.getElementById('shfocusbox');
+					shfocusboxElm=document.getElementById('shfocusbox'),
+					customizer=document.getElementById('customizer'),
+					customizerS=document.getElementById("customSelect"),
+					customizeLoop=document.getElementById("customizeLoop"),
+					customizeColor=document.getElementById("customizeColor"),
+					customizeColorAlpha=document.getElementById("customColorAlpha");
 				p.canvas.addEventListener('click', updateBox);
 				selectorBoxElm.addEventListener('click',selectorClicked);
 				p.canvas.addEventListener('mousemove', updateSmallLines);
@@ -287,6 +398,28 @@
 				largexline1Elm.addEventListener('mousemove',bigLineGotHovered);
 				largeylineElm.addEventListener('mousemove',bigLineGotHovered);
 				largeyline1Elm.addEventListener('mousemove',bigLineGotHovered);
+				document.getElementById('customizeName').addEventListener('change',function(){
+					console.log("change name",this.value);
+					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+						name:this.value
+					});
+					updateCustomizer();
+				});
+				function changeColor(){
+					console.log("change color");
+					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+						color:hex2rgba(customizeColor.value,parseInt(customizeColorAlpha.value))
+					});
+				}
+				customizeColor.addEventListener('change',changeColor);
+				customizeColorAlpha.addEventListener('change',changeColor);
+				customizeLoop.addEventListener('change',function(){
+					console.group("change loop",this.checked);
+					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+						loop:this.checked
+					});
+					console.groupEnd("change loop");
+				});
 				shtargeterElm.addEventListener('click',function() {
 					var state=shtargeterElm.checked?"hidden":"visible";
 					smallxlineElm.style.visibility=state;
@@ -299,6 +432,17 @@
 				shfocusboxElm.addEventListener('click',function() {
 					var state=shfocusboxElm.checked?"hidden":"visible";
 					selectorBoxElm.style.visibility=state;
+				});
+				customizerS.addEventListener('change',function(){
+					updateCustomizer()
+				})
+				document.getElementById('customizeT').addEventListener('click',function() {
+					if(this.checked){
+						customizer.classList.remove("hidden")
+						updateCustomizer()
+					}else{
+						customizer.classList.add("hidden")
+					}
 				});
 				p.zoomX=10;
 				p.zoomY=10;
@@ -346,7 +490,7 @@
 					"Wireworld Conductor":{
 						color:[67,75,77,255],
 						liveCell:function(rel) {
-							var num=p.elementTypeMap["Wireworld Electricity"].number;
+							var num=p.getElementByName("Wireworld Electricity").number;
 							var conductorNearbyTotal=rel.mooreNearbyCounter(rel.x,rel.y,num);
 							//copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
 							if(conductorNearbyTotal===1||conductorNearbyTotal===2)
@@ -487,18 +631,42 @@
 					p.randomlyFill(pr,document.getElementById("altSelect").value);
 					p.update();
 				});
-				var elmdrops=document.getElementsByClassName("elmDrop")
+			});
+			p.onElementModified=function(){
+				// Super ineficient but It's probabbly fine.
+				var elmdrops=document.getElementsByClassName("elmDrop"),
+					nsve=document.getElementById("normalSelect"),
+					csve=document.getElementById("ctrlSelect"),
+					asve=document.getElementById("altSelect"),
+					cusve=document.getElementById("customSelect");
+					// Save the current selection for later
+					nsv=nsve.value,
+					csv=csve.value,
+					asv=asve.value,
+					cusv=cusve.value;
+				if(nsv.length===0)
+					nsv="Conway's Game Of Life";
+				if(csv.length===0)
+					csv="Blocks";
+				if(asv.length===0)
+					asv="Water";
+				if(cusv.length===0)
+					cusv="Conway's Game Of Life";
 				for (var i=0;i<elmdrops.length;i++){
+					elmdrops[i].innerHTML="";
 					for (var elementName in p.elementTypeMap) {
 						var newElement=document.createElement("option")
 						newElement.innerText=elementName
 						elmdrops[i].appendChild(newElement)
 					}
 				}
-				document.getElementById("normalSelect").value="Conway's Game Of Life"
-				document.getElementById("ctrlSelect").value="Blocks"
-				document.getElementById("altSelect").value="Water"
-			});
+				// Restore that selection, accounting for aliases
+				nsve.value=(p.getElementByName(nsv)||{name:""}).name;
+				csve.value=(p.getElementByName(csv)||{name:""}).name;
+				asve.value=(p.getElementByName(asv)||{name:""}).name;
+				cusve.value=(p.getElementByName(cusv)||{name:""}).name;
+				if(cusve.value)updateCustomizer()
+			};
 		</script>
 	</body>
 </html>
