@@ -205,7 +205,7 @@
 							<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
 						</div>
 						<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-						Library v<span id="backendversion"></span>, Frontend v1.29.0
+						Library v<span id="backendversion"></span>, Frontend v1.30.0
 					</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 				</div>
 			</div>
@@ -342,8 +342,8 @@
 					output.push(alpha);
 				return output;
 			}
-			function updateCustomizer(value){
-				var elm=p.elementTypeMap[value],
+			function updateCustomizer(){
+				var elm=p.elementTypeMap[document.getElementById("customSelect").value],
 						customizeSection=document.getElementById("customizePatternSection");
 				document.getElementById("customizeColor").value=rgb2hex(elm.color);
 				document.getElementById("customColorAlpha").value=elm.color[3];// Raw alpha value
@@ -403,15 +403,13 @@
 					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
 						name:this.value
 					});
-					customizerS.value=this.value;
-					updateCustomizer(customizerS.value);
+					updateCustomizer();
 				});
 				function changeColor(){
 					console.log("change color");
 					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
 						color:hex2rgba(customizeColor.value,parseInt(customizeColorAlpha.value))
 					});
-					updateCustomizer(customizerS.value);
 				}
 				customizeColor.addEventListener('change',changeColor);
 				customizeColorAlpha.addEventListener('change',changeColor);
@@ -420,7 +418,6 @@
 					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
 						loop:this.checked
 					});
-					updateCustomizer(customizerS.value);
 					console.groupEnd("change loop");
 				});
 				shtargeterElm.addEventListener('click',function() {
@@ -437,12 +434,12 @@
 					selectorBoxElm.style.visibility=state;
 				});
 				customizerS.addEventListener('change',function(){
-					updateCustomizer(this.value)
+					updateCustomizer()
 				})
 				document.getElementById('customizeT').addEventListener('click',function() {
 					if(this.checked){
 						customizer.classList.remove("hidden")
-						updateCustomizer(customizerS.value)
+						updateCustomizer()
 					}else{
 						customizer.classList.add("hidden")
 					}
@@ -668,6 +665,7 @@
 				csve.value=(p.getElementByName(csv)||{name:""}).name;
 				asve.value=(p.getElementByName(asv)||{name:""}).name;
 				cusve.value=(p.getElementByName(cusv)||{name:""}).name;
+				if(cusve.value)updateCustomizer()
 			};
 		</script>
 	</body>
