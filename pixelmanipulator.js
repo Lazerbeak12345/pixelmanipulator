@@ -354,7 +354,7 @@
 				//console.log("play");
 				if (innerP.mode==="playing") innerP.reset(canvasSizes);
 				innerP.mode="playing";
-				innerP.loopint=setInterval(innerP.iterate,1);
+				innerP.loopint=g.requestAnimationFrame(innerP.iterate);
 			},
 			reset:function(canvasSizes) {//reset (and resize) the canvas(es)
 				//        ({}?        )
@@ -382,7 +382,7 @@
 			},
 			pause:function() {//pause canvas iterations
 				innerP.mode="paused";
-				clearInterval(innerP.loopint);
+				g.cancelAnimationFrame(innerP.loopint);
 			},
 			zoom:function(e  ) {//This tells pixelmanipulator where to focus the center of the zoomElm
 				//       ({}?)
@@ -607,6 +607,8 @@
 				}
 				innerP.update();
 				innerP.onAfterIterate();
+				if (innerP.mode==="playing")
+					innerP.loopint=g.requestAnimationFrame(innerP.iterate);
 			},
 			updateData:function() {//defines the starting values of the library and is run on `p.reset();`
 				//console.log("updateData");
