@@ -1,6 +1,6 @@
 {
   "name": "pixelmanipulator",
-  "version": "4.6.0",
+  "version": "4.6.1",
   "description": "Run any cellular automata on an html5 canvas.",
   "main": "pixelmanipulator.js",
   "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
