@@ -114,7 +114,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by-function documentation. (Updated last for version `4.6`)
+Function-by-function documentation. (Updated last for version `4.5`)
 
 ### The global
 
