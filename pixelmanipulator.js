@@ -17,7 +17,7 @@
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
 (function(g) {
 	'use strict';
-	var pxversion="4.5.1";
+	var pxversion="4.6.0";
 	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
@@ -36,17 +36,21 @@
 			//imageData:{},
 			zoomX:0,
 			zoomY:0,
+			_width:1,//Must be at least one pixel for startup to work
+			_height:1,
 			get_width:function(){
-				return innerP.canvas.width
+				return innerP._width
 			},
 			set_width:function(value){
 				innerP.canvas.width=value
+				innerP._width=value
 			},
 			get_height:function(){
-				return innerP.canvas.height
+				return innerP._height
 			},
 			set_height:function(value){
 				innerP.canvas.height=value
+				innerP._height=value
 			},
 			row:0,
 			//__oldDraw:false,

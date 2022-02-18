@@ -114,7 +114,7 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 ## Documentation
 
-Function-by function documentation. (Updated last for version `4.5`)
+Function-by-function documentation. (Updated last for version `4.6`)
 
 ### The global
 
@@ -581,7 +581,7 @@ This is the number that indicates what interval the iterate function is being ca
 
 The coordinates of where the center of the zoomelm is windowed at.
 
-#### get and set width an height
+#### get and set width and height
 
 `get_width` and `get_height` take no args and return the width or height, respectively.
 
