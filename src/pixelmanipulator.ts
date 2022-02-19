@@ -24,6 +24,9 @@
 			});
 		}*/
 		if (typeof g.window=="undefined") console.warn("This enviroment has not been tested, and is officially not supported.\nGood luck.");
+		function boolToNumber(bool:boolean):number{
+			return bool?1:0
+		}
 		function PixelManipulator(){
 			this.loopint=0;
 			this.zoomX=0;
@@ -506,7 +509,7 @@
 				//console.log("wolframNearby");
 				if(typeof binDex==="string"){
 					//Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
-					binDex=(binDex[0]==="1")<<2|(binDex[1]==="1")<<1|(binDex[2]==="1")<<0;
+					binDex=boolToNumber(binDex[0]==="1")<<2|boolToNumber(binDex[1]==="1")<<1|boolToNumber(binDex[2]==="1")<<0;
 				}
 				loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
 				// the three spots above (nw,n,ne)
