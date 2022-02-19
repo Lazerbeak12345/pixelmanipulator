@@ -162,7 +162,8 @@ var PixelManipulator;
                 return out;
             },
             __index__: function (p, elm, data) {
-                if (data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1)
+                if (typeof data.pattern === "undefined" ||
+                    data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1)
                     return [];
                 var numbers = data.pattern.split(/\/?[a-z]/gi); //"B",born,die
                 data.loop = typeof data.loop !== "undefined" ? data.loop : true;
@@ -189,7 +190,8 @@ var PixelManipulator;
         },
         __WOLFRAM__: {
             __index__: function (p, elm, data) {
-                if (data.pattern.search(/Rule \d*/gi) <= -1)
+                if (typeof data.pattern === "undefined" ||
+                    data.pattern.search(/Rule \d*/gi) <= -1)
                     return [];
                 var binStates = parseInt(data.pattern.split(/Rule /gi)[1]);
                 data.loop = typeof data.loop !== "undefined" ? data.loop : false;
@@ -367,7 +369,10 @@ var PixelManipulator;
             e.x = this.zoomX;
         if (typeof e.y == "undefined")
             e.x = this.zoomY;
-        if (e.x >= 0 && e.y >= 0) {
+        if (typeof e.x !== "undefined" &&
+            typeof e.y !== "undefined" &&
+            e.x >= 0 &&
+            e.y >= 0) {
             this.zoomX = e.x;
             this.zoomY = e.y;
         }

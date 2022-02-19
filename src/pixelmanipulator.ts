@@ -181,7 +181,7 @@ namespace PixelManipulator{
 		number:number
 	}
 	interface ElementDataUnknown{
-		[index:string]:string|number[]|boolean|hitbox|((rel:rel)=>void)|number
+		[index:string]:string|number[]|boolean|hitbox|((rel:rel)=>void)|number|undefined
 		name?:string
 		color?:number[]
 		pattern?:string
@@ -222,7 +222,10 @@ namespace PixelManipulator{
 				return out;
 			},
 			__index__:function(p:PixelManipulator,elm:number,data:ElementData) {
-				if(data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1)return[];
+				if(typeof data.pattern==="undefined"||
+				   data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1
+				)
+					return[];
 				var numbers=data.pattern.split(/\/?[a-z]/gi);//"B",born,die
 				data.loop=typeof data.loop!=="undefined"?data.loop:true;
 				if(typeof data.hitbox!=="undefined")
@@ -258,7 +261,10 @@ namespace PixelManipulator{
 		},
 		__WOLFRAM__:{
 			__index__:function(p:PixelManipulator,elm:number,data:ElementData) {
-				if(data.pattern.search(/Rule \d*/gi)<=-1)return[];
+				if(typeof data.pattern==="undefined"||
+				   data.pattern.search(/Rule \d*/gi)<=-1
+				)
+					return[];
 				var binStates=parseInt(data.pattern.split(/Rule /gi)[1]);
 				data.loop=typeof data.loop!=="undefined"?data.loop:false;
 				if(typeof data.hitbox==="undefined")
@@ -371,7 +377,7 @@ namespace PixelManipulator{
 		this.elementTypeMap[oldData.name]=oldData;
 		this.onElementModified(id);
 	};
-	PixelManipulator.prototype.aliasElements=function(oldData:ElementDataUnknown,newData:ElementDataUnknown){
+	PixelManipulator.prototype.aliasElements=function(oldData:ElementDataUnknownNameMandatory,newData:ElementDataUnknownNameMandatory){
 		if(typeof this.elementTypeMap[newData.name]!=="undefined")
 			throw new Error("The name "+newData.name+" is already in use!");
 		delete this.nameAliases[newData.name];
@@ -444,7 +450,11 @@ namespace PixelManipulator{
 		if (typeof e=="undefined") e={};
 		if (typeof e.x=="undefined") e.x=this.zoomX;
 		if (typeof e.y=="undefined") e.x=this.zoomY;
-		if (e.x>=0&&e.y>=0) {
+		if (typeof e.x!=="undefined"&&
+			typeof e.y!=="undefined"&&
+			e.x>=0&&
+			e.y>=0
+		) {
 			this.zoomX=e.x;
 			this.zoomY=e.y;
 		}
@@ -468,7 +478,7 @@ namespace PixelManipulator{
 		}
 		this.zoomctx.stroke();
 	};
-	PixelManipulator.prototype.colorToId=function(colors:number[]):number{
+	PixelManipulator.prototype.colorToId=function(colors:number[]):number|undefined{
 		for(var i=0;i<this.elementNumList.length;i++){
 			if(this.compareColors(colors,this.idToColor(i))){
 				return i;
@@ -478,7 +488,7 @@ namespace PixelManipulator{
 	PixelManipulator.prototype.idToColor=function(id:number):number[]{
 		return (this.getElementByName(this.elementNumList[id])||{color:false}).color;
 	};
-	type getPixelId=(x:number,y:number,loop:boolean)=>number;
+	type getPixelId=(x:number,y:number,loop?:boolean)=>number;
 	PixelManipulator.prototype.__GetPixelId=function(d:Uint32Array):getPixelId {//Generates getPixelId and getOldPixelId instances
 		//console.log("GetPixelId");
 		var p=this;
@@ -514,7 +524,7 @@ namespace PixelManipulator{
 		x:number,
 		y:number,
 		name:string|number|number[],
-		loop:boolean
+		loop?:boolean
 	)=>boolean
 	PixelManipulator.prototype.__ConfirmElm=function(getPixelId:getPixelId):confirmElm{//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
 		//console.log("ConfirmElm",f);
@@ -555,7 +565,7 @@ namespace PixelManipulator{
 		y:number,
 		name:string|number|number[],
 		binDex:string|number,
-		loop:boolean
+		loop?:boolean
 	)=>boolean
 	PixelManipulator.prototype.__WolframNearbyCounter=function(f:confirmElm):wolframNearbyCounter{//Generate wolframNearbyCounter
 		//console.log("WolframNearbygetOldPixel");

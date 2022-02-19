@@ -4,7 +4,8 @@
 		"allowJs":true,//TODO
 		"checkJs":true,//TODO
 		"target":"es5",
-		"noImplicitAny":true
+		"noImplicitAny":true,
+		"strictNullChecks":true
 	},
 	"include":["./src/**/*"],
 	"module":"umd"
