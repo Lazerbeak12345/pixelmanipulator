@@ -357,19 +357,20 @@
 				}
 			}
 			ready(function() {
+				window.p=new PixelManipulator();
 				document.getElementById("backendversion").innerText=p.version
 				p.canvasPrep({
 					canvas:document.getElementById('canvas'),
 					zoom:document.getElementById('zoom'),
 				});
-				window.pixelManipulator.canvas.addEventListener('click',function(event) {
-					window.pixelManipulator.zoom({
+				p.canvas.addEventListener('click',function(event) {
+					p.zoom({
 						x:event.offsetX,
 						y:event.offsetY,
 					});
 				});
-				window.pixelManipulator.zoomelm.addEventListener('click',zoomClick);
-				window.pixelManipulator.zoomelm.addEventListener('drag',zoomClick);
+				p.zoomelm.addEventListener('click',zoomClick);
+				p.zoomelm.addEventListener('drag',zoomClick);
 				var selectorBoxElm=document.getElementById('selectorBox'),//define these before, as they are used multiple times
 					smallxlineElm=document.getElementById('smallxline'),
 					smallylineElm=document.getElementById('smallyline'),
@@ -631,42 +632,43 @@
 					p.randomlyFill(pr,document.getElementById("altSelect").value);
 					p.update();
 				});
-			});
-			p.onElementModified=function(){
-				// Super ineficient but It's probabbly fine.
-				var elmdrops=document.getElementsByClassName("elmDrop"),
-					nsve=document.getElementById("normalSelect"),
-					csve=document.getElementById("ctrlSelect"),
-					asve=document.getElementById("altSelect"),
-					cusve=document.getElementById("customSelect");
-					// Save the current selection for later
-					nsv=nsve.value,
-					csv=csve.value,
-					asv=asve.value,
-					cusv=cusve.value;
-				if(nsv.length===0)
-					nsv="Conway's Game Of Life";
-				if(csv.length===0)
-					csv="Blocks";
-				if(asv.length===0)
-					asv="Water";
-				if(cusv.length===0)
-					cusv="Conway's Game Of Life";
-				for (var i=0;i<elmdrops.length;i++){
-					elmdrops[i].innerHTML="";
-					for (var elementName in p.elementTypeMap) {
-						var newElement=document.createElement("option")
-						newElement.innerText=elementName
-						elmdrops[i].appendChild(newElement)
+				p.onElementModified=function(){
+					// Super ineficient but It's probabbly fine.
+					var elmdrops=document.getElementsByClassName("elmDrop"),
+						nsve=document.getElementById("normalSelect"),
+						csve=document.getElementById("ctrlSelect"),
+						asve=document.getElementById("altSelect"),
+						cusve=document.getElementById("customSelect");
+						// Save the current selection for later
+						nsv=nsve.value,
+						csv=csve.value,
+						asv=asve.value,
+						cusv=cusve.value;
+					if(nsv.length===0)
+						nsv="Conway's Game Of Life";
+					if(csv.length===0)
+						csv="Blocks";
+					if(asv.length===0)
+						asv="Water";
+					if(cusv.length===0)
+						cusv="Conway's Game Of Life";
+					for (var i=0;i<elmdrops.length;i++){
+						elmdrops[i].innerHTML="";
+						for (var elementName in p.elementTypeMap) {
+							var newElement=document.createElement("option")
+							newElement.innerText=elementName
+							elmdrops[i].appendChild(newElement)
+						}
 					}
-				}
-				// Restore that selection, accounting for aliases
-				nsve.value=(p.getElementByName(nsv)||{name:""}).name;
-				csve.value=(p.getElementByName(csv)||{name:""}).name;
-				asve.value=(p.getElementByName(asv)||{name:""}).name;
-				cusve.value=(p.getElementByName(cusv)||{name:""}).name;
-				if(cusve.value)updateCustomizer()
-			};
+					// Restore that selection, accounting for aliases
+					nsve.value=(p.getElementByName(nsv)||{name:""}).name;
+					csve.value=(p.getElementByName(csv)||{name:""}).name;
+					asve.value=(p.getElementByName(asv)||{name:""}).name;
+					cusve.value=(p.getElementByName(cusv)||{name:""}).name;
+					if(cusve.value)updateCustomizer()
+				};
+				p.onElementModified();// Call it once to fill in dropdowns
+			});
 		</script>
 	</body>
 </html>
