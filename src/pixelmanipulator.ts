@@ -526,11 +526,9 @@
 			for(var i=0;i<4;++i)
 				this.imageData.data[pixelOffset+i]=color[i];
 		};
-		PixelManipulator.prototype.setPixel=function(x,y,arry ,loop ) {//places given pixel at the x and y position, handling for loop (default loop is true)
+		PixelManipulator.prototype.setPixel=function(x:number,y:number,arry ,loop ) {//places given pixel at the x and y position, handling for loop (default loop is true)
 			//           (#,#,[]:"",true?)
 			//console.log("rawSetPixel",x,y,name,loop);
-			x=Math.floor(x).toString()-0;//Fix any bad math done further up the line. Also remove bad math later
-			y=Math.floor(y).toString()-0;//...
 			loop=typeof loop!=="undefined"?loop:true;
 			var id;
 			if (typeof arry==="string") {
