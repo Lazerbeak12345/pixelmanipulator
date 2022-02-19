@@ -565,6 +565,7 @@
 				rel={
 					x:0,
 					y:0,
+					oldId:0,
 					getOldPixelId:getOldPixelId,
 					confirmOldElm:confirmOldElm,
 					getOldPixel:this.__GetPixel(getOldPixelId),
