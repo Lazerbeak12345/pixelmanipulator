@@ -5,10 +5,21 @@
 		"checkJs":true,//TODO
 		"declaration":true,
 		"target":"es5",
+
+		"allowUnreachableCode":true,//TODO
+		"allowUnusedLabels":true,//TODO
+		"alwaysStrict":false,//TODO
 		"noImplicitAny":true,
+		"noImplicitReturns":false,//TODO
+		"noImplicitThis":true,
+		"noFallthroughCasesInSwitch":false,//TODO
+		"noUnusedLocals":false,//TODO
+		"noUnusedParameters":false,//TODO
+		"suppressExcessPropertyErrors":true,//TODO
+		"suppressImplicitAnyIndexErrors":true,//TODO
+		"strictFunctionTypes":false,//TODO
 		"strictNullChecks":true,
-		"noImplicitThis":true
+		"strictPropertyInitialization":false//TODO
 	},
-	"include":["./src/**/*"],
-	"module":"umd"
+	"include":["./src/**/*"]
 }
