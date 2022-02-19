@@ -1,4 +1,4 @@
-declare namespace PixelManipulator {
+export declare namespace PixelManipulator {
     interface xycoord {
         x: number;
         y: number;

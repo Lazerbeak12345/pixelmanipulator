@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PixelManipulator = void 0;
 /*  This is a cellular automata JavaScript library called PixelManipulator. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
     Copyright (C) 2018-2021  Nathan Fritzler
 
@@ -687,7 +690,7 @@ var PixelManipulator;
         "free software, and you are welcome to redistribute it\nunder certain " +
         "conditions, as according to the GNU GENERAL PUBLIC LICENSE version 3 or " +
         "later.";
-})(PixelManipulator || (PixelManipulator = {}));
+})(PixelManipulator = exports.PixelManipulator || (exports.PixelManipulator = {}));
 if (typeof this.window == "undefined")
     console.warn("This enviroment has not been tested, and is officially not supported.\nGood " +
         "luck.");
