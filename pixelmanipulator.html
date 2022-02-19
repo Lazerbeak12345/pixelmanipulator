@@ -358,16 +358,11 @@
 			}
 			ready(function() {
 				window.p=new PixelManipulator();
-				document.getElementById("backendversion").innerText=p.version
+				document.getElementById("backendversion").innerText=p.version;
+				var canvas=document.getElementById('canvas');
 				p.canvasPrep({
-					canvas:document.getElementById('canvas'),
+					canvas:canvas,
 					zoom:document.getElementById('zoom'),
-				});
-				p.canvas.addEventListener('click',function(event) {
-					p.zoom({
-						x:event.offsetX,
-						y:event.offsetY,
-					});
 				});
 				p.zoomelm.addEventListener('click',zoomClick);
 				p.zoomelm.addEventListener('drag',zoomClick);
@@ -385,9 +380,15 @@
 					customizeLoop=document.getElementById("customizeLoop"),
 					customizeColor=document.getElementById("customizeColor"),
 					customizeColorAlpha=document.getElementById("customColorAlpha");
-				p.canvas.addEventListener('click', updateBox);
+				canvas.addEventListener('click', updateBox);
+				canvas.addEventListener('click',function(event) {
+					p.zoom({
+						x:event.offsetX,
+						y:event.offsetY,
+					});
+				});
+				canvas.addEventListener('mousemove', updateSmallLines);
 				selectorBoxElm.addEventListener('click',selectorClicked);
-				p.canvas.addEventListener('mousemove', updateSmallLines);
 				selectorBoxElm.addEventListener('mousemove', boxHoverOrClick);
 				selectorBoxElm.addEventListener('click', boxHoverOrClick);
 				smallxlineElm.addEventListener('mousemove', updateSmallLines);

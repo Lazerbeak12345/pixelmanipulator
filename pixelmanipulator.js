@@ -134,14 +134,14 @@
 			return this._width;
 		};
 		PixelManipulator.prototype.set_width=function(value){
-			this.canvas.width=value;
+			this._canvas.width=value;
 			this._width=value-0;
 		};
 		PixelManipulator.prototype.get_height=function(){
 			return this._height;
 		};
 		PixelManipulator.prototype.set_height=function(value){
-			this.canvas.height=value;
+			this._canvas.height=value;
 			this._height=value-0;
 		};
 		PixelManipulator.prototype.randomlyFill=function(pr ,value) {//fills the screen with value, at an optional given percent
@@ -402,7 +402,7 @@
 			if (this.get_height()<2) this.set_height(400);//it would be pointless to have a canvas this small
 			if (this.get_width()<2) this.set_width(400);
 			this.zoomctx.clearRect(0,0,this.zoomelm.width,this.zoomelm.height);//clear the screen
-			this.zoomctx.drawImage(this.canvas,//draw the selected section of the canvas onto the zoom canvas
+			this.zoomctx.drawImage(this._canvas,//draw the selected section of the canvas onto the zoom canvas
 							(this.zoomX - Math.floor(this.zoomScaleFactor/2)),
 							(this.zoomY - Math.floor(this.zoomScaleFactor/2)),
 							Math.floor(this.zoomelm.width/this.zoomScaleFactor),Math.floor(this.zoomelm.height/this.zoomScaleFactor),
@@ -647,8 +647,8 @@
 		PixelManipulator.prototype.canvasPrep=function(e ) {//Tells PixelManipulator what canvas(es) to use.
 			//             ({})
 			//Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
-			this.canvas=e.canvas;
-			this.ctx=this.canvas.getContext('2d');
+			this._canvas=e.canvas;
+			this.ctx=this._canvas.getContext('2d');
 			if (typeof e.zoom!=="undefined") {
 				this.zoomelm=e.zoom;
 				this.zoomctx=this.zoomelm.getContext('2d');
