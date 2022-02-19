@@ -265,8 +265,8 @@
 			if (typeof elm==="undefined") throw new Error("Name is required for element");
 			if (typeof data.name==="undefined") data.name=elm;
 			if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
-			data.number=this.elementNumList.length
-			this.elementNumList.push(elm)
+			data.number=this.elementNumList.length;
+			this.elementNumList.push(elm);
 			// Must be this value exactly for modifyElement to work
 			this.elementTypeMap[elm]={number:data.number,color:data.color};
 			this.modifyElement(data.number,data);
@@ -347,7 +347,7 @@
 			var p=this;
 			return (function whatIsGeneric(x,y,loop ) {//return the name of an element in a given location
 				//          (#,#,true?)
-				return p.elementNumList[getPixelId(x,y,loop)]
+				return p.elementNumList[getPixelId(x,y,loop)];
 			});
 		};
 		PixelManipulator.prototype.play=function(canvasSizes) {//Start iterations on all of the elements on the canvas
@@ -369,8 +369,8 @@
 			this.pause();
 			var w=this.get_width(),
 				h=this.get_height();
-			this.set_width(canvasSizes.canvasW||w)
-			this.set_height(canvasSizes.canvasH||h)
+			this.set_width(canvasSizes.canvasW||w);
+			this.set_height(canvasSizes.canvasH||h);
 			if (typeof this.zoomelm!=="undefined") {
 				this.zoomelm.width=(canvasSizes.zoomW||this.zoomelm.width/this.zoomScaleFactor)*this.zoomScaleFactor;
 				this.zoomelm.height=(canvasSizes.zoomH||this.zoomelm.height/this.zoomScaleFactor)*this.zoomScaleFactor;
@@ -423,7 +423,7 @@
 			//            ([#,#,#])->#
 			for(var i=0;i<this.elementNumList.length;i++){
 				if(this.compareColors(colors,this.idToColor(i))){
-					return i
+					return i;
 				}
 			}
 		};
@@ -446,7 +446,7 @@
 					y%=h;
 					if(y<0)y+=h;
 				}else if (x<0||x>=w||y<0||x>=h) return "Blocks";
-				return d[(w*y)+x]
+				return d[(w*y)+x];
 			});
 		};
 		PixelManipulator.prototype.__GetPixel=function(getPixelId) {//Generates getPixel and getOldPixel instances
@@ -454,7 +454,7 @@
 			var p=this;
 			return (function getPixelGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
 				//           (#,#,true?)
-				return p.idToColor(getPixelId(x,y,loop))
+				return p.idToColor(getPixelId(x,y,loop));
 			});
 		};
 		PixelManipulator.prototype.update=function() {//applies changes made by setPixel to the graphical canvas(es)
@@ -476,9 +476,9 @@
 				//console.log("confirmElm",x,y,name,loop);
 				switch(typeof id){
 					case"string":id=p.getElementByName(id).number;break;
-					case"object":id=p.colorToId(id)
+					case"object":id=p.colorToId(id);
 				}
-				return getPixelId(x,y,loop)===id
+				return getPixelId(x,y,loop)===id;
 			};
 		};
 		PixelManipulator.prototype.__MooreNearbyCounter=function(f ) {//Generate mooreNearbyCounter
@@ -506,7 +506,7 @@
 				//console.log("wolframNearby");
 				if(typeof binDex==="string"){
 					//Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
-					binDex=(binDex[0]==="1")<<2|(binDex[1]==="1")<<1|(binDex[2]==="1")<<0
+					binDex=(binDex[0]==="1")<<2|(binDex[1]==="1")<<1|(binDex[2]==="1")<<0;
 				}
 				loop=typeof loop!=="undefined"?loop:false;//one-dimentional detectors by default don't loop around edges
 				// the three spots above (nw,n,ne)
@@ -532,10 +532,10 @@
 			var id;
 			if (typeof arry==="string") {
 				if(typeof this.getElementByName(arry)==="undefined")
-					throw new Error("Color name "+arry+" invalid!")
+					throw new Error("Color name "+arry+" invalid!");
 				id=this.getElementByName(arry).number;
 			}else if(typeof arry==="number")
-				id=arry
+				id=arry;
 			else if(typeof arry==="object"){
 				id=this.colorToId(arry);
 				//allows for arrays that are too small
@@ -551,12 +551,12 @@
 				if(y<0)y+=h;
 			}else if (x<0||x>=w||y<0||y>=h) return; //if it can't loop, and it's outside of the boundaries, exit
 			this.renderPixel(x,y,id);
-			this.currentElements[(w*y)+x]=id
+			this.currentElements[(w*y)+x]=id;
 		};
 		PixelManipulator.prototype.iterate=function() {//single frame of animation. Media functions pass this into setInterval
 			//console.log("iterate");
 			this.onIterate();
-			this.oldElements.set(this.currentElements)
+			this.oldElements.set(this.currentElements);
 			var getOldPixelId=this.__GetPixelId(this.oldElements),
 				confirmOldElm=this.__ConfirmElm(getOldPixelId),
 				w=this.get_width(),
@@ -679,7 +679,7 @@
 	}
 	if (typeof g.require=="undefined"&&typeof g.module=="undefined") {
 		var exprt=pix();
-		g.PixelManipulator=exprt.PixelManipulator
+		g.PixelManipulator=exprt.PixelManipulator;
 	}else if (typeof g.define!="undefined"&&typeof g.module=="undefined") {
 		g.define(["require","exports","module"],pix);
 	}else {
