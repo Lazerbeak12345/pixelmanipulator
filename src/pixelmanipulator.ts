@@ -15,9 +15,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Concerning the function commments, # is number, [] means array, {} means object, () means function, true means boolean and, "" means string. ? means optional, seperated with : means that it could be one or the other
-(function(g) {
+type require=(path:string)=>any;
+interface Module {
+	exports:any
+}
+type define=(imports:string[]|require,define:define|any,mod?:Module)=>void;
+interface xycoord{
+	x:number
+	y:number
+}
+type hitbox=xycoord[];
+interface neigborhoods{
+	wolfram:(radius?:number,yval?:number,include_self?:boolean)=>hitbox
+}
+interface PixelManipulator{//TODO
+	setPixel:(x:number,y:number,arry:string|number|number[],loop?:boolean)=>void
+	defaultId:number
+	neighborhoods:neigborhoods
+	defaultElm:string
+}
+type g={//TODO
+	define?:define
+	module?:Module
+	require?:require
+	window?:g
+	requestAnimationFrame:(callback:()=>void)=>number
+	cancelAnimationFrame:(num:number)=>void
+	PixelManipulator?:PixelManipulator
+};
+(function(g:g) {
 	'use strict';
-	function pix(require,exports,module) {//done like this for better support for things like require.js and Dojo
+	var pix=function(require:require,exports:any,module:Module):any{//done like this for better support for things like require.js and Dojo
 		/*function ret(v) {
 			return (function() {
 				return v;
@@ -60,11 +88,11 @@
 			this.onAfterIterate=function() {};
 			this.neighborhoods={
 				// Area is f(x)=2x-1
-				wolfram:function(radius,yval,include_self){
+				wolfram:function(radius?:number,yval?:number,include_self?:boolean){
 					if(typeof radius==="undefined")
 						radius=1;
 					if(typeof yval==="undefined")
-						yval=1;
+						yval=-1;
 					var output=[{x:0,y:yval}];
 					if(typeof include_self==="undefined"||include_self){
 						output.push({x:0,y:yval});
@@ -76,7 +104,7 @@
 					return output;
 				},
 				// Area is f(x)=(2r+1)^2
-				moore:function(radius,include_self){
+				moore:function(radius?:number,include_self?:boolean){
 					if(typeof radius==="undefined")
 						radius=1;
 					if(typeof include_self==="undefined")
@@ -93,7 +121,7 @@
 					// goal? Or just weren't using higher-order algorithims?
 				},
 				// Area is f(x)=r^2+(r+1)^2
-				vonNeumann:function(radius,include_self){
+				vonNeumann:function(radius?:number,include_self?:boolean){
 					if(typeof radius==="undefined")
 						radius=1;
 					if(typeof include_self==="undefined")
@@ -111,7 +139,7 @@
 					return output;
 				},
 				// Area is not quite that of a circle. TODO
-				euclidean:function(radius,include_self){
+				euclidean:function(radius?:number,include_self?:boolean){
 					if(typeof radius==="undefined")
 						radius=1;
 					if(typeof include_self==="undefined")
@@ -136,23 +164,19 @@
 		PixelManipulator.prototype.get_width=function(){
 			return this._width;
 		};
-		PixelManipulator.prototype.set_width=function(value){
+		PixelManipulator.prototype.set_width=function(value:number){
 			this._canvas.width=value;
-			this._width=value-0;
+			this._width=value;
 		};
 		PixelManipulator.prototype.get_height=function(){
 			return this._height;
 		};
-		PixelManipulator.prototype.set_height=function(value){
+		PixelManipulator.prototype.set_height=function(value:number){
 			this._canvas.height=value;
-			this._height=value-0;
+			this._height=value;
 		};
-		PixelManipulator.prototype.randomlyFill=function(pr ,value) {//fills the screen with value, at an optional given percent
-			//               ({}?,""   )
-			if (arguments.length===1) {
-				value=pr;
-				pr=undefined;
-			}
+		//fills the screen with value, at an optional given percent
+		PixelManipulator.prototype.randomlyFill=function(value:string|number|number[],pr?:number) {
 			pr=pr||15;
 			var w=this.get_width(),
 				h=this.get_height();
@@ -163,10 +187,54 @@
 				}
 			}
 		};
-		var __templates={//an object containing the different templates that are currently in the system
+		interface rel{
+			x:number
+			y:number
+			mooreNearbyCounter:mooreNearbyCounter
+			wolframNearbyCounter:wolframNearbyCounter
+		}
+		interface ElementData{
+			name:string
+			color:number[]
+			pattern?:string
+			loop?:boolean
+			hitbox:hitbox
+			liveCell:(rel:rel)=>void
+			deadCell:(rel:rel)=>void
+			number:number
+		}
+		interface ElementDataUnknown{
+			[index:string]:string|number[]|boolean|hitbox|((rel:rel)=>void)|number
+			name?:string
+			color?:number[]
+			pattern?:string
+			loop?:boolean
+			hitbox?:hitbox
+			liveCell:(rel:rel)=>void
+			deadCell:(rel:rel)=>void
+			number?:number
+		}
+		interface ElementDataUnknownNameMandatory{
+			name:string
+			color?:number[]
+			pattern?:string
+			loop?:boolean
+			hitbox?:hitbox
+			liveCell:(rel:rel)=>void
+			deadCell:(rel:rel)=>void
+			number?:number
+		}
+		interface template{
+			__index__:Function
+			_convertNumListToBf?:Function
+			__LIVE__:Function
+			__DEAD__:Function
+		}
+		var __templates:{
+			[index:string]:template
+		}={//an object containing the different templates that are currently in the system
 			__LIFE__:{//Things like Conway's Game of Life
-				_convertNumListToBf:function(nl){
-					//                      ("")->#
+				_convertNumListToBf:function(nl:number[]):number{
 					// While I used to use string with each digit in it, I found that since
 					// there are 0-8, I could use a 9bit field (remember: off by one)
 					var out=0;
@@ -176,8 +244,7 @@
 					}
 					return out;
 				},
-				__index__:function(p,elm,data) {
-					//            ("" ,{}  )
+				__index__:function(p:PixelManipulator,elm:number,data:ElementData) {
 					if(data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1)return[];
 					var numbers=data.pattern.split(/\/?[a-z]/gi);//"B",born,die
 					data.loop=typeof data.loop!=="undefined"?data.loop:true;
@@ -199,34 +266,34 @@
 						)
 					];
 				},
-				__LIVE__:function(p,bfdie,loop,elm) {
-					return (function llive(rel) {
+				__LIVE__:function(p:PixelManipulator,bfdie:number,loop:boolean|undefined,elm:number) {
+					return (function llive(rel:rel) {
 						if((bfdie&1<<rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))==0)
 							p.setPixel(rel.x,rel.y,p.defaultElm);// if any match (of how many moore are nearby) is found, it dies
 					});
 				},
-				__DEAD__:function(p,bflive,loop,elm) {
-					return (function ldead(rel) {
+				__DEAD__:function(p:PixelManipulator,bflive:number,loop:boolean|undefined,elm:number) {
+					return (function ldead(rel:rel) {
 						if((bflive&1<<rel.mooreNearbyCounter(rel.x,rel.y,elm,loop))>0)
 							p.setPixel(rel.x,rel.y,elm);// if any match (of how many moore are nearby) is found, it lives
 					});
 				},
 			},
 			__WOLFRAM__:{
-				__index__:function(p,elm,data) {
+				__index__:function(p:PixelManipulator,elm:number,data:ElementData) {
 					if(data.pattern.search(/Rule \d*/gi)<=-1)return[];
-					var binStates=data.pattern.split(/Rule /gi)[1]-0;
+					var binStates=parseInt(data.pattern.split(/Rule /gi)[1]);
 					data.loop=typeof data.loop!=="undefined"?data.loop:false;
 					if(typeof data.hitbox==="undefined")
-						data.hitbox=p.neighborhoods.wolfram();
+						data.hitbox=p.neighborhoods.wolfram(1,1);
 					console.log("Wolfram pattern found: ",data.name,data);
 					return [
 						this.__LIVE__(p,elm,binStates,data.loop),
 						this.__DEAD__(p,elm,binStates,data.loop)
 					];
 				},
-				__LIVE__:function(p,elm,binStates,loop) {
-					return (function wdead(rel) {
+				__LIVE__:function(p:PixelManipulator,elm:number,binStates:number,loop?:boolean) {
+					return (function wdead(rel:rel) {
 						if(rel.y===0)return;
 						for (var binDex=0; binDex<8; binDex++) {//for every possible state
 							if((binStates&1<<binDex)===0){//if the state is "off". Use a bit mask and shift it
@@ -238,8 +305,8 @@
 						}
 					});
 				},
-				__DEAD__:function(p,elm,binStates,loop) {
-					return (function wdead(rel) {
+				__DEAD__:function(p:PixelManipulator,elm:number,binStates:number,loop?:boolean) {
+					return (function wdead(rel:rel) {
 						for (var binDex=0; binDex<8; binDex++) {//for every possible state
 							if((binStates&1<<binDex)>0){//if the state is "on". Use a bit mask and shift it
 								if(rel.wolframNearbyCounter(rel.x,rel.y,elm,binDex,loop)) {//if there is a wolfram match (wolfram code goes from 111 to 000)
@@ -252,19 +319,16 @@
 				},
 			},
 		};
-		PixelManipulator.prototype.addMultipleElements=function(map) {//adds multiple elements
-			//                      ({} )
+		PixelManipulator.prototype.addMultipleElements=function(map:{[index:string]:ElementDataUnknown}) {//adds multiple elements
 			for (var elm in map) {
-				this.addElement(elm,map[elm]);
+				map[elm].name=elm;
+				this.addElement(map[elm] as ElementDataUnknownNameMandatory);
 			}
 		};
-		PixelManipulator.prototype.addElement=function(elm,data) {//adds a single element
-			//             ("" ,{}  )
-			if (arguments.length<2) {
-				data=elm;
-				elm=undefined;
-			}
-			if (typeof elm==="undefined") elm=data.name;//name of the element
+		PixelManipulator.prototype.addElement=function(
+			data:ElementDataUnknownNameMandatory
+		) {//adds a single element
+			var elm=data.name;//name of the element
 			if (typeof elm==="undefined") throw new Error("Name is required for element");
 			if (typeof data.name==="undefined") data.name=elm;
 			if (typeof data.color==="undefined") data.color=[255,255,255,255];//color of the element
@@ -274,8 +338,7 @@
 			this.elementTypeMap[elm]={number:data.number,color:data.color};
 			this.modifyElement(data.number,data);
 		};
-		PixelManipulator.prototype.modifyElement=function(id,data) {
-			//                (# ,{}  )
+		PixelManipulator.prototype.modifyElement=function(id:number,data:ElementDataUnknown) {
 			var name=this.elementNumList[id],
 				oldData=this.elementTypeMap[name];
 			delete this.elementTypeMap[name]; // Needs to be gone for color check
@@ -331,13 +394,13 @@
 			this.elementTypeMap[oldData.name]=oldData;
 			this.onElementModified(id);
 		};
-		PixelManipulator.prototype.aliasElements=function(oldData,newData){
+		PixelManipulator.prototype.aliasElements=function(oldData:ElementDataUnknown,newData:ElementDataUnknown){
 			if(typeof this.elementTypeMap[newData.name]!=="undefined")
 				throw new Error("The name "+newData.name+" is already in use!");
 			delete this.nameAliases[newData.name];
 			this.nameAliases[oldData.name]=newData.name;
 		};
-		PixelManipulator.prototype.getElementByName=function(name){
+		PixelManipulator.prototype.getElementByName=function(name:string){
 			var unaliased=name;
 			while(typeof unaliased!=="undefined"){
 				name=unaliased;
@@ -345,16 +408,20 @@
 			}
 			return this.elementTypeMap[name];
 		};
-		PixelManipulator.prototype.__WhatIs=function(getPixelId) {//Generator for whatIs
-			//           (()        )
+		type whatIs=(x:number,y:number,loop:boolean)=>string;
+		PixelManipulator.prototype.__WhatIs=function(getPixelId:getPixelId):whatIs{//Generator for whatIs
 			var p=this;
 			return (function whatIsGeneric(x,y,loop ) {//return the name of an element in a given location
-				//          (#,#,true?)
 				return p.elementNumList[getPixelId(x,y,loop)];
 			});
 		};
-		PixelManipulator.prototype.play=function(canvasSizes) {//Start iterations on all of the elements on the canvas
-			//       ({}?        )
+		interface canvasSizes{
+			canvasW?:number,
+			canvasH?:number,
+			zoomW?:number,
+			zoomH?:number
+		}
+		PixelManipulator.prototype.play=function(canvasSizes?:canvasSizes) {//Start iterations on all of the elements on the canvas
 			//console.log("play");
 			if (this.mode==="playing") this.reset(canvasSizes);
 			this.mode="playing";
@@ -363,8 +430,7 @@
 				p.iterate();
 			});
 		};
-		PixelManipulator.prototype.reset=function(canvasSizes) {//reset (and resize) the canvas(es)
-			//        ({}?        )
+		PixelManipulator.prototype.reset=function(canvasSizes?:canvasSizes) {//reset (and resize) the canvas(es)
 			//console.log("reset");
 			//clearInterval(this.loopint);
 			if(typeof canvasSizes==="undefined")
@@ -391,8 +457,11 @@
 			this.mode="paused";
 			g.cancelAnimationFrame(this.loopint);
 		};
-		PixelManipulator.prototype.zoom=function(e  ) {//This tells pixelmanipulator where to focus the center of the zoomElm
-			//       ({}?)
+		interface ZoomArg{
+			x?:number,
+			y?:number
+		}
+		PixelManipulator.prototype.zoom=function(e?:ZoomArg) {//This tells pixelmanipulator where to focus the center of the zoomElm
 			//console.log("zoom",e);
 			if (typeof this.zoomelm.height==="undefined") return;
 			if (typeof e=="undefined") e={};
@@ -422,24 +491,21 @@
 			}
 			this.zoomctx.stroke();
 		};
-		PixelManipulator.prototype.colorToId=function(colors ){
-			//            ([#,#,#])->#
+		PixelManipulator.prototype.colorToId=function(colors:number[]):number{
 			for(var i=0;i<this.elementNumList.length;i++){
 				if(this.compareColors(colors,this.idToColor(i))){
 					return i;
 				}
 			}
 		};
-		PixelManipulator.prototype.idToColor=function(id){
-			//            (# )->false?[#,#,#,#]
+		PixelManipulator.prototype.idToColor=function(id:number):number[]{
 			return (this.getElementByName(this.elementNumList[id])||{color:false}).color;
 		};
-		PixelManipulator.prototype.__GetPixelId=function(d ) {//Generates getPixelId and getOldPixelId instances
-			//               ([])
+		type getPixelId=(x:number,y:number,loop:boolean)=>number;
+		PixelManipulator.prototype.__GetPixelId=function(d:Uint32Array):getPixelId {//Generates getPixelId and getOldPixelId instances
 			//console.log("GetPixelId");
 			var p=this;
 			return (function getPixelIdGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
-				//           (#,#,true?)
 				var w=p.get_width(),
 					h=p.get_height();
 				loop=typeof loop!=="undefined"?loop:true;
@@ -448,15 +514,14 @@
 					if(x<0)x+=w;
 					y%=h;
 					if(y<0)y+=h;
-				}else if (x<0||x>=w||y<0||x>=h) return "Blocks";
+				}else if (x<0||x>=w||y<0||x>=h) return this.defaultId;
 				return d[(w*y)+x];
 			});
 		};
-		PixelManipulator.prototype.__GetPixel=function(getPixelId) {//Generates getPixel and getOldPixel instances
-			//             ((#,#,bool))
+		type getPixel=(x:number,y:number,loop:boolean)=>number[];
+		PixelManipulator.prototype.__GetPixel=function(getPixelId:getPixelId):getPixel{//Generates getPixel and getOldPixel instances
 			var p=this;
 			return (function getPixelGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
-				//           (#,#,true?)
 				return p.idToColor(getPixelId(x,y,loop));
 			});
 		};
@@ -465,17 +530,20 @@
 			this.ctx.putImageData(this.imageData,0,0);
 			if (typeof this.zoomelm!=="undefined") this.zoom();
 		};
-		PixelManipulator.prototype.compareColors=function(a        ,b        ){
-			//                ([#,#,#,#],[#,#,#,#])->bool
+		PixelManipulator.prototype.compareColors=function(a:number[],b:number[]){
 			return (a[0]||0)==(b[0]||0)&&(a[1]||0)==(b[1]||0)&&(a[2]||0)==(b[2]||0)&&(a[3]||255)==(b[3]||255);
 		};
-		PixelManipulator.prototype.__ConfirmElm=function(getPixelId){//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
-			//               (()        )
+		type confirmElm=(
+			x:number,
+			y:number,
+			name:string|number|number[],
+			loop:boolean
+		)=>boolean
+		PixelManipulator.prototype.__ConfirmElm=function(getPixelId:getPixelId):confirmElm{//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
 			//console.log("ConfirmElm",f);
 			//loop=typeof loop!=="undefined"?loop:true;
 			var p=this;
 			return function confirmElmGeneric(x,y,id     ,loop ) {//returns a boolean as to weather the inputted element name matches the selected location
-				//                           (#,#,"":#:[],true?)
 				//console.log("confirmElm",x,y,name,loop);
 				switch(typeof id){
 					case"string":id=p.getElementByName(id).number;break;
@@ -484,28 +552,37 @@
 				return getPixelId(x,y,loop)===id;
 			};
 		};
-		PixelManipulator.prototype.__MooreNearbyCounter=function(f ) {//Generate mooreNearbyCounter
-			//                       (())
+		type mooreNearbyCounter=(
+			x:number,
+			y:number,
+			name:string|number|number[],
+			loop?:boolean
+		)=>number
+		PixelManipulator.prototype.__MooreNearbyCounter=function(f:confirmElm):mooreNearbyCounter{//Generate mooreNearbyCounter
 			//console.log("MooreNearbyCounter");
 			//var specialConfirm=this.__ConfirmElm(f);
 			return (function mooreNearbyCounter(x,y,name,loop ) {//Count how many cells of this name match in a moore radius
-				//           (#,#,""  ,true?)
 				//console.log("mooreNearbyCounter");
-				return (f(x-1,y-1,name,loop))+//nw
-				(f(x-1,y,name,loop))+         //w
-				(f(x-1,y+1,name,loop))+       //sw
-				(f(x,y-1,name,loop))+         //n
-				(f(x,y+1,name,loop))+         //s
-				(f(x+1,y-1,name,loop))+       //ne
-				(f(x+1,y,name,loop))+         //e
-				(f(x+1,y+1,name,loop));       //se
+				return boolToNumber(f(x-1,y-1,name,loop))+//nw
+				boolToNumber(f(x-1,y,name,loop))+         //w
+				boolToNumber(f(x-1,y+1,name,loop))+       //sw
+				boolToNumber(f(x,y-1,name,loop))+         //n
+				boolToNumber(f(x,y+1,name,loop))+         //s
+				boolToNumber(f(x+1,y-1,name,loop))+       //ne
+				boolToNumber(f(x+1,y,name,loop))+         //e
+				boolToNumber(f(x+1,y+1,name,loop));       //se
 			});
 		};
-		PixelManipulator.prototype.__WolframNearbyCounter=function(f ) {//Generate wolframNearbyCounter
-			//                         (())
+		type wolframNearbyCounter=(
+			x:number,
+			y:number,
+			name:string|number|number[],
+			binDex:string|number,
+			loop:boolean
+		)=>boolean
+		PixelManipulator.prototype.__WolframNearbyCounter=function(f:confirmElm):wolframNearbyCounter{//Generate wolframNearbyCounter
 			//console.log("WolframNearbygetOldPixel");
 			return (function wolframNearbyCounter(x,y,name,binDex,loop ) {//determine if the three cells above a given cell match an inputted element query
-				//                               (#,#,""  ,#     ,true?)
 				//console.log("wolframNearby");
 				if(typeof binDex==="string"){
 					//Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
@@ -518,7 +595,7 @@
 					f(x+1,y-1,name,loop)===(binDex&1<<0)>0;
 			});
 		};
-		PixelManipulator.prototype.renderPixel=function(x,y,id){
+		PixelManipulator.prototype.renderPixel=function(x:number,y:number,id:number){
 			var color=this.idToColor(id),
 				w=this.get_width(),
 				//arry.length is always going to be 4. Checking wastes time.
@@ -526,8 +603,7 @@
 			for(var i=0;i<4;++i)
 				this.imageData.data[pixelOffset+i]=color[i];
 		};
-		PixelManipulator.prototype.setPixel=function(x:number,y:number,arry ,loop ) {//places given pixel at the x and y position, handling for loop (default loop is true)
-			//           (#,#,[]:"",true?)
+		PixelManipulator.prototype.setPixel=function(x:number,y:number,arry:string|number|number[],loop:boolean) {//places given pixel at the x and y position, handling for loop (default loop is true)
 			//console.log("rawSetPixel",x,y,name,loop);
 			loop=typeof loop!=="undefined"?loop:true;
 			var id;
@@ -646,8 +722,12 @@
 			this.confirmElm=this.__ConfirmElm(this.getPixelId);
 			this.whatIs=this.__WhatIs(this.getPixelId);
 		};
-		PixelManipulator.prototype.canvasPrep=function(e ) {//Tells PixelManipulator what canvas(es) to use.
-			//             ({})
+		interface CanvasPrepArg{
+			canvas:any // TODO
+			zoom:any // TODO
+		}
+		/// Tells PixelManipulator what canvas(es) to use.
+		PixelManipulator.prototype.canvasPrep=function(e:CanvasPrepArg) {
 			//Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
 			this._canvas=e.canvas;
 			this.ctx=this._canvas.getContext('2d');
@@ -683,11 +763,11 @@
 	if (typeof g.require=="undefined"&&typeof g.module=="undefined") {
 		var exprt=pix(
 			()=>undefined,
-			()=>undefined,
+			{},
 			undefined
 		);
 		g.PixelManipulator=exprt.PixelManipulator;
-	}else if (typeof g.define!="undefined"&&typeof g.module=="undefined") {
+	}else if (typeof g.define!=="undefined"&&typeof g.module==="undefined") {
 		g.define(["require","exports","module"],pix);
 	}else {
 		pix(require,exports,module);

@@ -3,7 +3,8 @@
 		"outDir":"./dist",
 		"allowJs":true,//TODO
 		"checkJs":true,//TODO
-		"target":"es5"
+		"target":"es5",
+		"noImplicitAny":true
 	},
 	"include":["./src/**/*"]
 }
