@@ -357,8 +357,8 @@
 				}
 			}
 			ready(function() {
-				window.p=new PixelManipulator();
-				document.getElementById("backendversion").innerText=p.version;
+				window.p=new PixelManipulator.PixelManipulator();
+				document.getElementById("backendversion").innerText=PixelManipulator.version;
 				var canvas=document.getElementById('canvas');
 				p.canvasPrep({
 					canvas:canvas,

@@ -6,5 +6,6 @@
 		"target":"es5",
 		"noImplicitAny":true
 	},
-	"include":["./src/**/*"]
+	"include":["./src/**/*"],
+	"module":"umd"
 }
