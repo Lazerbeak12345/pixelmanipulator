@@ -563,19 +563,13 @@
 					return active;
 				};
 				function zoomClick(e) {
-					//console.log("zoomClick",e);
-					var zoomXPos=Math.floor(e.offsetX/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomX-(window.pixelManipulator.zoomScaleFactor/2)),
-						zoomYPos=Math.floor(e.offsetY/window.pixelManipulator.zoomScaleFactor)+Math.floor(window.pixelManipulator.zoomY-(window.pixelManipulator.zoomScaleFactor/2));
-					//console.log(zoomXPos,"=Math.floor(",e.offsetX,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomX,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
-					//console.log(zoomYPos,"=Math.floor(",e.offsetY,"/",window.pixelManipulator.zoomScaleFactor,")+Math.floor(",window.pixelManipulator.zoomY,"-(",window.pixelManipulator.zoomScaleFactor,"/",2,"))");
-					window.pixelManipulator.setPixel(zoomXPos,zoomYPos,//Where to set the pixel
+					var zoomXPos=Math.floor(e.offsetX/p.zoomScaleFactor)+Math.floor(p.zoomX-(p.zoomScaleFactor/2)),
+						zoomYPos=Math.floor(e.offsetY/p.zoomScaleFactor)+Math.floor(p.zoomY-(p.zoomScaleFactor/2));
+					p.setPixel(zoomXPos,zoomYPos,//Where to set the pixel
 						onZoomClick(e,//pass in the click event
 							{x:zoomXPos,y:zoomYPos}));//as well as the position on the main canvas that this click was regestered to be at
-					window.pixelManipulator.update();
-					window.pixelManipulator.zoom({
-						x:window.pixelManipulator.zoomX,
-						y:window.pixelManipulator.zoomY,
-					});
+					p.update();
+					p.zoom();
 				}
 				p.onIterate=function() {
 					if (timedebug) lasttime=performance.now();
@@ -583,13 +577,16 @@
 				}
 				p.onAfterIterate=function() {
 					if (!document.getElementById('pixelCounterT').checked) {
-						//for (var timei=0,avrge=0;timei<times.length;timei++) { avrge+=times[timei]; } avrge/=times.length;
-						//console.log(1/(avrge/1000));
-						document.getElementById("pixelCounter").innerText=JSON.stringify(p.pixelCounts).replace(/[{}"]/g,"").replace(/,/g,"\n").replace(/:/g," : ")+
-							"\n\nFrames:"+frames+
-							(timedebug?("\nFps:"+(1/((performance.now()-lasttime)/1000))):"");
+						var text="";
+						for(var id in p.pixelCounts){
+							var elm=p.elementNumList[parseInt(id)];
+							text+=elm+" : "+p.pixelCounts[id]+"\n";
+						}
+						text+="\n\nFrames:"+frames
+						if(timedebug)
+							text+="\nFps:"+(1/((performance.now()-lasttime)/1000));
+						document.getElementById("pixelCounter").innerText=text;
 					}else document.getElementById("pixelCounter").innerText="";
-					//times.push(performance.now()-lasttime);
 				}
 				document.getElementById('pixelCounterT').addEventListener('click',p.onAfterIterate);
 				document.getElementById("play").addEventListener('click',function() {
@@ -619,18 +616,24 @@
 					p.pause();
 				});
 				document.getElementById("normalFill").addEventListener('click',function() {
-					var pr=document.getElementById("normalFillP").value||15;
-					p.randomlyFill(pr,document.getElementById("normalSelect").value);
+					p.randomlyFill(
+						document.getElementById("normalSelect").value,
+						document.getElementById("normalFillP").value||15
+					);
 					p.update();//needed after any changes are made
 				});
 				document.getElementById("ctrlFill").addEventListener('click',function() {
-					var pr=document.getElementById("ctrlFillP").value||15;
-					p.randomlyFill(pr,document.getElementById("ctrlSelect").value);
+					p.randomlyFill(
+						document.getElementById("ctrlSelect").value,
+						document.getElementById("ctrlFillP").value||15
+					);
 					p.update();
 				});
 				document.getElementById("altFill").addEventListener('click',function() {
-					var pr=document.getElementById("altFillP").value||15;
-					p.randomlyFill(pr,document.getElementById("altSelect").value);
+					p.randomlyFill(
+						document.getElementById("altSelect").value,
+						document.getElementById("altFillP").value||15
+					);
 					p.update();
 				});
 				p.onElementModified=function(){
