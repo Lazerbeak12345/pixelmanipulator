@@ -35,6 +35,7 @@
     "canvas"
   ],
   "devDependencies": {
+    "@types/node": "^9.6.57",
     "typescript": "^4.5.5"
   }
 }
