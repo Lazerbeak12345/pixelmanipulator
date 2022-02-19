@@ -213,7 +213,7 @@ var PixelManipulator;
                             y += h;
                     }
                     else if (x < 0 || x >= w || y < 0 || x >= h)
-                        return this.defaultId;
+                        return p.defaultId;
                     return d[(w * y) + x];
                 });
             };

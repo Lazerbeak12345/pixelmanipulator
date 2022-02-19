@@ -116,7 +116,7 @@ declare namespace PixelManipulator {
         }): void;
         colorToId(colors: number[]): number | undefined;
         idToColor(id: number): number[];
-        __GetPixelId: (d: Uint32Array) => getPixelId;
+        __GetPixelId: (this: PixelManipulator, d: Uint32Array) => getPixelId;
         __GetPixel(getPixelId: getPixelId): getPixel;
         update(): void;
         compareColors(a: number[], b: number[]): boolean;

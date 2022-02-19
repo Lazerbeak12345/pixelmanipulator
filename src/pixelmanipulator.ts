@@ -61,14 +61,19 @@ namespace PixelManipulator{
 		deadCell?:(rel:rel)=>void
 		number?:number
 	}
-	interface template{
+	interface templatea{
 		__index__:Function
-		_convertNumListToBf?:Function
+		_convertNumListToBf:Function
+		__LIVE__:Function
+		__DEAD__:Function
+	}
+	interface templateb{
+		__index__:Function
 		__LIVE__:Function
 		__DEAD__:Function
 	}
 	var __templates:{
-		[index:string]:template
+		[index:string]:templatea|templateb
 	}={//an object containing the different templates that are currently in the system
 		__LIFE__:{//Things like Conway's Game of Life
 			_convertNumListToBf:function(nl:number[]):number{
@@ -81,7 +86,7 @@ namespace PixelManipulator{
 				}
 				return out;
 			},
-			__index__:function(p:PixelManipulator,elm:number,data:ElementData) {
+			__index__:function(this:templatea,p:PixelManipulator,elm:number,data:ElementData) {
 				if(typeof data.pattern==="undefined"||
 				   data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi)<=-1
 				)
@@ -509,7 +514,7 @@ namespace PixelManipulator{
 			return (this.getElementByName(this.elementNumList[id])||{color:false}).color;
 		};
 		//Generates getPixelId and getOldPixelId instances
-		__GetPixelId=function(d:Uint32Array):getPixelId {
+		__GetPixelId=function(this:PixelManipulator,d:Uint32Array):getPixelId {
 			//console.log("GetPixelId");
 			var p=this;
 			return (function getPixelIdGeneric(x,y,loop ) {//get the rgba value of the element at given position, handeling for looping(defaults to true)
@@ -521,7 +526,8 @@ namespace PixelManipulator{
 					if(x<0)x+=w;
 					y%=h;
 					if(y<0)y+=h;
-				}else if (x<0||x>=w||y<0||x>=h) return this.defaultId;
+				}else if (x<0||x>=w||y<0||x>=h)
+					return p.defaultId;
 				return d[(w*y)+x];
 			});
 		};
