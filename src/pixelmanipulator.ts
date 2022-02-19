@@ -684,7 +684,7 @@
 		var exprt=pix(
 			()=>undefined,
 			()=>undefined,
-			{exports:{}}
+			undefined
 		);
 		g.PixelManipulator=exprt.PixelManipulator;
 	}else if (typeof g.define!="undefined"&&typeof g.module=="undefined") {
