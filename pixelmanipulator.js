@@ -49,7 +49,7 @@
 					return this.elementNumList[this.defaultId];
 				},
 				set:function(value){
-					this.defaultId=this.elementTypeMap[value].number
+					this.defaultId=this.elementTypeMap[value].number;
 				}
 			});
 			this.defaultId=0;
@@ -132,17 +132,17 @@
 		};// end constructor
 		PixelManipulator.prototype.get_width=function(){
 			return this._width
-		},
+		};
 		PixelManipulator.prototype.set_width=function(value){
-			this.canvas.width=value
-			this._width=value-0
-		},
+			this.canvas.width=value;
+			this._width=value-0;
+		};
 		PixelManipulator.prototype.get_height=function(){
-			return this._height
-		},
+			return this._height;
+		};
 		PixelManipulator.prototype.set_height=function(value){
-			this.canvas.height=value
-			this._height=value-0
+			this.canvas.height=value;
+			this._height=value-0;
 		};
 		PixelManipulator.prototype.randomlyFill=function(pr ,value) {//fills the screen with value, at an optional given percent
 			//               ({}?,""   )
@@ -166,12 +166,12 @@
 					//                      ("")->#
 					// While I used to use string with each digit in it, I found that since
 					// there are 0-8, I could use a 9bit field (remember: off by one)
-					var out=0
+					var out=0;
 					for(var i=0;i<nl.length;i++){
 						var item=nl[i];
-						out|=1<<item
+						out|=1<<item;
 					}
-					return out
+					return out;
 				},
 				__index__:function(p,elm,data) {
 					//            ("" ,{}  )
