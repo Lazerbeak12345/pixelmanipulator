@@ -129,9 +129,9 @@
 				//TODO Non-Euclidean distance algorithim?
 			};
 			this.onElementModified=function(){};
-		};// end constructor
+		}// end constructor
 		PixelManipulator.prototype.get_width=function(){
-			return this._width
+			return this._width;
 		};
 		PixelManipulator.prototype.set_width=function(value){
 			this.canvas.width=value;
