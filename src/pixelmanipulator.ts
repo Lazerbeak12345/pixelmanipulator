@@ -681,7 +681,11 @@
 		else return exprt;
 	}
 	if (typeof g.require=="undefined"&&typeof g.module=="undefined") {
-		var exprt=pix();
+		var exprt=pix(
+			()=>undefined,
+			()=>undefined,
+			{exports:{}}
+		);
 		g.PixelManipulator=exprt.PixelManipulator;
 	}else if (typeof g.define!="undefined"&&typeof g.module=="undefined") {
 		g.define(["require","exports","module"],pix);
