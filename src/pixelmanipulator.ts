@@ -665,7 +665,8 @@
 		};
 		var exprt={
 			PixelManipulator:PixelManipulator,
-			version:"4.5.2"
+			version:"4.5.2",
+			licence:"",
 		};
 		exprt.licence="PixelManipulator v"+exprt.version+" Copyright (C) 2018-2021 "+
 			"Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is "+
