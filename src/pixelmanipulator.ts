@@ -675,7 +675,7 @@
 			"later.";
 		PixelManipulator.version=exprt.version;
 		PixelManipulator.licence=exprt.licence;
-		if(typeof g.window=="undefined")
+		if(typeof g.window!=="undefined")
 			console.log(exprt.licence);
 		if (typeof module!=="undefined") module.exports=exprt;
 		else return exprt;
