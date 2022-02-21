@@ -543,7 +543,11 @@ export class PixelManipulator{
 			this.ctx.putImageData(this.imageData,0,0);
 		if (typeof this.zoomelm!=="undefined") this.zoom();
 	};
-	compareColors(a:number[],b:number[]){
+	compareColors(a?:number[],b?:number[]){
+		if(typeof a==="undefined")
+			a=[];
+		if(typeof b==="undefined")
+			b=[];
 		return (a[0]||0)==(b[0]||0)&&(a[1]||0)==(b[1]||0)&&(a[2]||0)==(b[2]||0)&&(a[3]||255)==(b[3]||255);
 	};
 	//Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
