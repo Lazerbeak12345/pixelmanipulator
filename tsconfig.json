@@ -2,7 +2,6 @@
 	"compilerOptions":{
 		"outDir":"./dist/commonjs",
 		"allowJs":true,//TODO
-		"checkJs":true,//TODO
 		"declaration":true,
 		"target":"es5",
 
@@ -20,6 +19,5 @@
 		"strictFunctionTypes":true,
 		"strictNullChecks":true,
 		"strictPropertyInitialization":true
-	},
-	"include":["./src/**/*"]
+	}
 }
