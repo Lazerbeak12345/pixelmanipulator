@@ -13,13 +13,13 @@
 		"noImplicitReturns":false,//TODO
 		"noImplicitThis":true,
 		"noFallthroughCasesInSwitch":false,//TODO
-		"noUnusedLocals":false,//TODO
-		"noUnusedParameters":false,//TODO
-		"suppressExcessPropertyErrors":true,//TODO
-		"suppressImplicitAnyIndexErrors":true,//TODO
+		"noUnusedLocals":true,
+		"noUnusedParameters":true,
+		"suppressExcessPropertyErrors":false,
+		"suppressImplicitAnyIndexErrors":false,
 		"strictFunctionTypes":false,//TODO
 		"strictNullChecks":true,
-		"strictPropertyInitialization":false//TODO
+		"strictPropertyInitialization":true
 	},
 	"include":["./src/**/*"]
 }

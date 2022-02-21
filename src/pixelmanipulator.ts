@@ -711,14 +711,14 @@ export class PixelManipulator{
 	};
 	imageData:ImageData|undefined
 	ctx:CanvasRenderingContext2D|null=null
-	currentElements:Uint32Array
-	oldElements:Uint32Array
+	currentElements:Uint32Array=new Uint32Array(0);
+	oldElements:Uint32Array=new Uint32Array(0);
 	zoomelm:HTMLCanvasElement|undefined
-	zoomctx:CanvasRenderingContext2D|null
-	getPixelId:getPixelId
-	getPixel:getPixel
-	confirmElm:confirmElm
-	whatIs:whatIs
+	zoomctx:CanvasRenderingContext2D|null=null
+	getPixelId:getPixelId|undefined
+	getPixel:getPixel|undefined
+	confirmElm:confirmElm|undefined
+	whatIs:whatIs|undefined
 	updateData() {//defines the starting values of the library and is run on `p.reset();`
 		//console.log("updateData");
 		var w=this.get_width(),

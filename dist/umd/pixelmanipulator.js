@@ -207,6 +207,9 @@
             };
             this.pixelCounts = {};
             this.ctx = null;
+            this.currentElements = new Uint32Array(0);
+            this.oldElements = new Uint32Array(0);
+            this.zoomctx = null;
         }
         PixelManipulator.prototype.get_width = function () {
             return this._width;

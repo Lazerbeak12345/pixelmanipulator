@@ -134,10 +134,10 @@ export declare class PixelManipulator {
     oldElements: Uint32Array;
     zoomelm: HTMLCanvasElement | undefined;
     zoomctx: CanvasRenderingContext2D | null;
-    getPixelId: getPixelId;
-    getPixel: getPixel;
-    confirmElm: confirmElm;
-    whatIs: whatIs;
+    getPixelId: getPixelId | undefined;
+    getPixel: getPixel | undefined;
+    confirmElm: confirmElm | undefined;
+    whatIs: whatIs | undefined;
     updateData(): void;
     canvasPrep(e: {
         canvas: HTMLCanvasElement;
