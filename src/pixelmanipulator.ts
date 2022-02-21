@@ -511,7 +511,7 @@ export class PixelManipulator{
 		return undefined;
 	};
 	idToColor(id:number):number[]{
-		return (this.getElementByName(this.elementNumList[id])||{color:false}).color;
+		return (this.getElementByName(this.elementNumList[id])||{color:undefined}).color;
 	};
 	//Generates getPixelId and getOldPixelId instances
 	__GetPixelId=function(this:PixelManipulator,d:Uint32Array):getPixelId {
