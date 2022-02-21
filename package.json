@@ -50,7 +50,8 @@
     "pretest": "yarn build",
     "test": "exit 1",
     "watch:serve": "python -m http.server",
-    "watch:all": "yarn watch:serve",
+    "watch:build": "gulp build_watch",
+    "watch:all": "yarn watch:serve & yarn watch:build",
     "watch": "yarn watch:all",
     "build": "gulp",
     "coverage": "exit 1"

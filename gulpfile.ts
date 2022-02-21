@@ -1,4 +1,4 @@
-import { src, dest, series } from 'gulp'
+import { watch, src, dest, series } from 'gulp'
 import { createProject } from "gulp-typescript";
 import { rollup } from 'rollup';
 const tsProject = createProject(
@@ -9,8 +9,9 @@ const tsProject = createProject(
 		"moduleResolution":"node",
 	}
 );
+const source_glob="src/*";
 export function build_es(){
-	return src("src/*")
+	return src(source_glob)
 		.pipe(tsProject())
 		.pipe(dest("dist/es"));
 }
@@ -31,3 +32,6 @@ function post_rollup(){
 export const build_umd=series(build_es,use_rollup,post_rollup)
 export const build=build_umd
 export default build
+export function build_watch(){
+	watch(source_glob,{ignoreInitial:false},build)
+}
