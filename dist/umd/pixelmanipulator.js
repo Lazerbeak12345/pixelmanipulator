@@ -420,6 +420,7 @@
                     return i;
                 }
             }
+            return undefined;
         };
         PixelManipulator.prototype.idToColor = function (id) {
             return (this.getElementByName(this.elementNumList[id]) || { color: false }).color;

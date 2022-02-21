@@ -244,7 +244,7 @@ export class PixelManipulator{
 				radius=1;
 			if(typeof include_self==="undefined")
 				include_self=false;
-			var output=[];
+			var output:hitbox=[];
 			// Note: no need to calculate the Chebyshev distance. All pixels in this
 			// range are "magically" within.
 			for(var x=-1*radius;x<=radius;x++)
@@ -261,7 +261,7 @@ export class PixelManipulator{
 				radius=1;
 			if(typeof include_self==="undefined")
 				include_self=false;
-			var output=[];
+			var output:hitbox=[];
 			// A Von Neumann neighborhood of a given distance always fits inside of a
 			// Moore neighborhood of the same. (This is a bit brute-force)
 			for(var x=-1*radius;x<=radius;x++)
@@ -279,7 +279,7 @@ export class PixelManipulator{
 				radius=1;
 			if(typeof include_self==="undefined")
 				include_self=false;
-			var output=[];
+			var output:hitbox=[];
 			// A circle of a given diameter always fits inside of a square of the same
 			// side-length. (This is a bit brute-force)
 			for(var x=-1*radius;x<=radius;x++)
