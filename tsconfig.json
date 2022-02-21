@@ -6,18 +6,18 @@
 		"declaration":true,
 		"target":"es5",
 
-		"allowUnreachableCode":true,//TODO
-		"allowUnusedLabels":true,//TODO
+		"allowUnreachableCode":false,
+		"allowUnusedLabels":false,
 		"alwaysStrict":false,//TODO
 		"noImplicitAny":true,
-		"noImplicitReturns":false,//TODO
+		"noImplicitReturns":true,
 		"noImplicitThis":true,
-		"noFallthroughCasesInSwitch":false,//TODO
+		"noFallthroughCasesInSwitch":true,
 		"noUnusedLocals":true,
 		"noUnusedParameters":true,
 		"suppressExcessPropertyErrors":false,
 		"suppressImplicitAnyIndexErrors":false,
-		"strictFunctionTypes":false,//TODO
+		"strictFunctionTypes":true,
 		"strictNullChecks":true,
 		"strictPropertyInitialization":true
 	},

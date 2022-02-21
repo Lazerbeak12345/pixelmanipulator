@@ -508,6 +508,7 @@ export class PixelManipulator{
 				return i;
 			}
 		}
+		return undefined;
 	};
 	idToColor(id:number):number[]{
 		return (this.getElementByName(this.elementNumList[id])||{color:false}).color;
