@@ -211,7 +211,7 @@
 			</div>
 		</div>
 		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
-		<script src="dist/pixelmanipulator.js"></script>
+		<script src="dist/umd/pixelmanipulator.js"></script>
 		<script>
 			function ready(callback){ //the original was from https://stackoverflow.com/a/7053197 , but I added returns in order to speed up the prossess.
 				// in case the document is already rendered
@@ -357,8 +357,8 @@
 				}
 			}
 			ready(function() {
-				window.p=new PixelManipulator.PixelManipulator();
-				document.getElementById("backendversion").innerText=PixelManipulator.version;
+				window.p=new pixelmanipulator.PixelManipulator();
+				document.getElementById("backendversion").innerText=pixelmanipulator.version;
 				var canvas=document.getElementById('canvas');
 				p.canvasPrep({
 					canvas:canvas,

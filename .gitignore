@@ -5,3 +5,4 @@ node_modules/
 .notepadppsession
 
 *.log
+dist/es/
