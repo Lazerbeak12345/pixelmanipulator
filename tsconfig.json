@@ -1,7 +1,6 @@
 {
 	"compilerOptions":{
 		"outDir":"./dist/commonjs",
-		"allowJs":true,//TODO
 		"declaration":true,
 		"target":"es5",
 
