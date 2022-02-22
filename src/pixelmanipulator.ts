@@ -405,7 +405,7 @@ export class PixelManipulator {
   };
 
   aliasElements (oldData: ElementDataUnknownNameMandatory, newData: ElementDataUnknownNameMandatory): void {
-    if (typeof this.elementTypeMap.get(newData.name) !== 'undefined') {
+    if (this.elementTypeMap.has(newData.name)) {
       throw new Error('The name ' + newData.name + ' is already in use!')
     }
     this.nameAliases.delete(newData.name)
