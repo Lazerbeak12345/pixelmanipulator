@@ -1,6 +1,7 @@
 import { watch, src, dest, series } from 'gulp'
 import { createProject } from 'gulp-typescript'
-import { rollup } from 'rollup'
+import { rollup, RollupOutput } from 'rollup'
+type Stream=NodeJS.ReadWriteStream
 const tsProject = createProject(
   'tsconfig.json',
   {
@@ -9,13 +10,13 @@ const tsProject = createProject(
     moduleResolution: 'node'
   }
 )
-const source_glob = 'src/*'
-export function build_es () {
-  return src(source_glob)
+const sourceGlob = 'src/*'
+export function buildEs (): Stream {
+  return src(sourceGlob)
     .pipe(tsProject())
     .pipe(dest('dist/es'))
 }
-async function use_rollup () {
+async function useRollup (): Promise<RollupOutput> {
   const bundle = await rollup({
     input: 'dist/es/pixelmanipulator.js'
   })
@@ -25,13 +26,13 @@ async function use_rollup () {
     name: 'pixelmanipulator'
   })
 }
-function post_rollup () {
+function postRollup (): Stream {
   return src('dist/es/*.d.ts')
     .pipe(dest('dist/umd'))
 }
-export const build_umd = series(build_es, use_rollup, post_rollup)
-export const build = build_umd
+export const buildUmd = series(buildEs, useRollup, postRollup)
+export const build = buildUmd
 export default build
-export function build_watch () {
-  watch(source_glob, { ignoreInitial: false }, build)
+export function buildWatch (): void {
+  watch(sourceGlob, { ignoreInitial: false }, build)
 }

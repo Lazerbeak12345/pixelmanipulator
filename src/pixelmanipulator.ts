@@ -71,7 +71,7 @@ interface templateb{
   __LIVE__: Function
   __DEAD__: Function
 }
-const __templates: {
+const templates: {
   [index: string]: templatea|templateb
 } = { // an object containing the different templates that are currently in the system
   __LIFE__: { // Things like Conway's Game of Life
@@ -86,9 +86,9 @@ const __templates: {
       return out
     },
     __index__: function (this: templatea, p: PixelManipulator, elm: number, data: ElementData) {
-      if (typeof data.pattern === 'undefined' ||
-			   data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1
-      ) { return [] }
+      if (typeof data.pattern === 'undefined' || data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1) {
+        return []
+      }
       const numbers = data.pattern.split(/\/?[a-z]/gi)// "B",born,die
       data.loop = typeof data.loop !== 'undefined' ? data.loop : true
       if (typeof data.hitbox !== 'undefined') { data.hitbox = p.neighborhoods.moore() }
@@ -110,7 +110,10 @@ const __templates: {
     },
     __LIVE__: function (p: PixelManipulator, bfdie: number, loop: boolean|undefined, elm: number) {
       return function llive (rel: rel) {
-        if ((bfdie & 1 << rel.mooreNearbyCounter(rel.x, rel.y, elm, loop)) == 0) { p.setPixel(rel.x, rel.y, p.defaultId) }// if any match (of how many moore are nearby) is found, it dies
+        // if any match (of how many moore are nearby) is found, it dies
+        if ((bfdie & 1 << rel.mooreNearbyCounter(rel.x, rel.y, elm, loop)) === 0) {
+          p.setPixel(rel.x, rel.y, p.defaultId)
+        }
       }
     },
     __DEAD__: function (p: PixelManipulator, bflive: number, loop: boolean|undefined, elm: number) {
@@ -121,9 +124,9 @@ const __templates: {
   },
   __WOLFRAM__: {
     __index__: function (p: PixelManipulator, elm: number, data: ElementData) {
-      if (typeof data.pattern === 'undefined' ||
-			   data.pattern.search(/Rule \d*/gi) <= -1
-      ) { return [] }
+      if (typeof data.pattern === 'undefined' || data.pattern.search(/Rule \d*/gi) <= -1) {
+        return []
+      }
       const binStates = parseInt(data.pattern.split(/Rule /gi)[1])
       data.loop = typeof data.loop !== 'undefined' ? data.loop : false
       if (typeof data.hitbox === 'undefined') { data.hitbox = p.neighborhoods.wolfram(1, 1) }
@@ -195,35 +198,34 @@ export class PixelManipulator {
   _width=1// Must be at least one pixel for startup to work
   _height=1
   row=0
-  elementTypeMap: {
-    [index: string]: ElementData
-  }={
-    blank: {
-      color: [0, 0, 0, 255],
-      number: 0, // Index in this.elementNumList
-      hitbox: [],
-      name: 'blank'
-    }
-  }
+  elementTypeMap: Map<string, ElementData>=new Map([
+    [
+      'blank',
+      {
+        color: [0, 0, 0, 255],
+        number: 0, // Index in this.elementNumList
+        hitbox: [],
+        name: 'blank'
+      }
+    ]
+  ])
 
   elementNumList=['blank']
-  nameAliases: {
-    [index: string]: string
-  }={}
+  nameAliases: Map<string, string>=new Map()
 
   mode='paused'
   zoomScaleFactor=20
   zoomctxStrokeStyle='gray'
   defaultId=0
-  onIterate=function () {}// both of these need to be defined so the absence of either is suitiable.
-  onAfterIterate=function () {}
+  onIterate: () => void=function () {}// both of these need to be defined so the absence of either is suitiable.
+  onAfterIterate: () => void=function () {}
   neighborhoods={
     // Area is f(x)=2x-1
-    wolfram: function (radius?: number, yval?: number, include_self?: boolean) {
+    wolfram: function (radius?: number, yval?: number, includeSelf?: boolean) {
       if (typeof radius === 'undefined') { radius = 1 }
       if (typeof yval === 'undefined') { yval = -1 }
       const output = [{ x: 0, y: yval }]
-      if (typeof include_self === 'undefined' || include_self) {
+      if (typeof includeSelf === 'undefined' || includeSelf) {
         output.push({ x: 0, y: yval })
       }
       for (let i = radius; i > 0; i--) {
@@ -233,15 +235,15 @@ export class PixelManipulator {
       return output
     },
     // Area is f(x)=(2r+1)^2
-    moore: function (radius?: number, include_self?: boolean) {
+    moore: function (radius?: number, includeSelf?: boolean) {
       if (typeof radius === 'undefined') { radius = 1 }
-      if (typeof include_self === 'undefined') { include_self = false }
+      if (typeof includeSelf === 'undefined') { includeSelf = false }
       const output: hitbox = []
       // Note: no need to calculate the Chebyshev distance. All pixels in this
       // range are "magically" within.
       for (let x = -1 * radius; x <= radius; x++) {
         for (let y = -1 * radius; y <= radius; y++) {
-          if (include_self || !(x === 0 && y === 0)) { output.push({ x: x, y: y }) }
+          if (includeSelf || !(x === 0 && y === 0)) { output.push({ x: x, y: y }) }
         }
       }
       return output
@@ -249,34 +251,34 @@ export class PixelManipulator {
       // goal? Or just weren't using higher-order algorithims?
     },
     // Area is f(x)=r^2+(r+1)^2
-    vonNeumann: function (radius?: number, include_self?: boolean) {
+    vonNeumann: function (radius?: number, includeSelf?: boolean) {
       if (typeof radius === 'undefined') { radius = 1 }
-      if (typeof include_self === 'undefined') { include_self = false }
+      if (typeof includeSelf === 'undefined') { includeSelf = false }
       const output: hitbox = []
       // A Von Neumann neighborhood of a given distance always fits inside of a
       // Moore neighborhood of the same. (This is a bit brute-force)
       for (let x = -1 * radius; x <= radius; x++) {
         for (let y = -1 * radius; y <= radius; y++) {
           if (
-            (include_self || !(x === 0 && y === 0)) &&
-						(Math.abs(x) + Math.abs(y) <= radius) // Taxicab distance
+            (includeSelf || !(x === 0 && y === 0)) &&
+            (Math.abs(x) + Math.abs(y) <= radius) // Taxicab distance
           ) { output.push({ x: x, y: y }) }
         }
       }
       return output
     },
     // Area is not quite that of a circle. TODO
-    euclidean: function (radius?: number, include_self?: boolean) {
+    euclidean: function (radius?: number, includeSelf?: boolean) {
       if (typeof radius === 'undefined') { radius = 1 }
-      if (typeof include_self === 'undefined') { include_self = false }
+      if (typeof includeSelf === 'undefined') { includeSelf = false }
       const output: hitbox = []
       // A circle of a given diameter always fits inside of a square of the same
       // side-length. (This is a bit brute-force)
       for (let x = -1 * radius; x <= radius; x++) {
         for (let y = -1 * radius; y <= radius; y++) {
           if (
-            (include_self || !(x === 0 && y === 0)) &&
-						(Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= radius) // Euclidean distance
+            (includeSelf || !(x === 0 && y === 0)) &&
+            (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= radius) // Euclidean distance
           ) { output.push({ x: x, y: y }) }
         }
       }
@@ -287,28 +289,28 @@ export class PixelManipulator {
   }
 
   onElementModified: (id: number) => void=function () {}
-  get_width () {
+  get_width (): number {
     return this._width
   }
 
   _canvas: undefined|HTMLCanvasElement
-  set_width (value: number) {
+  set_width (value: number): void {
     if (typeof this._canvas !== 'undefined') { this._canvas.width = value }
     this._width = value
   };
 
-  get_height () {
+  get_height (): number {
     return this._height
   };
 
-  set_height (value: number) {
+  set_height (value: number): void {
     if (typeof this._canvas !== 'undefined') { this._canvas.height = value }
     this._height = value
   };
 
   /// fills the screen with value, at an optional given percent
-  randomlyFill (value: string|number|number[], pr?: number) {
-    pr = pr || 15
+  randomlyFill (value: string|number|number[], pr?: number): void {
+    pr = pr ?? 15
     const w = this.get_width()
     const h = this.get_height()
     for (let xPos = 0; xPos < w; xPos++) {
@@ -319,7 +321,7 @@ export class PixelManipulator {
   };
 
   // adds multiple elements
-  addMultipleElements (map: {[index: string]: ElementDataUnknown}) {
+  addMultipleElements (map: {[index: string]: ElementDataUnknown}): void {
     for (const elm in map) {
       map[elm].name = elm
       this.addElement(map[elm] as ElementDataUnknownNameMandatory)
@@ -328,7 +330,7 @@ export class PixelManipulator {
 
   addElement (
     data: ElementDataUnknownNameMandatory
-  ) { // adds a single element
+  ): number { // adds a single element
     const elm = data.name// name of the element
     if (typeof elm === 'undefined') throw new Error('Name is required for element')
     if (typeof data.name === 'undefined') data.name = elm
@@ -336,30 +338,38 @@ export class PixelManipulator {
     data.number = this.elementNumList.length
     this.elementNumList.push(elm)
     // Must be this value exactly for modifyElement to work
-    this.elementTypeMap[elm] = {
+    this.elementTypeMap.set(elm, {
       name: elm,
       number: data.number,
       color: data.color,
       hitbox: []
-    }
+    })
     this.modifyElement(data.number, data as ElementDataUnknown)
+    return data.number
   };
 
-  modifyElement (id: number, data: ElementDataUnknown) {
+  modifyElement (id: number, data: ElementDataUnknown): void {
     const name = this.elementNumList[id]
-    const oldData = this.elementTypeMap[name]
-    delete this.elementTypeMap[name] // Needs to be gone for color check
+    if (typeof name === 'undefined') {
+      throw new Error(`Invalid ID ${id}`)
+    }
+    const oldData = this.elementTypeMap.get(name) as ElementData
+    this.elementTypeMap.delete(name) // Needs to be gone for color check
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
       this.aliasElements(oldData, data as ElementDataUnknownNameMandatory)
       this.elementNumList[id] = data.name
     }
     if (typeof data.color !== 'undefined') {
       while (data.color.length < 4) { data.color.push(255) }
-      if (typeof this.colorToId(data.color) !== 'undefined') { throw new Error('The color ' + data.color + ' is already in use!') }
+      if (typeof this.colorToId(data.color) !== 'undefined') {
+        throw new Error(`The color ${data.color.toString()} is already in use!`)
+      }
     }
     if (typeof data.loop !== 'undefined' && typeof data.pattern === 'undefined') { data.pattern = oldData.pattern }
     for (const di in data) {
-      if (data.hasOwnProperty(di)) { oldData[di] = data[di] }
+      if (Object.prototype.hasOwnProperty.call(data, di) as boolean) {
+        oldData[di] = data[di]
+      }
     }
     if (typeof data.pattern === 'string') {
       const hb = oldData.hitbox
@@ -369,8 +379,8 @@ export class PixelManipulator {
       oldData.hitbox = typeof data.hitbox === 'undefined' ? [] : data.hitbox
       oldData.liveCell = data.liveCell
       oldData.deadCell = data.deadCell
-      for (const tempNam in __templates) {
-        const out = __templates[tempNam].__index__(this, id, oldData)
+      for (const tempNam in templates) {
+        const out = templates[tempNam].__index__(this, id, oldData)
         if (out.length === 0) continue// if the output was [], then go on.
         // Checking if `data` has the cell update functions because we _want_ to
         // override the ones in `oldData`
@@ -383,64 +393,62 @@ export class PixelManipulator {
       // ones.
       if (
         typeof oldData.liveCell === 'undefined' &&
-				typeof oldData.deadCell === 'undefined'
+        typeof oldData.deadCell === 'undefined'
       ) {
         if (typeof lc !== 'undefined') { oldData.liveCell = lc }
+        if (typeof dc !== 'undefined') { oldData.deadCell = dc }
       }
-      if (typeof dc !== 'undefined') { oldData.deadCell = dc }
     }
     if (typeof oldData.hitbox === 'undefined') { oldData.hitbox = this.neighborhoods.moore() }
-    this.elementTypeMap[oldData.name] = oldData
+    this.elementTypeMap.set(oldData.name, oldData)
     this.onElementModified(id)
   };
 
-  aliasElements (oldData: ElementDataUnknownNameMandatory, newData: ElementDataUnknownNameMandatory) {
-    if (typeof this.elementTypeMap[newData.name] !== 'undefined') { throw new Error('The name ' + newData.name + ' is already in use!') }
-    delete this.nameAliases[newData.name]
-    this.nameAliases[oldData.name] = newData.name
+  aliasElements (oldData: ElementDataUnknownNameMandatory, newData: ElementDataUnknownNameMandatory): void {
+    if (typeof this.elementTypeMap.get(newData.name) !== 'undefined') {
+      throw new Error('The name ' + newData.name + ' is already in use!')
+    }
+    this.nameAliases.delete(newData.name)
+    this.nameAliases.set(oldData.name, newData.name)
   };
 
-  getElementByName (name: string) {
-    let unaliased = name
+  getElementByName (name: string): ElementData|undefined {
+    let unaliased: string|undefined = name
     while (typeof unaliased !== 'undefined') {
       name = unaliased
-      unaliased = this.nameAliases[name]
+      unaliased = this.nameAliases.get(name)
     }
-    return this.elementTypeMap[name]
+    return this.elementTypeMap.get(name)
   };
 
   // Generator for whatIs
   __WhatIs (getPixelId: getPixelId): whatIs {
-    const p = this
-    return function whatIsGeneric (x, y, loop) { // return the name of an element in a given location
-      return p.elementNumList[getPixelId(x, y, loop)]
+    return (x, y, loop) => { // return the name of an element in a given location
+      return this.elementNumList[getPixelId(x, y, loop)]
     }
   };
 
   // Start iterations on all of the elements on the canvas
-  play (canvasSizes?: canvasSizes) {
+  play (canvasSizes?: canvasSizes): void {
     // console.log("play");
     if (this.mode === 'playing') this.reset(canvasSizes)
     this.mode = 'playing'
-    const p = this
-    this.loopint = window.requestAnimationFrame(function () {
-      p.iterate()
+    this.loopint = window.requestAnimationFrame(() => {
+      this.iterate()
     })
   };
 
   // reset (and resize) the canvas(es)
-  reset (canvasSizes?: canvasSizes) {
-    // console.log("reset");
-    // clearInterval(this.loopint);
+  reset (canvasSizes?: canvasSizes): void {
     if (typeof canvasSizes === 'undefined') { canvasSizes = {} }
     this.pause()
     const w = this.get_width()
     const h = this.get_height()
-    this.set_width(canvasSizes.canvasW || w)
-    this.set_height(canvasSizes.canvasH || h)
+    this.set_width(canvasSizes.canvasW ?? w)
+    this.set_height(canvasSizes.canvasH ?? h)
     if (typeof this.zoomelm !== 'undefined') {
-      this.zoomelm.width = (canvasSizes.zoomW || this.zoomelm.width / this.zoomScaleFactor) * this.zoomScaleFactor
-      this.zoomelm.height = (canvasSizes.zoomH || this.zoomelm.height / this.zoomScaleFactor) * this.zoomScaleFactor
+      this.zoomelm.width = (canvasSizes.zoomW ?? this.zoomelm.width / this.zoomScaleFactor) * this.zoomScaleFactor
+      this.zoomelm.height = (canvasSizes.zoomH ?? this.zoomelm.height / this.zoomScaleFactor) * this.zoomScaleFactor
     }
     this.updateData()
     for (let x = 0; x < w; x++) {
@@ -449,26 +457,24 @@ export class PixelManipulator {
       }
     }
     this.update()
-    if (this.ctx !== null && typeof this.imageData !== 'undefined') { this.ctx.putImageData(this.imageData, 0, 0) }
+    if (this.ctx !== null && typeof this.imageData !== 'undefined') {
+      this.ctx.putImageData(this.imageData, 0, 0)
+    }
   };
 
   // pause canvas iterations
-  pause () {
+  pause (): void {
     this.mode = 'paused'
     window.cancelAnimationFrame(this.loopint)
   };
 
-  zoom (e?: {x?: number, y?: number}) { // This tells pixelmanipulator where to focus the center of the zoomElm
+  zoom (e?: {x?: number, y?: number}): void { // This tells pixelmanipulator where to focus the center of the zoomElm
     // console.log("zoom",e);
     if (typeof this.zoomelm === 'undefined' || typeof this.zoomelm.height === 'undefined') return
     if (typeof e === 'undefined') e = {}
-    if (typeof e.x === 'undefined') e.x = this.zoomX
-    if (typeof e.y === 'undefined') e.x = this.zoomY
-    if (typeof e.x !== 'undefined' &&
-			typeof e.y !== 'undefined' &&
-			e.x >= 0 &&
-			e.y >= 0
-    ) {
+    e.x = e.x ?? this.zoomX
+    e.y = e.y ?? this.zoomY
+    if (e.x >= 0 && e.y >= 0) {
       this.zoomX = e.x
       this.zoomY = e.y
     }
@@ -483,11 +489,11 @@ export class PixelManipulator {
         0, 0,
         this.zoomelm.width, this.zoomelm.height)
       this.zoomctx.beginPath()// draw the grid
-      for (var i = 1; i < (this.zoomelm.width / this.zoomScaleFactor); i++) {
+      for (let i = 1; i < (this.zoomelm.width / this.zoomScaleFactor); i++) {
         this.zoomctx.moveTo(i * this.zoomScaleFactor, 0)
         this.zoomctx.lineTo(i * this.zoomScaleFactor, this.zoomelm.height)
       }
-      for (i = 1; i < (this.zoomelm.height / this.zoomScaleFactor); i++) {
+      for (let i = 1; i < (this.zoomelm.height / this.zoomScaleFactor); i++) {
         this.zoomctx.moveTo(0, i * this.zoomScaleFactor)
         this.zoomctx.lineTo(this.zoomelm.width, i * this.zoomScaleFactor)
       }
@@ -504,62 +510,62 @@ export class PixelManipulator {
     return undefined
   };
 
-  idToColor (id: number): number[] {
-    return (this.getElementByName(this.elementNumList[id]) || { color: undefined }).color
+  idToColor (id: number): number[]|undefined {
+    return this.getElementByName(this.elementNumList[id])?.color
   };
 
   // Generates getPixelId and getOldPixelId instances
   __GetPixelId=function (this: PixelManipulator, d: Uint32Array): getPixelId {
-    // console.log("GetPixelId");
-    const p = this
-    return function getPixelIdGeneric (x, y, loop) { // get the rgba value of the element at given position, handeling for looping(defaults to true)
-      const w = p.get_width()
-      const h = p.get_height()
+    return (x, y, loop) => { // get the rgba value of the element at given position, handeling for looping(defaults to true)
+      const w = this.get_width()
+      const h = this.get_height()
       loop = typeof loop !== 'undefined' ? loop : true
       if (loop) {
         x %= w
         if (x < 0)x += w
         y %= h
         if (y < 0)y += h
-      } else if (x < 0 || x >= w || y < 0 || x >= h) { return p.defaultId }
+      } else if (x < 0 || x >= w || y < 0 || x >= h) { return this.defaultId }
       return d[(w * y) + x]
     }
   }
 
-  __GetPixel (getPixelId: getPixelId): getPixel { // Generates getPixel and getOldPixel instances
-    const p = this
-    return function getPixelGeneric (x, y, loop) { // get the rgba value of the element at given position, handeling for looping(defaults to true)
-      return p.idToColor(getPixelId(x, y, loop))
+  // Generates getPixel and getOldPixel instances
+  __GetPixel (getPixelId: getPixelId): getPixel {
+    // get the rgba value of the element at given position, handeling for looping(defaults to true)
+    return (x, y, loop) => {
+      const tmp = this.idToColor(getPixelId(x, y, loop))
+      if (typeof tmp === 'undefined') {
+        throw new Error("Can't get pixel color from pixel id in get pixel (should never happen).")
+      }
+      return tmp
     }
   };
 
-  update () { // applies changes made by setPixel to the graphical canvas(es)
-    // console.log("update");
+  update (): void { // applies changes made by setPixel to the graphical canvas(es)
     if (this.ctx !== null && typeof this.imageData !== 'undefined') { this.ctx.putImageData(this.imageData, 0, 0) }
     if (typeof this.zoomelm !== 'undefined') this.zoom()
   };
 
-  compareColors (a?: number[], b?: number[]) {
+  compareColors (a?: number[], b?: number[]): boolean {
     if (typeof a === 'undefined') { a = [] }
     if (typeof b === 'undefined') { b = [] }
-    return (a[0] || 0) == (b[0] || 0) && (a[1] || 0) == (b[1] || 0) && (a[2] || 0) == (b[2] || 0) && (a[3] || 255) == (b[3] || 255)
+    return (a[0] ?? 0) === (b[0] ?? 0) && (a[1] ?? 0) === (b[1] ?? 0) && (a[2] ?? 0) === (b[2] ?? 0) && (a[3] ?? 255) === (b[3] ?? 255)
   };
 
   // Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
   __ConfirmElm (getPixelId: getPixelId): confirmElm {
-    // console.log("ConfirmElm",f);
-    // loop=typeof loop!=="undefined"?loop:true;
-    const p = this
-    return function confirmElmGeneric (x, y, id, loop) { // returns a boolean as to weather the inputted element name matches the selected location
+    return (x, y, id, loop) => { // returns a boolean as to weather the inputted element name matches the selected location
       // console.log("confirmElm",x,y,name,loop);
       let realid: number = 0
+      let tmp: number|undefined
       switch (typeof id) {
-        case 'string':realid = p.getElementByName(id).number; break
-        case 'object':
-          var tmp = p.colorToId(id)
-          if (typeof tmp === 'undefined') { throw new Error(`color ${id} invalid!`) }
-          break
-        case 'number':realid = id
+        case 'string': tmp = this.getElementByName(id)?.number; break
+        case 'object': tmp = this.colorToId(id); break
+        case 'number': realid = id
+      }
+      if (typeof tmp === 'undefined') {
+        throw new Error(`color ${id.toString()} invalid!`)
       }
       return getPixelId(x, y, loop) === realid
     }
@@ -572,13 +578,13 @@ export class PixelManipulator {
     return function mooreNearbyCounter (x, y, name, loop) { // Count how many cells of this name match in a moore radius
       // console.log("mooreNearbyCounter");
       return boolToNumber(f(x - 1, y - 1, name, loop)) +// nw
-			boolToNumber(f(x - 1, y, name, loop)) + // w
-			boolToNumber(f(x - 1, y + 1, name, loop)) + // sw
-			boolToNumber(f(x, y - 1, name, loop)) + // n
-			boolToNumber(f(x, y + 1, name, loop)) + // s
-			boolToNumber(f(x + 1, y - 1, name, loop)) + // ne
-			boolToNumber(f(x + 1, y, name, loop)) + // e
-			boolToNumber(f(x + 1, y + 1, name, loop)) // se
+        boolToNumber(f(x - 1, y, name, loop)) + // w
+        boolToNumber(f(x - 1, y + 1, name, loop)) + // sw
+        boolToNumber(f(x, y - 1, name, loop)) + // n
+        boolToNumber(f(x, y + 1, name, loop)) + // s
+        boolToNumber(f(x + 1, y - 1, name, loop)) + // ne
+        boolToNumber(f(x + 1, y, name, loop)) + // e
+        boolToNumber(f(x + 1, y + 1, name, loop)) // se
     }
   };
 
@@ -593,35 +599,50 @@ export class PixelManipulator {
       }
       loop = typeof loop !== 'undefined' ? loop : false// one-dimentional detectors by default don't loop around edges
       // the three spots above (nw,n,ne)
-      return f(x - 1, y - 1, name, loop) === (binDex & 1 << 2) > 0 &&
-				f(x, y - 1, name, loop) === (binDex & 1 << 1) > 0 &&
-				f(x + 1, y - 1, name, loop) === (binDex & 1 << 0) > 0
+      return f(x - 1, y - 1, name, loop) === ((binDex & 1 << 2) > 0) &&
+        f(x, y - 1, name, loop) === ((binDex & 1 << 1) > 0) &&
+        f(x + 1, y - 1, name, loop) === ((binDex & 1 << 0) > 0)
     }
   };
 
-  renderPixel (x: number, y: number, id: number) {
+  renderPixel (x: number, y: number, id: number): void {
     const color = this.idToColor(id)
+    if (typeof color === 'undefined') {
+      throw new Error('Invalid ID')
+    }
+    // allows for arrays that are too small
+    while (color.length < 4) {
+      color.push(255)
+    }
     const w = this.get_width()
     // arry.length is always going to be 4. Checking wastes time.
     const pixelOffset = ((w * y) + x) * 4
     if (typeof this.imageData !== 'undefined') {
-      for (let i = 0; i < 4; ++i) { this.imageData.data[pixelOffset + i] = color[i] }
+      for (let i = 0; i < 4; ++i) {
+        this.imageData.data[pixelOffset + i] = color[i]
+      }
     }
   };
 
-  setPixel (x: number, y: number, arry: string|number|number[], loop?: boolean) { // places given pixel at the x and y position, handling for loop (default loop is true)
+  /// places given pixel at the x and y position, handling for loop (default loop is true)
+  setPixel (x: number, y: number, arry: string|number|number[], loop?: boolean): void {
     // console.log("rawSetPixel",x,y,name,loop);
-    loop = typeof loop !== 'undefined' ? loop : true
+    loop = loop ?? true
     let id = 0
     if (typeof arry === 'string') {
       if (typeof this.getElementByName(arry) === 'undefined') { throw new Error('Color name ' + arry + ' invalid!') }
-      id = this.getElementByName(arry).number
+      const tmp = this.getElementByName(arry)
+      if (typeof tmp === 'undefined') {
+        throw new Error(`Color ${arry} is invalid`)
+      }
+      id = tmp.number
     } else if (typeof arry === 'number') { id = arry } else if (typeof arry === 'object') {
       const tmp = this.colorToId(arry)
-      if (typeof tmp !== 'undefined') { id = tmp } else throw new Error(`Color ${tmp} is invalid`)
-      // allows for arrays that are too small
-      while (arry.length < 4) { arry.push(255) }
-    } else throw new Error('Color type ' + (typeof arry) + ' is invalid!')
+      if (typeof tmp === 'undefined') {
+        throw new Error(`Color ${id} is invalid`)
+      }
+      id = tmp
+    } else throw new Error(`Color type ${typeof arry} is invalid!`)
     const w = this.get_width()
     const h = this.get_height()
     if (loop) {
@@ -639,7 +660,7 @@ export class PixelManipulator {
   }={}
 
   // single frame of animation. Media functions pass this into setInterval
-  iterate () {
+  iterate (): void {
     // console.log("iterate");
     this.onIterate()
     this.oldElements.set(this.currentElements)
@@ -658,7 +679,7 @@ export class PixelManipulator {
       mooreNearbyCounter: this.__MooreNearbyCounter(confirmOldElm),
       wolframNearbyCounter: this.__WolframNearbyCounter(confirmOldElm)
     }
-    const typedUpdatedDead = new Array(this.elementNumList.length)
+    const typedUpdatedDead = new Array<Uint8Array>(this.elementNumList.length)
     this.pixelCounts = {}
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) { // iterate through x and y
@@ -666,6 +687,13 @@ export class PixelManipulator {
         if (currentPixId === this.defaultId) continue
         const currentPix = this.elementNumList[currentPixId]
         const elm = this.getElementByName(currentPix)
+        if (typeof elm === 'undefined') {
+          throw new Error(
+            'This isn\'t supposed to happen, but the internal pixel buffer was ' +
+            'currupted. This is likely a bug, or a symptom of improper direct ' +
+            'access to the current memory buffer'
+          )
+        }
         if (typeof elm.liveCell === 'function') {
           rel.y = y
           rel.x = x
@@ -676,7 +704,9 @@ export class PixelManipulator {
           this.pixelCounts[currentPixId] = 1
         } else this.pixelCounts[currentPixId]++
         if (typeof elm.deadCell === 'function') {
-          if (!typedUpdatedDead[currentPixId]) { typedUpdatedDead[currentPixId] = new Uint8Array(Math.ceil((w * h) / 8)) }
+          if (typeof typedUpdatedDead[currentPixId] === 'undefined') {
+            typedUpdatedDead[currentPixId] = new Uint8Array(Math.ceil((w * h) / 8))
+          }
           for (let hi = 0; hi < elm.hitbox.length; hi++) {
             const pixel = elm.hitbox[hi]
             rel.x = (x + pixel.x) % w
@@ -699,9 +729,8 @@ export class PixelManipulator {
     this.update()
     this.onAfterIterate()
     if (this.mode === 'playing') {
-      const p = this
-      this.loopint = window.requestAnimationFrame(function () {
-        p.iterate()
+      this.loopint = window.requestAnimationFrame(() => {
+        this.iterate()
       })
     }
   };
@@ -716,7 +745,7 @@ export class PixelManipulator {
   getPixel: getPixel|undefined
   confirmElm: confirmElm|undefined
   whatIs: whatIs|undefined
-  updateData () { // defines the starting values of the library and is run on `p.reset();`
+  updateData (): void { // defines the starting values of the library and is run on `p.reset();`
     // console.log("updateData");
     const w = this.get_width()
     const h = this.get_height()
@@ -737,7 +766,7 @@ export class PixelManipulator {
   };
 
   /// Tells PixelManipulator what canvas(es) to use.
-  canvasPrep (e: {canvas: HTMLCanvasElement, zoom: HTMLCanvasElement}) {
+  canvasPrep (e: {canvas: HTMLCanvasElement, zoom: HTMLCanvasElement}): void {
     // Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
     this._canvas = e.canvas
     if (typeof this._canvas !== 'undefined') { this.ctx = this._canvas.getContext('2d') }
@@ -746,9 +775,7 @@ export class PixelManipulator {
       this.zoomctx = this.zoomelm.getContext('2d')
     }
     this.updateData()
-    if (typeof e.zoom !== 'undefined' &&
-			typeof this.zoomelm !== 'undefined'
-    ) {
+    if (typeof e.zoom !== 'undefined' && typeof this.zoomelm !== 'undefined') {
       this.zoom({ // zoom at the center
         x: Math.floor(this.zoomelm.width / 2) - (Math.floor(this.zoomelm.width / 2) * this.zoomScaleFactor),
         y: Math.floor(this.zoomelm.height / 2) - (Math.floor(this.zoomelm.height / 2) * this.zoomScaleFactor)
@@ -757,17 +784,18 @@ export class PixelManipulator {
   };
 }// end class PixelManipulator
 export const version = '4.5.2'
-export const licence = 'PixelManipulator v' + version + ' Copyright (C) 2018-2021 ' +
-	'Nathan Fritzler\nThis program comes with ABSOLUTELY NO WARRANTY\nThis is ' +
-	'free software, and you are welcome to redistribute it\nunder certain ' +
-	'conditions, as according to the GNU GENERAL PUBLIC LICENSE version 3 or ' +
-	'later.'
+export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
+  '2018-2021 Nathan Fritzler\nThis program comes with ABSOLUTELY NO ' +
+  'WARRANTY\nThis is free software, and you are welcome to redistribute it\n' +
+  'under certain conditions, as according to the GNU GENERAL PUBLIC LICENSE ' +
+  'version 3 or later.'
 // A cursed hack from https://stackoverflow.com/a/59243202/6353323 to get a
-// global when in es6 module mode
+// global when in es6 module mode.
+// eslint-disable-next-line no-eval
 const global: any = (0, eval)('this')
 if (typeof global.window === 'undefined') {
   console.warn(
-    'This enviroment has not been tested, and is officially not supported.\nGood ' +
-		'luck.'
+    'This enviroment has not been tested, and is officially not supported.\n' +
+    'Good luck.'
   )
 } else console.log(licence)

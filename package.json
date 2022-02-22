@@ -50,16 +50,17 @@
     "gulp-typescript": "^6.0.0-alpha.1",
     "rollup": "^2.67.3",
     "ts-node": "^10.5.0",
-    "typescript": "^4.5.5"
+    "typescript": "<4.5.0"
   },
   "scripts": {
     "prepare": "yarn build",
     "pretest": "yarn build",
     "test": "exit 1",
     "watch:serve": "python -m http.server",
-    "watch:build": "gulp build_watch",
+    "watch:build": "gulp buildWatch",
     "watch:all": "yarn watch:serve & yarn watch:build",
     "watch": "yarn watch:all",
+    "prebuild": "eslint .",
     "build": "gulp",
     "coverage": "exit 1"
   }
