@@ -343,7 +343,7 @@
 				return output;
 			}
 			function updateCustomizer(){
-				var elm=p.elementTypeMap[document.getElementById("customSelect").value],
+				var elm=p.elementTypeMap.get(document.getElementById("customSelect").value),
 						customizeSection=document.getElementById("customizePatternSection");
 				document.getElementById("customizeColor").value=rgb2hex(elm.color);
 				document.getElementById("customColorAlpha").value=elm.color[3];// Raw alpha value
@@ -402,14 +402,14 @@
 				largeyline1Elm.addEventListener('mousemove',bigLineGotHovered);
 				document.getElementById('customizeName').addEventListener('change',function(){
 					console.log("change name",this.value);
-					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+					p.modifyElement(p.elementTypeMap.get(customizerS.value).number,{
 						name:this.value
 					});
 					updateCustomizer();
 				});
 				function changeColor(){
 					console.log("change color");
-					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+					p.modifyElement(p.elementTypeMap.get(customizerS.value).number,{
 						color:hex2rgba(customizeColor.value,parseInt(customizeColorAlpha.value))
 					});
 				}
@@ -417,7 +417,7 @@
 				customizeColorAlpha.addEventListener('change',changeColor);
 				customizeLoop.addEventListener('change',function(){
 					console.group("change loop",this.checked);
-					p.modifyElement(p.elementTypeMap[customizerS.value].number,{
+					p.modifyElement(p.elementTypeMap.get(customizerS.value).number,{
 						loop:this.checked
 					});
 					console.groupEnd("change loop");
@@ -596,10 +596,10 @@
 				});
 				document.getElementById("reset").addEventListener('click',function() {
 					p.reset({
-						canvasW:document.getElementById("width").value||100,
-						canvasH:document.getElementById("height").value||100,
-						zoomW:document.getElementById("zoomWidthElm").value||20,
-						zoomH:document.getElementById("zoomHeightElm").value||20,
+						canvasW:document.getElementById("width").value-0||100,
+						canvasH:document.getElementById("height").value-0||100,
+						zoomW:document.getElementById("zoomWidthElm").value-0||20,
+						zoomH:document.getElementById("zoomHeightElm").value-0||20,
 					});//Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
 					updateBox();
 					document.getElementById('play').disabled = false;
@@ -658,8 +658,9 @@
 						cusv="Conway's Game Of Life";
 					for (var i=0;i<elmdrops.length;i++){
 						elmdrops[i].innerHTML="";
-						for (var elementName in p.elementTypeMap) {
-							var newElement=document.createElement("option")
+						for (var ni=0;ni<p.elementNumList.length;ni++) {
+							var elementName=p.elementNumList[ni],
+								newElement=document.createElement("option")
 							newElement.innerText=elementName
 							elmdrops[i].appendChild(newElement)
 						}

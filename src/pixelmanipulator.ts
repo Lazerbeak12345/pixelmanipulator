@@ -557,17 +557,16 @@ export class PixelManipulator {
   __ConfirmElm (getPixelId: getPixelId): confirmElm {
     return (x, y, id, loop) => { // returns a boolean as to weather the inputted element name matches the selected location
       // console.log("confirmElm",x,y,name,loop);
-      let realid: number = 0
       let tmp: number|undefined
       switch (typeof id) {
         case 'string': tmp = this.getElementByName(id)?.number; break
         case 'object': tmp = this.colorToId(id); break
-        case 'number': realid = id
+        case 'number': tmp = id
       }
       if (typeof tmp === 'undefined') {
         throw new Error(`color ${id.toString()} invalid!`)
       }
-      return getPixelId(x, y, loop) === realid
+      return getPixelId(x, y, loop) === tmp
     }
   };
 
