@@ -221,7 +221,7 @@ export class PixelManipulator {
   onAfterIterate: () => void=function () {}
   neighborhoods={
     // Area is f(x)=2x-1
-    wolfram: function (radius?: number, yval?: number, includeSelf?: boolean) {
+    wolfram: function (radius?: number, yval?: number, includeSelf?: boolean): hitbox {
       if (typeof radius === 'undefined') { radius = 1 }
       if (typeof yval === 'undefined') { yval = -1 }
       const output = [{ x: 0, y: yval }]
@@ -235,7 +235,7 @@ export class PixelManipulator {
       return output
     },
     // Area is f(x)=(2r+1)^2
-    moore: function (radius?: number, includeSelf?: boolean) {
+    moore: function (radius?: number, includeSelf?: boolean): hitbox {
       if (typeof radius === 'undefined') { radius = 1 }
       if (typeof includeSelf === 'undefined') { includeSelf = false }
       const output: hitbox = []
@@ -251,7 +251,7 @@ export class PixelManipulator {
       // goal? Or just weren't using higher-order algorithims?
     },
     // Area is f(x)=r^2+(r+1)^2
-    vonNeumann: function (radius?: number, includeSelf?: boolean) {
+    vonNeumann: function (radius?: number, includeSelf?: boolean): hitbox {
       if (typeof radius === 'undefined') { radius = 1 }
       if (typeof includeSelf === 'undefined') { includeSelf = false }
       const output: hitbox = []
@@ -268,7 +268,7 @@ export class PixelManipulator {
       return output
     },
     // Area is not quite that of a circle. TODO
-    euclidean: function (radius?: number, includeSelf?: boolean) {
+    euclidean: function (radius?: number, includeSelf?: boolean): hitbox {
       if (typeof radius === 'undefined') { radius = 1 }
       if (typeof includeSelf === 'undefined') { includeSelf = false }
       const output: hitbox = []
@@ -367,7 +367,7 @@ export class PixelManipulator {
     }
     if (typeof data.loop !== 'undefined' && typeof data.pattern === 'undefined') { data.pattern = oldData.pattern }
     for (const di in data) {
-      if (Object.prototype.hasOwnProperty.call(data, di) as boolean) {
+      if (Object.prototype.hasOwnProperty.call(data, di)) {
         oldData[di] = data[di]
       }
     }
@@ -791,7 +791,7 @@ export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
   'version 3 or later.'
 // A cursed hack from https://stackoverflow.com/a/59243202/6353323 to get a
 // global when in es6 module mode.
-// eslint-disable-next-line no-eval
+// eslint-disable-next-line no-eval,@typescript-eslint/no-explicit-any
 const global: any = (0, eval)('this')
 if (typeof global.window === 'undefined') {
   console.warn(

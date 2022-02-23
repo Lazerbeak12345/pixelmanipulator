@@ -5,18 +5,16 @@
 		"target":"es5",
 
 		"allowUnreachableCode":false,
-		"allowUnusedLabels":false,
-		"alwaysStrict":true,
-		"noImplicitReturns":true,
-		"noImplicitThis":true,
-		"noImplicitAny":true,
+		"allowUnusedLabels": false,
+		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch":true,
 		"noUnusedLocals":true,
 		"noUnusedParameters":true,
 		"suppressExcessPropertyErrors":false,
-		"suppressImplicitAnyIndexErrors":false,
-		"strictFunctionTypes":true,
-		"strictNullChecks":true,
-		"strictPropertyInitialization":true
+		"suppressImplicitAnyIndexErrors": false,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noImplicitOverride": true
 	}
 }
