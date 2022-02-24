@@ -2,14 +2,7 @@ import { watch, src, dest, series } from 'gulp'
 import { createProject } from 'gulp-typescript'
 import { rollup, RollupOutput } from 'rollup'
 type Stream=NodeJS.ReadWriteStream
-const tsProject = createProject(
-  'tsconfig.json',
-  {
-    // Must be overriden or else this gulpfile won't run
-    module: 'es6',
-    moduleResolution: 'node'
-  }
-)
+const tsProject = createProject('tsconfig.json')
 const sourceGlob = 'src/*'
 export function buildEs (): Stream {
   return src(sourceGlob)

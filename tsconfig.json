@@ -2,7 +2,8 @@
 	"compilerOptions":{
 		"outDir":"./dist/commonjs",
 		"declaration":true,
-		"target":"es5",
+		"target":"ES2015",
+		"moduleResolution": "node",
 
 		"allowUnreachableCode":false,
 		"allowUnusedLabels": false,
