@@ -788,11 +788,7 @@ export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
   'WARRANTY\nThis is free software, and you are welcome to redistribute it\n' +
   'under certain conditions, as according to the GNU GENERAL PUBLIC LICENSE ' +
   'version 3 or later.'
-// A cursed hack from https://stackoverflow.com/a/59243202/6353323 to get a
-// global when in es6 module mode.
-// eslint-disable-next-line no-eval,@typescript-eslint/no-explicit-any
-const global: any = (0, eval)('this')
-if (typeof global.window === 'undefined') {
+if (typeof window === 'undefined') {
   console.warn(
     'This enviroment has not been tested, and is officially not supported.\n' +
     'Good luck.'
