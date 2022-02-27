@@ -1,0 +1,59 @@
+body{
+	background-color:grey;
+	font-family: sans-serif;
+}
+#canvas{/*This is where the pixels are being renderd*/
+	position:fixed;
+	top:0;
+	left:0;
+}
+#menu-box{
+	position:fixed;
+	top:0;
+	right:0;
+	z-index:999;
+	height:100%;
+	flex-direction:row;
+	display:flex;
+}
+#menu-box>div{
+	border-left:1px solid lightgrey;
+}
+#zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
+	height:100%;
+	flex-direction:column;
+	display:flex;
+}
+#scroll-box{
+	overflow-y:scroll;
+}
+#scroll-box>div{
+	padding-bottom:1em;
+}
+#scroll-box input[type="text"]{
+	text-align:right;
+	width:3em;
+}
+#actions-box{
+	border-bottom:1px solid lightgrey;
+}
+#selectorBox,/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
+#smallxline,/*These are the lines that show where on the canvas the mouse cursor is hovering.*/
+#smallyline,
+#largexline,
+#largeyline,
+#largexline1,
+#largeyline1{
+	position:absolute;
+	background:rgba(128,128,128,.5);
+	border:none;
+}
+#selectorBox:hover{
+	border:solid rgba(255,255,255,.5) 1px;
+}
+.click-type-random{
+	padding-left:1em
+}
+.hidden{
+	display:none;
+}

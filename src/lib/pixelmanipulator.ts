@@ -22,42 +22,44 @@ type hitbox=xycoord[]
 function boolToNumber (bool: boolean): number {
   return bool ? 1 : 0
 }
-interface rel{
+export interface Rel{
   x: number
   y: number
   mooreNearbyCounter: mooreNearbyCounter
   wolframNearbyCounter: wolframNearbyCounter
+  oldId: number
 }
+export type Color=[number, number, number, number]|[number, number, number]|[number, number]|[number]|[]
 interface ElementData{
-  [index: string]: string|number[]|boolean|hitbox|((rel: rel) => void)|number|undefined
+  [index: string]: string|number[]|boolean|hitbox|((rel: Rel) => void)|number|undefined
   name: string
-  color: number[]
+  color: Color
   pattern?: string
   loop?: boolean
   hitbox: hitbox
-  liveCell?: (rel: rel) => void
-  deadCell?: (rel: rel) => void
+  liveCell?: (rel: Rel) => void
+  deadCell?: (rel: Rel) => void
   number: number
 }
 interface ElementDataUnknown{
-  [index: string]: string|number[]|boolean|hitbox|((rel: rel) => void)|number|undefined
+  [index: string]: string|number[]|boolean|hitbox|((rel: Rel) => void)|number|undefined
   name?: string
-  color?: number[]
+  color?: Color
   pattern?: string
   loop?: boolean
   hitbox?: hitbox
-  liveCell?: (rel: rel) => void
-  deadCell?: (rel: rel) => void
+  liveCell?: (rel: Rel) => void
+  deadCell?: (rel: Rel) => void
   number?: number
 }
 interface ElementDataUnknownNameMandatory{
   name: string
-  color?: number[]
+  color?: Color
   pattern?: string
   loop?: boolean
   hitbox?: hitbox
-  liveCell?: (rel: rel) => void
-  deadCell?: (rel: rel) => void
+  liveCell?: (rel: Rel) => void
+  deadCell?: (rel: Rel) => void
   number?: number
 }
 interface templatea{
@@ -109,7 +111,7 @@ const templates: {
       ]
     },
     __LIVE__: function (p: PixelManipulator, bfdie: number, loop: boolean|undefined, elm: number) {
-      return function llive (rel: rel) {
+      return function llive (rel: Rel) {
         // if any match (of how many moore are nearby) is found, it dies
         if ((bfdie & 1 << rel.mooreNearbyCounter(rel.x, rel.y, elm, loop)) === 0) {
           p.setPixel(rel.x, rel.y, p.defaultId)
@@ -117,7 +119,7 @@ const templates: {
       }
     },
     __DEAD__: function (p: PixelManipulator, bflive: number, loop: boolean|undefined, elm: number) {
-      return function ldead (rel: rel) {
+      return function ldead (rel: Rel) {
         if ((bflive & 1 << rel.mooreNearbyCounter(rel.x, rel.y, elm, loop)) > 0) { p.setPixel(rel.x, rel.y, elm) }// if any match (of how many moore are nearby) is found, it lives
       }
     }
@@ -137,7 +139,7 @@ const templates: {
       ]
     },
     __LIVE__: function (p: PixelManipulator, elm: number, binStates: number, loop?: boolean) {
-      return function wdead (rel: rel) {
+      return function wlive (rel: Rel) {
         if (rel.y === 0) return
         for (let binDex = 0; binDex < 8; binDex++) { // for every possible state
           if ((binStates & 1 << binDex) === 0) { // if the state is "off". Use a bit mask and shift it
@@ -150,7 +152,7 @@ const templates: {
       }
     },
     __DEAD__: function (p: PixelManipulator, elm: number, binStates: number, loop?: boolean) {
-      return function wdead (rel: rel) {
+      return function wdead (rel: Rel) {
         for (let binDex = 0; binDex < 8; binDex++) { // for every possible state
           if ((binStates & 1 << binDex) > 0) { // if the state is "on". Use a bit mask and shift it
             if (rel.wolframNearbyCounter(rel.x, rel.y, elm, binDex, loop)) { // if there is a wolfram match (wolfram code goes from 111 to 000)
@@ -217,7 +219,7 @@ export class PixelManipulator {
   zoomScaleFactor=20
   zoomctxStrokeStyle='gray'
   defaultId=0
-  onIterate: () => void=function () {}// both of these need to be defined so the absence of either is suitiable.
+  onIterate: () => void=() => {}
   onAfterIterate: () => void=function () {}
   neighborhoods={
     // Area is f(x)=2x-1
@@ -353,14 +355,16 @@ export class PixelManipulator {
     if (typeof name === 'undefined') {
       throw new Error(`Invalid ID ${id}`)
     }
-    const oldData = this.elementTypeMap.get(name) as ElementData
+    const oldData: ElementDataUnknown = this.elementTypeMap.get(name) as ElementData
     this.elementTypeMap.delete(name) // Needs to be gone for color check
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
-      this.aliasElements(oldData, data as ElementDataUnknownNameMandatory)
+      this.aliasElements(oldData as ElementData, data as ElementDataUnknownNameMandatory)
       this.elementNumList[id] = data.name
     }
     if (typeof data.color !== 'undefined') {
-      while (data.color.length < 4) { data.color.push(255) }
+      while (data.color.length < 4) {
+        (data.color as [number]).push(255)
+      }
       if (typeof this.colorToId(data.color) !== 'undefined') {
         throw new Error(`The color ${data.color.toString()} is already in use!`)
       }
@@ -376,7 +380,7 @@ export class PixelManipulator {
       const lc = oldData.liveCell
       const dc = oldData.deadCell
       // Even if it's undefined. If it's undefined the template will fill it.
-      oldData.hitbox = typeof data.hitbox === 'undefined' ? [] : data.hitbox
+      oldData.hitbox = data.hitbox
       oldData.liveCell = data.liveCell
       oldData.deadCell = data.deadCell
       for (const tempNam in templates) {
@@ -400,7 +404,7 @@ export class PixelManipulator {
       }
     }
     if (typeof oldData.hitbox === 'undefined') { oldData.hitbox = this.neighborhoods.moore() }
-    this.elementTypeMap.set(oldData.name, oldData)
+    this.elementTypeMap.set((oldData as ElementData).name, oldData as ElementData) // These casts might be dangerous.
     this.onElementModified(id)
   };
 
@@ -740,9 +744,9 @@ export class PixelManipulator {
   oldElements: Uint32Array=new Uint32Array(0)
   zoomelm: HTMLCanvasElement|undefined
   zoomctx: CanvasRenderingContext2D|null=null
-  getPixelId: getPixelId|undefined
+  getPixelId: getPixelId=this.__GetPixelId(this.oldElements)
   getPixel: getPixel|undefined
-  confirmElm: confirmElm|undefined
+  confirmElm: confirmElm=this.__ConfirmElm(this.getPixelId)
   whatIs: whatIs|undefined
   updateData (): void { // defines the starting values of the library and is run on `p.reset();`
     // console.log("updateData");
@@ -765,7 +769,7 @@ export class PixelManipulator {
   };
 
   /// Tells PixelManipulator what canvas(es) to use.
-  canvasPrep (e: {canvas: HTMLCanvasElement, zoom: HTMLCanvasElement}): void {
+  canvasPrep (e: {canvas: HTMLCanvasElement, zoom?: HTMLCanvasElement}): void {
     // Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
     this._canvas = e.canvas
     if (typeof this._canvas !== 'undefined') { this.ctx = this._canvas.getContext('2d') }
@@ -794,3 +798,5 @@ if (typeof window === 'undefined') {
     'Good luck.'
   )
 } else console.log(licence)
+// This is called a "modeline". It's a (n)vi(m)|ex thing.
+// vi: tabstop=2 shiftwidth=2 expandtab
