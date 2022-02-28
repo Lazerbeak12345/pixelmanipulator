@@ -340,12 +340,12 @@ export class PixelManipulator {
     data.number = this.elementNumList.length
     this.elementNumList.push(elm)
     // Must be this value exactly for modifyElement to work
-    this.elementTypeMap.set(elm, {
+    const tmpData: ElementDataUnknown = {
       name: elm,
       number: data.number,
-      color: data.color,
-      hitbox: []
-    })
+      color: data.color
+    }
+    this.elementTypeMap.set(elm, tmpData as ElementData) // hitbox must be undefined for modifyElement to be able to correctly assign it
     this.modifyElement(data.number, data as ElementDataUnknown)
     return data.number
   };
