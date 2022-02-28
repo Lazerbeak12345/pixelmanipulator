@@ -24,6 +24,9 @@ body{
 	flex-direction:column;
 	display:flex;
 }
+#zoom{
+	float:right;
+}
 #scroll-box{
 	overflow-y:scroll;
 }
