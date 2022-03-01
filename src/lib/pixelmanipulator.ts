@@ -438,7 +438,7 @@ export class PixelManipulator {
     if (this.mode === 'playing') this.reset(canvasSizes)
     this.mode = 'playing'
     this.loopint = window.requestAnimationFrame(() => {
-      this.iterate()
+      void this.iterate()
     })
   };
 
@@ -663,7 +663,7 @@ export class PixelManipulator {
   }={}
 
   // single frame of animation. Media functions pass this into setInterval
-  iterate (): void {
+  async iterate (): Promise<void> {
     // console.log("iterate");
     this.onIterate()
     this.oldElements.set(this.currentElements)
@@ -674,7 +674,7 @@ export class PixelManipulator {
     const rel = {
       x: 0,
       y: 0,
-      oldId: 0,
+      oldId: this.defaultId,
       getOldPixelId: getOldPixelId,
       confirmOldElm: confirmOldElm,
       getOldPixel: this.__GetPixel(getOldPixelId),
@@ -684,6 +684,7 @@ export class PixelManipulator {
     }
     const typedUpdatedDead = new Array<Uint8Array>(this.elementNumList.length)
     this.pixelCounts = {}
+    const promises = []
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) { // iterate through x and y
         const currentPixId = rel.getOldPixelId(x, y)
@@ -698,10 +699,15 @@ export class PixelManipulator {
           )
         }
         if (typeof elm.liveCell === 'function') {
-          rel.y = y
-          rel.x = x
-          rel.oldId = currentPixId
-          elm.liveCell(rel)
+          promises.push(
+            Promise.resolve({
+              ...rel,
+              y,
+              x,
+              oldId: currentPixId
+            })
+              .then(elm.liveCell)
+          )
         }
         if (typeof this.pixelCounts[currentPixId] === 'undefined') {
           this.pixelCounts[currentPixId] = 1
@@ -712,30 +718,33 @@ export class PixelManipulator {
           }
           for (let hi = 0; hi < elm.hitbox.length; hi++) {
             const pixel = elm.hitbox[hi]
-            rel.x = (x + pixel.x) % w
-            if (rel.x < 0)rel.x += w
-            rel.y = (y + pixel.y) % h
-            if (rel.y < 0)rel.y += h
-            const index = Math.floor((w * rel.y + rel.x) / 8)
+            let rx = (x + pixel.x) % w
+            if (rx < 0) rx += w
+            let ry = (y + pixel.y) % h
+            if (ry < 0)ry += h
+            const index = Math.floor((w * ry + rx) / 8)
             const oldValue = typedUpdatedDead[currentPixId][index]
-            const bitMask = 1 << (rel.x % 8)
+            const bitMask = 1 << (rx % 8)
             if ((oldValue & bitMask) > 0) { continue }
             // I timed it, and confirmOldElm is slower than all the math above.
-            if (!rel.confirmOldElm(rel.x, rel.y, this.defaultId)) { continue }
-            rel.oldId = this.defaultId
-            elm.deadCell(rel)
+            if (!rel.confirmOldElm(rx, ry, this.defaultId)) { continue }
+            promises.push(
+              Promise.resolve({ ...rel, x: rx, y: ry })
+                .then(elm.deadCell)
+            )
             typedUpdatedDead[currentPixId][index] = oldValue | bitMask
           }
         }
       }
     }
-    this.update()
-    this.onAfterIterate()
+    await Promise.all(promises)
     if (this.mode === 'playing') {
       this.loopint = window.requestAnimationFrame(() => {
-        this.iterate()
+        void this.iterate()
       })
     }
+    this.onAfterIterate()
+    return await new Promise(() => this.update())
   };
 
   imageData: ImageData|undefined
