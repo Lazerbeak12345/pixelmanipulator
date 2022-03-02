@@ -1,0 +1,17 @@
+{
+	"targets": {
+		"esmodules":true,
+		"browsers":"defaults",
+		"node":"current"
+	},
+	"presets": [
+		"@babel/preset-typescript",
+		[
+			"@babel/preset-env",
+			{
+				"bugfixes": true,
+				"modules": false
+			}
+		]
+	]
+}

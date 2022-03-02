@@ -3,8 +3,11 @@
 		"outDir":"./dist/commonjs",
 		"rootDir":"src",
 		"declaration":true,
+		"emitDeclarationOnly":true,
 		"target":"ES2015",
 		"moduleResolution": "node",
+		"lib":["esnext","dom"],
+		"esModuleInterop":true,
 
 		"allowUnreachableCode":false,
 		"allowUnusedLabels": false,
