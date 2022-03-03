@@ -1,49 +1,86 @@
 import { PixelManipulator, Color, version } from '../lib/pixelmanipulator.js'
 
-const p: PixelManipulator = new PixelManipulator()
-const timedebug = true
-let framecount = 0
-
-const altFill = document.getElementById('altFill')
-const altFillP = document.getElementById('altFillP')
-const altSelect = document.getElementById('altSelect')
-const backendversion = document.getElementById('backendversion')
 const canvas = document.getElementById('canvas')
-const ctrlFill = document.getElementById('ctrlFill')
-const ctrlFillP = document.getElementById('ctrlFillP')
-const ctrlSelect = document.getElementById('ctrlSelect')
-const customizeT = document.getElementById('customizeT')
-const customizeColor = document.getElementById('customizeColor')
-const customizeColorAlpha = document.getElementById('customizeColorAlpha')
-const customizeColorAlphaText = document.getElementById('customizeColorAlphaText')
-const customizeLoop = document.getElementById('customizeLoop')
-const customizeName = document.getElementById('customizeName')
-const customizeSection = document.getElementById('customizePatternSection')
-const customizer = document.getElementById('customizer')
-const customSelect = document.getElementById('customSelect')
-const heightE = document.getElementById('height')
-const largexline1Elm = document.getElementById('largexline1')
-const largexlineElm = document.getElementById('largexline')
-const largeyline1Elm = document.getElementById('largeyline1')
-const largeylineElm = document.getElementById('largeyline')
-const normalFill = document.getElementById('normalFill')
-const normalFillP = document.getElementById('normalFillP')
-const normalSelect = document.getElementById('normalSelect')
-const oneFrameAtATime = document.getElementById('oneFrameAtATime')
-const pauseBtn = document.getElementById('pause')
-const pixelCounter = document.getElementById('pixelCounter')
-const pixelCounterT = document.getElementById('pixelCounterT')
-const playBtn = document.getElementById('play')
-const resetBtn = document.getElementById('reset')
-const selectorBoxElm = document.getElementById('selectorBox')
-const shfocusboxElm = document.getElementById('shfocusbox')
-const shtargeterElm = document.getElementById('shtargeter')
+
+/// Grey overlay lines over the canvas
 const smallxline = document.getElementById('smallxline')
 const smallyline = document.getElementById('smallyline')
-const widthE = document.getElementById('width')
+/// Grey box showing where zoom elm is looking at
+const selectorBoxElm = document.getElementById('selectorBox')
+
+const customizer = document.getElementById('customizer')
+/// Select the element to customize
+const customSelect = document.getElementById('customSelect')
+/// Change the color
+const customizeColor = document.getElementById('customizeColor')
+const customizeColorAlpha = document.getElementById('customizeColorAlpha')
+/// Name for the alpha field of the color
+const customizeColorAlphaText = document.getElementById('customizeColorAlphaText')
+/// Name of element
+const customizeName = document.getElementById('customizeName')
+
+/// Within are elements only shown if there is a pattern in use
+const customizeSection = document.getElementById('customizePatternSection')
+/// Should this pattern loop?
+const customizeLoop = document.getElementById('customizeLoop')
+
+/// Zoomed in canvas
 const zoom = document.getElementById('zoom')
+
+/// Grey overlay over zoom canvas
+const largexlineElm = document.getElementById('largexline')
+const largeylineElm = document.getElementById('largeyline')
+const largexline1Elm = document.getElementById('largexline1')
+const largeyline1Elm = document.getElementById('largeyline1')
+
+/// Actions box button.
+const resetBtn = document.getElementById('reset')
+const playBtn = document.getElementById('play')
+const pauseBtn = document.getElementById('pause')
+const oneFrameAtATime = document.getElementById('oneFrameAtATime')
+
+/// Sizes for render canvas
+const widthE = document.getElementById('width')
+const heightE = document.getElementById('height')
+/// Sizes for zoom canvas
 const zhE = document.getElementById('zoomHeightElm')
 const zwE = document.getElementById('zoomWidthElm')
+
+/// Element placed on normal-click
+const normalSelect = document.getElementById('normalSelect')
+/// The button to fill canvas with normal elm of given percent
+const normalFill = document.getElementById('normalFill')
+/// The percent of normal elm to fill canvas with when normalFill clicked
+const normalFillP = document.getElementById('normalFillP')
+
+/// Element placed on ctrl-click
+const ctrlSelect = document.getElementById('ctrlSelect')
+/// The button to fill canvas with ctrl elm of given percent
+const ctrlFill = document.getElementById('ctrlFill')
+/// The percent of ctrl elm to fill canvas with when normalFill clicked
+const ctrlFillP = document.getElementById('ctrlFillP')
+
+/// Element placed on alt-click
+const altSelect = document.getElementById('altSelect')
+/// The button to fill canvas with alt elm of given percent
+const altFill = document.getElementById('altFill')
+/// The percent of alt elm to fill canvas with when normalFill clicked
+const altFillP = document.getElementById('altFillP')
+
+/// Hide targeter lines
+const shtargeterElm = document.getElementById('shtargeter')
+/// Hide focus box
+const shfocusboxElm = document.getElementById('shfocusbox')
+/// Hide pixelCounter
+const pixelCounter = document.getElementById('pixelCounter')
+/// Show element customizer
+const customizeT = document.getElementById('customizeT')
+
+/// Version of backend
+const backendversion = document.getElementById('backendversion')
+
+/// Text element for pixel totals
+const pixelCounterT = document.getElementById('pixelCounterT')
 
 const selectorboxSty = selectorBoxElm?.style
 const largexlinesty = largexlineElm?.style
@@ -53,6 +90,18 @@ const largeylinesty = largeylineElm?.style
 
 const elmdrops = document.getElementsByClassName('elmDrop')
 
+const p: PixelManipulator = new PixelManipulator()
+const timedebug = true
+let framecount = 0
+
+if (backendversion != null) backendversion.innerText = version
+if (canvas == null) throw new Error('canvas could not be found!')
+p.canvasPrep(zoom == null
+  ? { canvas: canvas as HTMLCanvasElement }
+  : {
+      zoom: zoom as HTMLCanvasElement,
+      canvas: canvas as HTMLCanvasElement
+    })
 
 function updateBox (): void {
   if (selectorboxSty != null && p.zoomelm != null) {
@@ -204,14 +253,6 @@ function updateCustomizer (): void {
     } else customizeSection.classList.add('hidden')
   }
 }
-if (backendversion != null) backendversion.innerText = version
-if (canvas == null) throw new Error('canvas could not be found!')
-p.canvasPrep(zoom == null
-  ? { canvas: canvas as HTMLCanvasElement }
-  : {
-      zoom: zoom as HTMLCanvasElement,
-      canvas: canvas as HTMLCanvasElement
-    })
 if (p.zoomelm != null) {
   p.zoomelm.addEventListener('click', zoomClick)
   p.zoomelm.addEventListener('drag', zoomClick)
