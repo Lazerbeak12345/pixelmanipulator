@@ -8,6 +8,7 @@ const sourceGlob = 'src/lib/*'
 export function buildDocs (): Stream {
   return src(sourceGlob)
     .pipe(typedoc({
+      name: 'PixelManipulator',
       exclude: 'gulpfile.ts',
       out: 'dist/docs',
       media: 'media'
