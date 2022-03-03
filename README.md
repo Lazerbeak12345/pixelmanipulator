@@ -1,4 +1,4 @@
-# ![pixelmanipulator logo](pixelmanipulator_logo.svg) PixelManipulator
+# ![pixelmanipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator
 
 PixelManipulator is a JavaScript library that can run any cellular automata on
 an html5 canvas, such as "Conway's Game of Life," and "Rule 90." Inspired by the
