@@ -4,7 +4,7 @@ import * as typedoc from 'gulp-typedoc'
 import { rollup } from 'rollup'
 type Stream=NodeJS.ReadWriteStream
 const tsProject = createProject('tsconfig.json')
-const sourceGlob = 'src/es/*'
+const sourceGlob = 'src/lib/*'
 export function buildDocs (): Stream {
   return src(sourceGlob)
     .pipe(typedoc({
@@ -16,12 +16,12 @@ export function buildDocs (): Stream {
 export function buildEs (): Stream {
   return src(sourceGlob)
     .pipe(tsProject())
-    .pipe(dest('dist/es'))
+    .pipe(dest('dist/lib'))
 }
 export const buildEsAndDocs = parallel(buildEs, buildDocs)
 async function rollupToUmd (): Promise<void> {
   const bundle = await rollup({
-    input: 'dist/es/pixelmanipulator.js'
+    input: 'dist/lib/pixelmanipulator.js'
   })
   await bundle.write({
     file: 'dist/umd/pixelmanipulator.js',
@@ -31,7 +31,7 @@ async function rollupToUmd (): Promise<void> {
   return await bundle.close()
 }
 function postRollup (): Stream {
-  return src('dist/es/*.d.ts')
+  return src('dist/lib/*.d.ts')
     .pipe(dest('dist/umd'))
 }
 export const buildUmd = series(buildEsAndDocs, rollupToUmd, postRollup)

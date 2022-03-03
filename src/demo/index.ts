@@ -1,4 +1,4 @@
-import { PixelManipulator, Color, version } from '../es/pixelmanipulator.js'
+import { PixelManipulator, Color, version } from '../lib/pixelmanipulator.js'
 
 const canvas = document.getElementById('canvas')
 
