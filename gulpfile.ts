@@ -1,5 +1,6 @@
 import { watch, src, dest, series } from 'gulp'
 import { createProject } from 'gulp-typescript'
+import * as ghdeploy from 'gulp-gh-pages'
 import { rollup } from 'rollup'
 type Stream=NodeJS.ReadWriteStream
 const tsProject = createProject('tsconfig.json')
@@ -40,5 +41,10 @@ export function buildWatch (): void {
 export function buildWatchLib (): void {
   watch(sourceGlob, { ignoreInitial: false }, buildUmd)
 }
+function doDeploy (): Stream {
+  return src(['./index.html', './pixelmanipulator.html', './dist/**/*'])
+    .pipe(ghdeploy({ push: false, force: true }))
+}
+export const deploy = series(build, doDeploy)
 // This is called a "modeline". It's a (n)vi(m)|ex thing.
 // vi: tabstop=2 shiftwidth=2 expandtab

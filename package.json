@@ -38,6 +38,7 @@
   ],
   "devDependencies": {
     "@types/gulp": "^4.0.9",
+    "@types/gulp-gh-pages": "^0.0.33",
     "@types/gulp-sourcemaps": "^0.0.35",
     "@types/node": "^14",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
@@ -48,6 +49,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1 || ^5.0.0",
     "gulp": "^4.0.2",
+    "gulp-gh-pages": "^0.5.4",
     "gulp-typescript": "^6.0.0-alpha.1",
     "rollup": "^2.67.3",
     "ts-node": "^10.5.0",

@@ -6,3 +6,6 @@ node_modules/
 
 *.log
 dist/
+
+# Used by gulp-gh-pages
+.publish/
