@@ -13,9 +13,9 @@ const customizer = document.getElementById('customizer')
 const customSelect = document.getElementById('customSelect')
 /// Change the color
 const customizeColor = document.getElementById('customizeColor')
-const customizeColorAlpha = document.getElementById('customizeColorAlpha')
+const customizeColorAlpha = document.getElementById('customColorAlpha')
 /// Name for the alpha field of the color
-const customizeColorAlphaText = document.getElementById('customizeColorAlphaText')
+const customizeColorAlphaText = document.getElementById('customColorAlphaText')
 /// Name of element
 const customizeName = document.getElementById('customizeName')
 
