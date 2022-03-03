@@ -3,8 +3,8 @@ import { PixelManipulator, Color, version } from '../lib/pixelmanipulator.js'
 const p: PixelManipulator = new PixelManipulator()
 const timedebug = true
 let framecount = 0
+const selectorboxSty = document.getElementById('selectorBox')?.style
 function updateBox (): void {
-  const selectorboxSty = document.getElementById('selectorBox')?.style
   if (selectorboxSty != null && p.zoomelm != null) {
     selectorboxSty.width = `${p.zoomelm.width / p.zoomScaleFactor}px`
     selectorboxSty.height = `${p.zoomelm.height / p.zoomScaleFactor}px`
@@ -16,9 +16,9 @@ interface PageLoc{
   pageX: number
   pageY: number
 }
+const smallxline = document.getElementById('smallxline')
+const smallyline = document.getElementById('smallyline')
 function updateSmallLines (e: MouseEvent|PageLoc): void {
-  const smallxline = document.getElementById('smallxline')
-  const smallyline = document.getElementById('smallyline')
   if (smallxline != null && smallyline != null) {
     smallxline.style.left = `${e.pageX}px`
     smallyline.style.top = `${e.pageY}px`
@@ -40,6 +40,8 @@ function updateSmallLines (e: MouseEvent|PageLoc): void {
     updateLargeLinesY(x, y)
   } else updateLargeLinesY(x, -1)
 }
+const largexlinesty = document.getElementById('largexline')?.style
+const largexline1sty = document.getElementById('largexline1')?.style
 function updateLargeLinesX (x: number, y: number): void {
   if (p.zoomelm == null) return
   const zh = p.zoomelm.height
@@ -55,7 +57,6 @@ function updateLargeLinesX (x: number, y: number): void {
     h2 = 0
   }
 
-  const largexlinesty = document.getElementById('largexline')?.style
   if (largexlinesty != null) {
     largexlinesty.width = `${p.zoomScaleFactor}px`
     largexlinesty.height = `${h}px`
@@ -63,7 +64,6 @@ function updateLargeLinesX (x: number, y: number): void {
     largexlinesty.top = `${t}px`
   }
 
-  const largexline1sty = document.getElementById('largexline1')?.style
   if (largexline1sty != null) {
     largexline1sty.width = `${p.zoomScaleFactor}px`
     largexline1sty.height = `${h2}px`
@@ -388,11 +388,11 @@ p.addMultipleElements({
     }
   }
 })
+const ctrlSelect = document.getElementById('ctrlSelect')
+const altSelect = document.getElementById('altSelect')
+const normalSelect = document.getElementById('normalSelect')
 function onZoomClick (e: MouseEvent, rel: {x: number, y: number}): string { // an event-like function that returns what should be set where the zoom ctx was clicked
   let active = ''
-  const ctrlSelect = document.getElementById('ctrlSelect')
-  const altSelect = document.getElementById('altSelect')
-  const normalSelect = document.getElementById('normalSelect')
   if (e.ctrlKey && ctrlSelect != null) active = (ctrlSelect as HTMLSelectElement).value
   else if (e.altKey && altSelect != null) active = (altSelect as HTMLSelectElement).value
   else if (normalSelect != null) active = (normalSelect as HTMLSelectElement).value
@@ -447,12 +447,12 @@ const oneFrameAtATime = document.getElementById('oneFrameAtATime')
 if (oneFrameAtATime != null) {
   oneFrameAtATime.addEventListener('click', () => p.iterate())
 }
+const widthE = document.getElementById('width')
+const heightE = document.getElementById('height')
+const zwE = document.getElementById('zoomWidthElm')
+const zhE = document.getElementById('zoomHeightElm')
 if (resetBtn != null) {
   resetBtn.addEventListener('click', () => {
-    const widthE = document.getElementById('width')
-    const heightE = document.getElementById('height')
-    const zwE = document.getElementById('zoomWidthElm')
-    const zhE = document.getElementById('zoomHeightElm')
     if (widthE != null && heightE != null) {
       const canvasW = parseInt((widthE as HTMLInputElement).value)
       const canvasH = parseInt((heightE as HTMLInputElement).value)
@@ -486,7 +486,6 @@ if (pauseBtn != null) {
   })
 }
 const normalFill = document.getElementById('normalFill')
-const normalSelect = document.getElementById('normalSelect')
 const normalFillP = document.getElementById('normalFillP')
 if (normalFill != null && normalSelect != null && normalFillP != null) {
   normalFill.addEventListener('click', () => {
@@ -498,7 +497,6 @@ if (normalFill != null && normalSelect != null && normalFillP != null) {
   })
 }
 const ctrlFill = document.getElementById('ctrlFill')
-const ctrlSelect = document.getElementById('ctrlSelect')
 const ctrlFillP = document.getElementById('ctrlFillP')
 if (ctrlFill != null && ctrlSelect != null && ctrlFillP != null) {
   ctrlFill.addEventListener('click', () => {
@@ -510,7 +508,6 @@ if (ctrlFill != null && ctrlSelect != null && ctrlFillP != null) {
   })
 }
 const altFill = document.getElementById('altFill')
-const altSelect = document.getElementById('altSelect')
 const altFillP = document.getElementById('altFillP')
 if (altFill != null && altSelect != null && altFillP != null) {
   altFill.addEventListener('click', () => {
