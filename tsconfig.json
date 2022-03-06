@@ -5,7 +5,10 @@
 		"declaration":true,
 		"target":"ES2015",
 		"moduleResolution": "node",
-
+		"lib":[
+			"dom",
+			"es2015"
+		],
 		"allowUnreachableCode":false,
 		"allowUnusedLabels": false,
 		"noImplicitReturns": true,
