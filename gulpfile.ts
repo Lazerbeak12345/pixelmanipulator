@@ -46,10 +46,10 @@ export const buildDemo = series(buildUmd, demoTsc)
 export const build = buildDemo
 export default build
 export function buildWatch (): void {
-  watch([sourceGlob, demoSrcGlob], { ignoreInitial: false }, build)
+  watch([sourceGlob, 'README.md', demoSrcGlob], { ignoreInitial: false }, build)
 }
 export function buildWatchLib (): void {
-  watch(sourceGlob, { ignoreInitial: false }, buildUmd)
+  watch([sourceGlob, 'README.md'], { ignoreInitial: false }, buildUmd)
 }
 // This is called a "modeline". It's a (n)vi(m)|ex thing.
 // vi: tabstop=2 shiftwidth=2 expandtab
