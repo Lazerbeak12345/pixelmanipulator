@@ -49,7 +49,7 @@ export interface Rel{
   */
   getOldPixelId: getPixelId
   /**
-  * @return Does the element at this location in the last frame match the
+  * @returns Does the element at this location in the last frame match the
   * provided query?
   */
   confirmOldElm: confirmElm
@@ -113,8 +113,8 @@ export interface ElementDataUnknown{
   * are whole numbers from zero(0) to eight(8), due to the fact that that is
   * the physical limit.
   *
-  * > Note that the presence of the number 9 will fail silently, and act as if
-  * > that digit is not present.
+  * \> Note that the presence of the number 9 will fail silently, and act as if
+  * \> that digit is not present.
   *
   * ## Wolfram
   *
@@ -295,7 +295,7 @@ const templates: {
 }
 /**
 *
-* @param loop Should this check wrap around canvas edges?
+* @param loop - Should this check wrap around canvas edges?
 *
 * @returns Name of element at passed-in location. See [[ElementData.name]]
 */
@@ -314,23 +314,23 @@ export interface CanvasSizes{
 }
 /**
 *
-* @param loop Should this check wrap around canvas edges?
+* @param loop - Should this check wrap around canvas edges?
 *
 * @returns the [[ElementData.number]] of the element at a given location
 */
 export type getPixelId=(x: number, y: number, loop?: boolean) => number
 /**
 *
-* @param loop Should this check wrap around canvas edges?
+* @param loop - Should this check wrap around canvas edges?
 *
 * @returns the [[ElementData.color]] of the element at a given location
 */
 export type getPixel=(x: number, y: number, loop?: boolean) => number[]
 /**
 *
-* @param loop Should this check wrap around canvas edges?
+* @param loop - Should this check wrap around canvas edges?
 *
-* @return Does the element at this location match the provided query?
+* @returns Does the element at this location match the provided query?
 */
 export type confirmElm=(
   x: number,
@@ -338,19 +338,19 @@ export type confirmElm=(
   name: string|number|number[],
   loop?: boolean
 ) => boolean
-/** @param loop Should this check wrap around canvas edges?
-* @param name element to look for
-* @return Number of elements in moore radius */
+/** @param loop - Should this check wrap around canvas edges?
+* @param name - element to look for
+* @returns Number of elements in moore radius */
 type mooreNearbyCounter=(
   x: number,
   y: number,
   name: string|number|number[],
   loop?: boolean
 ) => number
-/** @param loop Should this check wrap around canvas edges?
-* @param name element to look for
-* @param bindex Either a string like `"001"` to match to, or the same encoded as a number.
-* @return Number of elements in moore radius */
+/** @param loop - Should this check wrap around canvas edges?
+* @param name - element to look for
+* @param bindex - Either a string like `"001"` to match to, or the same encoded as a number.
+* @returns Number of elements in moore radius */
 type wolframNearbyCounter=(
   x: number,
   y: number,
@@ -364,8 +364,8 @@ export class PixelManipulator {
   * This is the number that indicates what animation frame the iterate function
   * is being called with.
   *
-  * > You can use this to mannually stop the iterations like so:
-  * > `cancelAnimationFrame(this.loopint)` (not reccommended)
+  * \> You can use this to mannually stop the iterations like so:
+  * \> `cancelAnimationFrame(this.loopint)` (not reccommended)
   */
   loopint=0
   /**
@@ -383,7 +383,7 @@ export class PixelManipulator {
   /**
   * A low-level listing of the availiable elements.
   *
-  * > This has been around since late version 0!
+  * \> This has been around since late version 0!
   *
   * Format is much like the argument to
   * [[PixelManipulator.addMultipleElements]], but is not sanitized.
@@ -391,7 +391,7 @@ export class PixelManipulator {
   * Includes a `number` value that serves as the element's ID number and a `name`
   * value for convenience in making general components of elements. See [[ElementData.number]]
   *
-  * > Warning! Does not respect the [[PixelManipulator.nameAliases]] object!
+  * \> Warning! Does not respect the [[PixelManipulator.nameAliases]] object!
   */
   elementTypeMap: Map<string, ElementData>=new Map([
     [
@@ -422,8 +422,8 @@ export class PixelManipulator {
   * It is `"playing"` if it is currently animating, or `"paused"` if not
   * currently animating.
   *
-  * > This has been around since early version 0, and once was the `innerText`
-  * > value of a pause/play button!
+  * \> This has been around since early version 0, and once was the `innerText`
+  * \> value of a pause/play button!
   */
   mode: 'playing'|'paused'='paused'
   /**
@@ -454,9 +454,9 @@ export class PixelManipulator {
     *
     * Area is f(x)=2x-1
     *
-    * @param radius Count of how many to the right and left to include. Defaults
-    * @param yval Count of how many to offset the y value by. Defaults to -1.
-    * @param includeSelf Should this include the center pixel? Defaults to true.
+    * @param radius - Count of how many to the right and left to include. Defaults
+    * @param yval - Count of how many to offset the y value by. Defaults to -1.
+    * @param includeSelf - Should this include the center pixel? Defaults to true.
     * @returns A hitbox shaped like this under defaults:
     *
     * ```txt
@@ -482,9 +482,9 @@ export class PixelManipulator {
     *
     * Area is f(x)=(2r+1)^2
     *
-    * @param radius Count of how many rings around the center to include defaults
+    * @param radius - Count of how many rings around the center to include defaults
     * to 1.
-    * @param includeSelf Should this include the center pixel? Defaults to false.
+    * @param includeSelf - Should this include the center pixel? Defaults to false.
     * @returns A hitbox shaped like this under defaults:
     *
     * ```txt
@@ -513,9 +513,9 @@ export class PixelManipulator {
     *
     * Area is f(x)=r^2+(r+1)^2
     *
-    * @param radius Count of how many rings around the center to include. defaults
+    * @param radius - Count of how many rings around the center to include. defaults
     * to 1.
-    * @param includeSelf Should this include the center pixel? Defaults to false.
+    * @param includeSelf - Should this include the center pixel? Defaults to false.
     * @returns A hitbox shaped like this under defaults:
     *
     * ```txt
@@ -545,11 +545,11 @@ export class PixelManipulator {
     *
     * Area is not quite that of a circle. TODO find math for exact value.
     *
-    * @param radius Count of how many rings around the center to include. defaults
+    * @param radius - Count of how many rings around the center to include. defaults
     * to 1.
-    * @param includeSelf Should this include the center pixel? Defaults to false.
+    * @param includeSelf - Should this include the center pixel? Defaults to false.
     * @returns A hitbox where all pixels fit within a circle of the given
-    * radius, where the precise euclidean distance is <= the radias.
+    * radius, where the precise euclidean distance is `<=` the radias.
     */
     euclidean: function (radius?: number, includeSelf?: boolean): hitbox {
       if (typeof radius === 'undefined') { radius = 1 }
@@ -581,7 +581,7 @@ export class PixelManipulator {
     return this._width
   }
 
-  /** @param value The new width of the canvas */
+  /** @param value - The new width of the canvas */
   set_width (value: number): void {
     if (typeof this._canvas !== 'undefined') { this._canvas.width = value }
     this._width = value
@@ -592,7 +592,7 @@ export class PixelManipulator {
     return this._height
   }
 
-  /** @param value The new height of the canvas */
+  /** @param value - The new height of the canvas */
   set_height (value: number): void {
     if (typeof this._canvas !== 'undefined') { this._canvas.height = value }
     this._height = value
@@ -625,7 +625,7 @@ export class PixelManipulator {
   * })
   * ```
   *
-  * @param elements Index is the element name, value is the element data (and
+  * @param elements - Index is the element name, value is the element data (and
   * does not require the name). Value is passed to
   * [[PixelManipulator.addElement]]
   */
@@ -752,7 +752,7 @@ export class PixelManipulator {
   };
 
   /**
-  * @param name Name of the (possibly aliased) element.
+  * @param name - Name of the (possibly aliased) element.
   * @returns The element from [[PixelManipulator.elementTypeMap]], respecting
   * aliases in [[PixelManipulator.nameAliases]], or [[undefined]] if not found.
   */
@@ -776,7 +776,7 @@ export class PixelManipulator {
   * Sets [[PixelManipulator.mode]] to `"playing"`, and requests a new animation
   * frame, saving it in [[PixelManipulator.loopint]].
   *
-  * @param canvasSizes If [[PixelManipulator.mode]] is already `"playing"` then
+  * @param canvasSizes - If [[PixelManipulator.mode]] is already `"playing"` then
   * canvasSizes is passed to [[PixelManipulator.reset]]. Otherwise reset is not
   * called.
   */
@@ -833,14 +833,17 @@ export class PixelManipulator {
   *
   * Also renders a grid on the zoom element.
   *
-  * @param e Tells pixelmanipulator where to focus the center of the zoomElm (or
+  * @param e - Tells pixelmanipulator where to focus the center of the zoomElm (or
   * zoom-box).
-  * @param e.x Position to center the zoom elm on. (If absent, uses
-  * [[PixelManipulator.zoomX]])
-  * @param e.y Position to center the zoom elm on. (If absent, uses
-  * [[PixelManipulator.zoomY]])
   */
-  zoom (e?: {x?: number, y?: number}): void {
+  zoom (e?: {
+    /** Position to center the zoom elm on. (If absent, uses
+    * [[PixelManipulator.zoomX]]) */
+    x?: number
+    /** Position to center the zoom elm on. (If absent, uses
+    * [[PixelManipulator.zoomY]]) */
+    y?: number
+  }): void {
     if (typeof this.zoomelm === 'undefined' || typeof this.zoomelm.height === 'undefined') return
     if (typeof e === 'undefined') e = {}
     e.x = e.x ?? this.zoomX
@@ -920,8 +923,8 @@ export class PixelManipulator {
   * In the demo, this is used to show changes the users make when they click on
   * the zoomElm.
   *
-  * > calls [[PixelManipulator.zoom]] automatically, but only if there is a zoom
-  * > elm
+  * \> calls [[PixelManipulator.zoom]] automatically, but only if there is a zoom
+  * \> elm
   */
   update (): void {
     if (this.ctx !== null && typeof this.imageData !== 'undefined') { this.ctx.putImageData(this.imageData, 0, 0) }
@@ -991,9 +994,9 @@ export class PixelManipulator {
   * The sole purpose of this function is to allow future seperation between what
   * the render target is, and the current enviroment.
   *
-  * > If you want to try somethin' real hacky, overriding this function *might*
-  * > be enough to change what the render target _is_. I'd love to see if anyone
-  * > give this a try.
+  * \> If you want to try somethin' real hacky, overriding this function *might*
+  * \> be enough to change what the render target _is_. I'd love to see if anyone
+  * \> give this a try.
   */
   renderPixel (x: number, y: number, id: number): void {
     const color = this.idToColor(id)
@@ -1016,15 +1019,15 @@ export class PixelManipulator {
 
   /** Set a pixel in a given location.
   *
-  * @param x X position.
-  * @param y Y position.
-  * @param ident Value to identify the element.
+  * @param x - X position.
+  * @param y - Y position.
+  * @param ident - Value to identify the element.
   *
   * - If a string, it assumes it's an element name.
   * - If a number, it assumes it's an element ID
   * - If an array, it assumes it's an 4-long color array.
   *
-  * @param loop Defaults to [[true]]. Wraps `x` and `y` around canvas borders.
+  * @param loop - Defaults to [[true]]. Wraps `x` and `y` around canvas borders.
   */
   setPixel (x: number, y: number, ident: string|number|number[], loop?: boolean): void {
     loop = loop ?? true
@@ -1062,11 +1065,11 @@ export class PixelManipulator {
   /** A single frame of animation. Media functions pass this into
   * [[requestAnimationFrame]].
   *
-  * > Be careful! Calling this while [[PixelManipulator.mode]] is `"playing"`
-  * > might cause two concurrent calls to this function. If any of your automata
-  * > have "hidden state" - that is they don't represent every detail about
-  * > themselves as data within the pixels - it might cause conflicts. I haven't
-  * > seen any issues caused by this thus far, but it still bears a warning.
+  * \> Be careful! Calling this while [[PixelManipulator.mode]] is `"playing"`
+  * \> might cause two concurrent calls to this function. If any of your automata
+  * \> have "hidden state" - that is they don't represent every detail about
+  * \> themselves as data within the pixels - it might cause conflicts. I haven't
+  * \> seen any issues caused by this thus far, but it still bears a warning.
   */
   iterate (): void {
     // console.log("iterate");
@@ -1166,29 +1169,29 @@ export class PixelManipulator {
   /**
   * @returns the [[ElementData.number]] of the element at a given location
   *
-  * > Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * > effect the result of this function.
+  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
+  * \> effect the result of this function.
   */
   getPixelId: getPixelId=this.__GetPixelId(this.oldElements)
   /**
   * @returns the [[ElementData.color]] of the element at a given location
   *
-  * > Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * > effect the result of this function.
+  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
+  * \> effect the result of this function.
   */
   getPixel: getPixel|undefined
   /**
-  * @return Does the cell at `x` and `y` position match `ident`?
+  * @returns Does the cell at `x` and `y` position match `ident`?
   *
-  * > Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * > effect the result of this function.
+  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
+  * \> effect the result of this function.
   */
   confirmElm: confirmElm=this.__ConfirmElm(this.getPixelId)
   /**
   * @returns Name of element at passed-in location. See [[ElementData.name]]
   *
-  * > Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * > effect the result of this function.
+  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
+  * \> effect the result of this function.
   */
   whatIs: whatIs|undefined
   /**
@@ -1218,10 +1221,14 @@ export class PixelManipulator {
   *
   * This function calls [[PixelManipulator.updateData]] automatically.
   *
-  * @param e.canvas An html5 canvas to render on. (To scale)
-  * @param e.zoom An html5 canvas, zoomed-in. A movable, scaled viewport.
+  * @param e - An object holding the canvas(es) to use.
   */
-  canvasPrep (e: {canvas: HTMLCanvasElement, zoom?: HTMLCanvasElement}): void {
+  canvasPrep (e: {
+    /** An html5 canvas to render on. (To scale) */
+    canvas: HTMLCanvasElement
+    /** An html5 canvas, zoomed-in. A movable, scaled viewport. */
+    zoom?: HTMLCanvasElement
+  }): void {
     // Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
     this._canvas = e.canvas
     if (typeof this._canvas !== 'undefined') { this.ctx = this._canvas.getContext('2d') }

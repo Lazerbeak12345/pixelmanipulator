@@ -1,4 +1,4 @@
-# ![pixelmanipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator
+# ![pixelmanipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator [![View the Demo][vtdsvg]][the demo] [![js-standard-style][standard svg]](http://standardjs.com)
 
 PixelManipulator is a JavaScript library that can run any cellular automata on
 an html5 canvas, such as "Conway's Game of Life," and "Rule 90." Inspired by the
@@ -7,10 +7,10 @@ web-browsers.
 
 [repo]: https://github.com/lazerbeak12345/pixelmanipulator
 [the demo]: https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html
+[vtdsvg]: https://img.shields.io/badge/view-the_demo-green.svg
+[standard svg]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg
 
-[![View the Demo](https://img.shields.io/badge/view-the_demo-green.svg)][the demo]
-
-## About the demo
+## About the demo [![View the Demo][vtdsvg]][the demo]
 
 The demo includes a full-view pixel array, with configurable size, along with a
 movable viewfinder - also with configurable size. Targeter lines - synced
