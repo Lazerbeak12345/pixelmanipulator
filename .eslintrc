@@ -1,5 +1,5 @@
 {
-	"plugins": ["eslint-plugin-tsdoc"],
+	"plugins": ["tsdoc"],
 	"ignorePatterns":["dist/**"],
 	"extends":"standard-with-typescript",
 	"parserOptions":{
