@@ -1,6 +1,6 @@
 {
 	"plugins": ["tsdoc"],
-	"ignorePatterns":["dist/**"],
+	"ignorePatterns":["dist/**","docs/**"],
 	"extends":"standard-with-typescript",
 	"parserOptions":{
 		"project":"./tsconfig.json"
