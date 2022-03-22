@@ -61,6 +61,7 @@
     "@parcel/transformer-typescript-types": "2.3.2",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.0",
+    "browserify": "^17.0.0",
     "eslint": "^7.12.1",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "eslint-plugin-import": "^2.22.1",
@@ -79,7 +80,8 @@
     "prebuild": "eslint .",
     "build:docs": "typedoc --name PixelManipulator --out docs --media media --includeVersion src/lib/pixelmanipulator.ts",
     "build:parcel": "parcel build",
-    "build": "yarn build:docs && yarn build:parcel",
+    "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
+    "build": "yarn build:docs && yarn build:parcel && yarn build:bundle",
     "coverage": "exit 1"
   },
   "dependencies": {
