@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+import { version as _version } from '../../package.json'
 export interface xycoord{
   x: number
   y: number
@@ -1246,7 +1247,8 @@ export class PixelManipulator {
   };
 }// end class PixelManipulator
 /** Version of library **for logging purposes only**. Uses semver. */
-export const version = '4.5.2'
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+export const version = _version as string
 /** Licence disclaimer for PixelManipulator */
 export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
   '2018-2021 Nathan Fritzler\nThis program comes with ABSOLUTELY NO ' +
