@@ -21,7 +21,8 @@
       "source": "src/lib/pixelmanipulator.ts"
     },
     "demo": {
-      "source": "src/demo/pixelmanipulator.html"
+      "source": "src/demo/pixelmanipulator.html",
+      "publicUrl": "https://lazerbeak12345.github.io/pixelmanipulator"
     }
   },
   "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
