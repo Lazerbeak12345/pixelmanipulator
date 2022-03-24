@@ -351,16 +351,16 @@ p.addMultipleElements({
   Acid: {
     color: [110, 162, 10, 255],
     // current Pixel Matches
-    liveCell: rel => {
+    liveCell: ({ x, y, oldId }) => {
       const randsAcid = new Uint8Array(3)
       window.crypto.getRandomValues(randsAcid)
-      const newx = rel.x + (randsAcid[0] % 3) - 1
-      let newy = rel.y + randsAcid[1] % 4
+      const newx = x + (randsAcid[0] % 3) - 1
+      let newy = y + randsAcid[1] % 4
       const h = p.get_height()
-      while ((newy >= h || p.confirmElm(newx, newy, rel.oldId, false)) && newy - 1 >= rel.y) newy--
-      if (!p.confirmElm(newx, newy, rel.oldId, false)) {
-        p.setPixel(rel.x, rel.y, p.defaultId, false)
-        p.setPixel(newx, newy, rel.oldId, false)
+      while ((newy >= h || p.confirmElm(newx, newy, oldId, 0, false)) && newy - 1 >= y) newy--
+      if (!p.confirmElm(newx, newy, oldId, 0, false)) {
+        p.setPixel(x, y, p.defaultId, false)
+        p.setPixel(newx, newy, oldId, false)
       } else if (randsAcid[2] % 100 === 0)p.setPixel(newx, newy, p.defaultId)
     }
   },
@@ -390,12 +390,14 @@ p.addMultipleElements({
   },
   'Wireworld Conductor': {
     color: [67, 75, 77, 255],
-    liveCell: rel => {
+    liveCell: ({ x, y }) => {
       const num = p.getElementByName('Wireworld Electricity')?.number
       if (num == null) return
-      const conductorNearbyTotal = rel.mooreNearbyCounter(rel.x, rel.y, num)
+      const conductorNearbyTotal = p.mooreNearbyCounter(x, y, num, 1)
       // copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
-      if (conductorNearbyTotal === 1 || conductorNearbyTotal === 2) p.setPixel(rel.x, rel.y, num)
+      if (conductorNearbyTotal === 1 || conductorNearbyTotal === 2) {
+        p.setPixel(x, y, num)
+      }
     }
   },
   'Wireworld Electricity': {
@@ -433,16 +435,16 @@ p.addMultipleElements({
   },
   Water: {
     color: [23, 103, 167, 255],
-    liveCell: (rel) => {
+    liveCell: ({ x, y, oldId }) => {
       const randsWater = new Uint8Array(2)
       window.crypto.getRandomValues(randsWater)
-      const newx = rel.x + (randsWater[0] % 3) - 1
-      let newy = rel.y + randsWater[1] % 4
+      const newx = x + (randsWater[0] % 3) - 1
+      let newy = y + randsWater[1] % 4
       const h = p.get_height()
-      while ((newy >= h || !p.confirmElm(newx, newy, p.defaultId, false)) && newy - 1 >= rel.y) newy--
-      if (p.confirmElm(newx, newy, p.defaultId, false)) {
-        p.setPixel(rel.x, rel.y, p.defaultId, false)
-        p.setPixel(newx, newy, rel.oldId, false)
+      while ((newy >= h || !p.confirmElm(newx, newy, p.defaultId, 0, false)) && newy - 1 >= y) newy--
+      if (p.confirmElm(newx, newy, p.defaultId, 0, false)) {
+        p.setPixel(x, y, p.defaultId, false)
+        p.setPixel(newx, newy, oldId, false)
       }
     }
   }

@@ -1,19 +1,22 @@
-/*  This is a cellular automata JavaScript library called PixelManipulator. For information about how to use this script, see https://github.com/Lazerbeak12345/pixelmanipulator
-    Copyright (C) 2018-2021  Nathan Fritzler
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/*  This is a cellular automata JavaScript library called PixelManipulator. For
+ *  information about how to use this script, see
+ *  https://github.com/Lazerbeak12345/pixelmanipulator
+ *
+ *  Copyright (C) 2018-2021  Nathan Fritzler
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 import { version as _version } from '../../package.json'
 export interface xycoord{
   x: number
@@ -31,34 +34,10 @@ export interface Rel{
   x: number
   /** The Y location of this pixel. */
   y: number
-  /** @returns pixels in the moore neighborhood in the last frame are there around given location? */
-  mooreNearbyCounter: mooreNearbyCounter
-  /** @returns pixels in the wolfram neighborhood in the last frame are there around given location? */
-  wolframNearbyCounter: wolframNearbyCounter
   /* The ID number of the current pixel. Reccommended if performance profiling
   * shows string comparision is a bottleneck.
   */
   oldId: number
-  /**
-  * @returns the [[ElementData.color]] of the element at a given location, as
-  * it was in the last frame.
-  */
-  getOldPixel: getPixel
-  /**
-  * @returns the [[ElementData.number]] of the element at a given location, as
-  * it was in the last frame.
-  */
-  getOldPixelId: getPixelId
-  /**
-  * @returns Does the element at this location in the last frame match the
-  * provided query?
-  */
-  confirmOldElm: confirmElm
-  /**
-  * @returns Name of element in last frame at passed-in location. See
-  * [[ElementData.name]]
-  */
-  whatIsOld: whatIs
 }
 export type Color=[number, number, number, number]|[number, number, number]|[number, number]|[number]|[]
 /** Much like [[ElementDataUnknown]] but all fields except [[ElementData.loop]],
@@ -240,16 +219,19 @@ const templates: {
       ]
     },
     __LIVE__: function (p: PixelManipulator, bfdie: number, loop: boolean|undefined, elm: number) {
-      return function llive (rel: Rel) {
+      return function llive ({ x, y }: Rel) {
         // if any match (of how many moore are nearby) is found, it dies
-        if ((bfdie & 1 << rel.mooreNearbyCounter(rel.x, rel.y, elm, loop)) === 0) {
-          p.setPixel(rel.x, rel.y, p.defaultId)
+        if ((bfdie & 1 << p.mooreNearbyCounter(x, y, elm, 1, loop)) === 0) {
+          p.setPixel(x, y, p.defaultId)
         }
       }
     },
     __DEAD__: function (p: PixelManipulator, bflive: number, loop: boolean|undefined, elm: number) {
-      return function ldead (rel: Rel) {
-        if ((bflive & 1 << rel.mooreNearbyCounter(rel.x, rel.y, elm, loop)) > 0) { p.setPixel(rel.x, rel.y, elm) }// if any match (of how many moore are nearby) is found, it lives
+      return function ldead ({ x, y }: Rel) {
+        // if any match (of how many moore are nearby) is found, it lives
+        if ((bflive & 1 << p.mooreNearbyCounter(x, y, elm, 1, loop)) > 0) {
+          p.setPixel(x, y, elm)
+        }
       }
     }
   },
@@ -268,39 +250,40 @@ const templates: {
       ]
     },
     __LIVE__: function (p: PixelManipulator, elm: number, binStates: number, loop?: boolean) {
-      return function wlive (rel: Rel) {
-        if (rel.y === 0) return
-        for (let binDex = 0; binDex < 8; binDex++) { // for every possible state
-          if ((binStates & 1 << binDex) === 0) { // if the state is "off". Use a bit mask and shift it
-            if (rel.wolframNearbyCounter(rel.x, rel.y, elm, binDex, loop)) { // if there is a wolfram match (wolfram code goes from 111 to 000)
-              p.setPixel(rel.x, rel.y, p.defaultId, loop)
-              return// No more logic needed, it is done.
-            }
+      return function wlive ({ x, y }: Rel) {
+        if (y === 0) return
+        // for every possible state
+        for (let binDex = 0; binDex < 8; binDex++) {
+          if (
+            // if the state is "off". Use a bit mask and shift it
+            (binStates & 1 << binDex) === 0 &&
+            // if there is a wolfram match (wolfram code goes from 111 to 000)
+            p.wolframNearbyCounter(x, y, elm, binDex, 1, loop)
+          ) {
+            p.setPixel(x, y, p.defaultId, loop)
+            return// No more logic needed, it is done.
           }
         }
       }
     },
     __DEAD__: function (p: PixelManipulator, elm: number, binStates: number, loop?: boolean) {
-      return function wdead (rel: Rel) {
-        for (let binDex = 0; binDex < 8; binDex++) { // for every possible state
-          if ((binStates & 1 << binDex) > 0) { // if the state is "on". Use a bit mask and shift it
-            if (rel.wolframNearbyCounter(rel.x, rel.y, elm, binDex, loop)) { // if there is a wolfram match (wolfram code goes from 111 to 000)
-              p.setPixel(rel.x, rel.y, elm, loop)
-              return// No more logic needed, it is done.
-            }
+      return function wdead ({ x, y }: Rel) {
+        // for every possible state
+        for (let binDex = 0; binDex < 8; binDex++) {
+          if (
+            // if the state is "on". Use a bit mask and shift it
+            (binStates & 1 << binDex) > 0 &&
+            // if there is a wolfram match (wolfram code goes from 111 to 000)
+            p.wolframNearbyCounter(x, y, elm, binDex, 1, loop)
+          ) {
+            p.setPixel(x, y, elm, loop)
+            return// No more logic needed, it is done.
           }
         }
       }
     }
   }
 }
-/**
-*
-* @param loop - Should this check wrap around canvas edges?
-*
-* @returns Name of element at passed-in location. See [[ElementData.name]]
-*/
-export type whatIs=(x: number, y: number, loop?: boolean) => string
 /** Sizes to set the canvases to. If a value below is absent, old value is used.
 */
 export interface CanvasSizes{
@@ -313,52 +296,6 @@ export interface CanvasSizes{
   /** height of the zoom canvas (size in zoomed pixels) */
   zoomH?: number
 }
-/**
-*
-* @param loop - Should this check wrap around canvas edges?
-*
-* @returns the [[ElementData.number]] of the element at a given location
-*/
-export type getPixelId=(x: number, y: number, loop?: boolean) => number
-/**
-*
-* @param loop - Should this check wrap around canvas edges?
-*
-* @returns the [[ElementData.color]] of the element at a given location
-*/
-export type getPixel=(x: number, y: number, loop?: boolean) => number[]
-/**
-*
-* @param loop - Should this check wrap around canvas edges?
-*
-* @returns Does the element at this location match the provided query?
-*/
-export type confirmElm=(
-  x: number,
-  y: number,
-  name: string|number|number[],
-  loop?: boolean
-) => boolean
-/** @param loop - Should this check wrap around canvas edges?
-* @param name - element to look for
-* @returns Number of elements in moore radius */
-type mooreNearbyCounter=(
-  x: number,
-  y: number,
-  name: string|number|number[],
-  loop?: boolean
-) => number
-/** @param loop - Should this check wrap around canvas edges?
-* @param name - element to look for
-* @param bindex - Either a string like `"001"` to match to, or the same encoded as a number.
-* @returns Number of elements in moore radius */
-type wolframNearbyCounter=(
-  x: number,
-  y: number,
-  name: string|number|number[],
-  binDex: string|number,
-  loop?: boolean
-) => boolean
 /** A cellular automata engine */
 export class PixelManipulator {
   /**
@@ -600,7 +537,7 @@ export class PixelManipulator {
   }
 
   /// fills the screen with value, at an optional given percent
-  randomlyFill (value: string|number|number[], pr?: number): void {
+  randomlyFill (value: string|number|Color, pr?: number): void {
     pr = pr ?? 15
     const w = this.get_width()
     const h = this.get_height()
@@ -766,12 +703,15 @@ export class PixelManipulator {
     return this.elementTypeMap.get(name)
   };
 
-  // Generator for whatIs
-  __WhatIs (getPixelId: getPixelId): whatIs {
-    return (x, y, loop) => { // return the name of an element in a given location
-      return this.elementNumList[getPixelId(x, y, loop)]
-    }
-  };
+  /**
+  *
+  * @param loop - Should this check wrap around canvas edges?
+  *
+  * @returns Name of element at passed-in location. See [[ElementData.name]]
+  */
+  whatIs (x: number, y: number, frame?: number, loop?: boolean): string {
+    return this.elementNumList[this.getPixelId(x, y, frame, loop)]
+  }
 
   /** Start iterations on all of the elements on the canvas.
   * Sets [[PixelManipulator.mode]] to `"playing"`, and requests a new animation
@@ -876,7 +816,7 @@ export class PixelManipulator {
     }
   };
 
-  colorToId (colors: number[]): number|undefined {
+  colorToId (colors: Color): number|undefined {
     for (let i = 0; i < this.elementNumList.length; i++) {
       if (this.compareColors(colors, this.idToColor(i))) {
         return i
@@ -885,37 +825,43 @@ export class PixelManipulator {
     return undefined
   };
 
-  idToColor (id: number): number[]|undefined {
+  idToColor (id: number): Color|undefined {
     return this.getElementByName(this.elementNumList[id])?.color
   };
 
-  // Generates getPixelId and getOldPixelId instances
-  __GetPixelId=function (this: PixelManipulator, d: Uint32Array): getPixelId {
-    return (x, y, loop) => { // get the rgba value of the element at given position, handeling for looping(defaults to true)
-      const w = this.get_width()
-      const h = this.get_height()
-      loop = typeof loop !== 'undefined' ? loop : true
-      if (loop) {
-        x %= w
-        if (x < 0)x += w
-        y %= h
-        if (y < 0)y += h
-      } else if (x < 0 || x >= w || y < 0 || x >= h) { return this.defaultId }
-      return d[(w * y) + x]
+  /**
+  * @returns the [[ElementData.number]] of the element at a given location
+  *
+  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
+  * \> effect the result of this function.
+  */
+  getPixelId (x: number, y: number, frame?: number, loop?: boolean): number {
+    const w = this.get_width()
+    const h = this.get_height()
+    if (loop ?? true) {
+      x %= w
+      if (x < 0)x += w
+      y %= h
+      if (y < 0)y += h
+    } else if (x < 0 || x >= w || y < 0 || x >= h) {
+      return this.defaultId
     }
+    return this.frames[frame ?? 0][(w * y) + x]
   }
 
-  // Generates getPixel and getOldPixel instances
-  __GetPixel (getPixelId: getPixelId): getPixel {
-    // get the rgba value of the element at given position, handeling for looping(defaults to true)
-    return (x, y, loop) => {
-      const tmp = this.idToColor(getPixelId(x, y, loop))
-      if (typeof tmp === 'undefined') {
-        throw new Error("Can't get pixel color from pixel id in get pixel (should never happen).")
-      }
-      return tmp
+  /**
+  * @returns the [[ElementData.color]] of the element at a given location
+  *
+  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
+  * \> effect the result of this function.
+  */
+  getPixel (x: number, y: number, frame?: number, loop?: boolean): Color {
+    const tmp = this.idToColor(this.getPixelId(x, y, frame, loop))
+    if (typeof tmp === 'undefined') {
+      throw new Error("Can't get pixel color from pixel id in get pixel (should never happen).")
     }
-  };
+    return tmp
+  }
 
   /**
   * Applies any changes made with [[PixelManipulator.setPixel]] to the canvas,
@@ -938,56 +884,54 @@ export class PixelManipulator {
     return (a[0] ?? 0) === (b[0] ?? 0) && (a[1] ?? 0) === (b[1] ?? 0) && (a[2] ?? 0) === (b[2] ?? 0) && (a[3] ?? 255) === (b[3] ?? 255)
   };
 
-  // Generates confirmElm and confirmOldElm instances, based of of the respective instances made by __GetPixel
-  __ConfirmElm (getPixelId: getPixelId): confirmElm {
-    return (x, y, id, loop) => { // returns a boolean as to weather the inputted element name matches the selected location
-      // console.log("confirmElm",x,y,name,loop);
-      let tmp: number|undefined
-      switch (typeof id) {
-        case 'string': tmp = this.getElementByName(id)?.number; break
-        case 'object': tmp = this.colorToId(id); break
-        case 'number': tmp = id
-      }
-      if (typeof tmp === 'undefined') {
-        throw new Error(`color ${id.toString()} invalid!`)
-      }
-      return getPixelId(x, y, loop) === tmp
+  /**
+  * @returns Does the cell at `x` and `y` position match `ident`?
+  *
+  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
+  * \> effect the result of this function.
+  */
+  confirmElm (x: number, y: number, id: number|string|Color, frame?: number, loop?: boolean): boolean {
+    let tmp: number|undefined
+    switch (typeof id) {
+      case 'string': tmp = this.getElementByName(id)?.number; break
+      case 'object': tmp = this.colorToId(id); break
+      case 'number': tmp = id
     }
-  };
+    if (typeof tmp === 'undefined') {
+      throw new Error(`color ${id.toString()} invalid!`)
+    }
+    return this.getPixelId(x, y, frame, loop) === tmp
+  }
 
-  // Generate mooreNearbyCounter
-  __MooreNearbyCounter (f: confirmElm): mooreNearbyCounter {
-    // console.log("MooreNearbyCounter");
-    // var specialConfirm=this.__ConfirmElm(f);
-    return function mooreNearbyCounter (x, y, name, loop) { // Count how many cells of this name match in a moore radius
-      // console.log("mooreNearbyCounter");
-      return boolToNumber(f(x - 1, y - 1, name, loop)) +// nw
-        boolToNumber(f(x - 1, y, name, loop)) + // w
-        boolToNumber(f(x - 1, y + 1, name, loop)) + // sw
-        boolToNumber(f(x, y - 1, name, loop)) + // n
-        boolToNumber(f(x, y + 1, name, loop)) + // s
-        boolToNumber(f(x + 1, y - 1, name, loop)) + // ne
-        boolToNumber(f(x + 1, y, name, loop)) + // e
-        boolToNumber(f(x + 1, y + 1, name, loop)) // se
-    }
-  };
+  /** @param loop - Should this check wrap around canvas edges?
+  * @param name - element to look for
+  * @returns Number of elements in moore radius */
+  mooreNearbyCounter (x: number, y: number, name: number|string|Color, frame?: number, loop?: boolean): number {
+    return boolToNumber(this.confirmElm(x - 1, y - 1, name, frame, loop)) +// nw
+      boolToNumber(this.confirmElm(x - 1, y, name, frame, loop)) + // w
+      boolToNumber(this.confirmElm(x - 1, y + 1, name, frame, loop)) + // sw
+      boolToNumber(this.confirmElm(x, y - 1, name, frame, loop)) + // n
+      boolToNumber(this.confirmElm(x, y + 1, name, frame, loop)) + // s
+      boolToNumber(this.confirmElm(x + 1, y - 1, name, frame, loop)) + // ne
+      boolToNumber(this.confirmElm(x + 1, y, name, frame, loop)) + // e
+      boolToNumber(this.confirmElm(x + 1, y + 1, name, frame, loop)) // se
+  }
 
-  // Generate wolframNearbyCounter
-  __WolframNearbyCounter (f: confirmElm): wolframNearbyCounter {
-    // console.log("WolframNearbygetOldPixel");
-    return function wolframNearbyCounter (x, y, name, binDex, loop) { // determine if the three cells above a given cell match an inputted element query
-      // console.log("wolframNearby");
-      if (typeof binDex === 'string') {
-        // Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
-        binDex = boolToNumber(binDex[0] === '1') << 2 | boolToNumber(binDex[1] === '1') << 1 | boolToNumber(binDex[2] === '1') << 0
-      }
-      loop = typeof loop !== 'undefined' ? loop : false// one-dimentional detectors by default don't loop around edges
-      // the three spots above (nw,n,ne)
-      return f(x - 1, y - 1, name, loop) === ((binDex & 1 << 2) > 0) &&
-        f(x, y - 1, name, loop) === ((binDex & 1 << 1) > 0) &&
-        f(x + 1, y - 1, name, loop) === ((binDex & 1 << 0) > 0)
+  /** @param loop - Should this check wrap around canvas edges?
+  * @param name - element to look for
+  * @param bindex - Either a string like `"001"` to match to, or the same encoded as a number.
+  * @returns Number of elements in moore radius */
+  wolframNearbyCounter (x: number, y: number, name: number, binDex: number|string, frame?: number, loop?: boolean): boolean {
+    if (typeof binDex === 'string') {
+      // Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
+      binDex = boolToNumber(binDex[0] === '1') << 2 | boolToNumber(binDex[1] === '1') << 1 | boolToNumber(binDex[2] === '1') << 0
     }
-  };
+    loop = loop ?? false // one-dimentional detectors by default don't loop around edges
+    // the three spots above (nw,n,ne)
+    return this.confirmElm(x - 1, y - 1, name, frame, loop) === ((binDex & 1 << 2) > 0) &&
+      this.confirmElm(x, y - 1, name, frame, loop) === ((binDex & 1 << 1) > 0) &&
+      this.confirmElm(x + 1, y - 1, name, frame, loop) === ((binDex & 1 << 0) > 0)
+  }
 
   /** Draws a pixel to a given location **without adding it to
   * [[PixelManipulator.currentElements]]**.
@@ -1001,12 +945,12 @@ export class PixelManipulator {
   */
   renderPixel (x: number, y: number, id: number): void {
     const color = this.idToColor(id)
-    if (typeof color === 'undefined') {
+    if (color == null) {
       throw new Error('Invalid ID')
     }
     // allows for arrays that are too small
     while (color.length < 4) {
-      color.push(255)
+      (color as [number]).push(255)
     }
     const w = this.get_width()
     // arry.length is always going to be 4. Checking wastes time.
@@ -1030,17 +974,20 @@ export class PixelManipulator {
   *
   * @param loop - Defaults to [[true]]. Wraps `x` and `y` around canvas borders.
   */
-  setPixel (x: number, y: number, ident: string|number|number[], loop?: boolean): void {
-    loop = loop ?? true
+  setPixel (x: number, y: number, ident: string|number|Color, loop?: boolean): void {
     let id = 0
     if (typeof ident === 'string') {
-      if (typeof this.getElementByName(ident) === 'undefined') { throw new Error('Color name ' + ident + ' invalid!') }
+      if (this.getElementByName(ident) == null) {
+        throw new Error('Color name ' + ident + ' invalid!')
+      }
       const tmp = this.getElementByName(ident)
       if (typeof tmp === 'undefined') {
         throw new Error(`Color ${ident} is invalid`)
       }
       id = tmp.number
-    } else if (typeof ident === 'number') { id = ident } else if (typeof ident === 'object') {
+    } else if (typeof ident === 'number') {
+      id = ident
+    } else if (typeof ident === 'object') {
       const tmp = this.colorToId(ident)
       if (typeof tmp === 'undefined') {
         throw new Error(`Color ${id} is invalid`)
@@ -1049,14 +996,14 @@ export class PixelManipulator {
     } else throw new Error(`Color type ${typeof ident} is invalid!`)
     const w = this.get_width()
     const h = this.get_height()
-    if (loop) {
+    if (loop ?? true) {
       x %= w
       if (x < 0)x += w
       y %= h
       if (y < 0)y += h
     } else if (x < 0 || x >= w || y < 0 || y >= h) return // if it can't loop, and it's outside of the boundaries, exit
     this.renderPixel(x, y, id)
-    this.currentElements[(w * y) + x] = id
+    this.frames[0][(w * y) + x] = id
   };
 
   pixelCounts: {
@@ -1075,27 +1022,18 @@ export class PixelManipulator {
   iterate (): void {
     // console.log("iterate");
     this.onIterate()
-    this.oldElements.set(this.currentElements)
-    const getOldPixelId = this.__GetPixelId(this.oldElements)
-    const confirmOldElm = this.__ConfirmElm(getOldPixelId)
+    for (let frame = this.frames.length - 1; frame >= 0; frame--) {
+      if (frame > 0) {
+        this.frames[frame].set(this.frames[frame - 1])
+      }
+    }
     const w = this.get_width()
     const h = this.get_height()
-    const rel = {
-      x: 0,
-      y: 0,
-      oldId: 0,
-      getOldPixelId: getOldPixelId,
-      confirmOldElm: confirmOldElm,
-      getOldPixel: this.__GetPixel(getOldPixelId),
-      whatIsOld: this.__WhatIs(getOldPixelId),
-      mooreNearbyCounter: this.__MooreNearbyCounter(confirmOldElm),
-      wolframNearbyCounter: this.__WolframNearbyCounter(confirmOldElm)
-    }
     const typedUpdatedDead = new Array<Uint8Array>(this.elementNumList.length)
     this.pixelCounts = {}
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) { // iterate through x and y
-        const currentPixId = rel.getOldPixelId(x, y)
+        const currentPixId = this.getPixelId(x, y, 1)
         if (currentPixId === this.defaultId) continue
         const currentPix = this.elementNumList[currentPixId]
         const elm = this.getElementByName(currentPix)
@@ -1107,10 +1045,11 @@ export class PixelManipulator {
           )
         }
         if (typeof elm.liveCell === 'function') {
-          rel.y = y
-          rel.x = x
-          rel.oldId = currentPixId
-          elm.liveCell(rel)
+          elm.liveCell({
+            x,
+            y,
+            oldId: currentPixId
+          })
         }
         if (typeof this.pixelCounts[currentPixId] === 'undefined') {
           this.pixelCounts[currentPixId] = 1
@@ -1121,18 +1060,23 @@ export class PixelManipulator {
           }
           for (let hi = 0; hi < elm.hitbox.length; hi++) {
             const pixel = elm.hitbox[hi]
-            rel.x = (x + pixel.x) % w
-            if (rel.x < 0)rel.x += w
-            rel.y = (y + pixel.y) % h
-            if (rel.y < 0)rel.y += h
-            const index = Math.floor((w * rel.y + rel.x) / 8)
+            let hbx = (x + pixel.x) % w
+            if (hbx < 0) hbx += w
+            let hby = (y + pixel.y) % h
+            if (hby < 0) hby += h
+            const index = Math.floor((w * hby + hbx) / 8)
             const oldValue = typedUpdatedDead[currentPixId][index]
-            const bitMask = 1 << (rel.x % 8)
+            const bitMask = 1 << (hbx % 8)
             if ((oldValue & bitMask) > 0) { continue }
             // I timed it, and confirmOldElm is slower than all the math above.
-            if (!rel.confirmOldElm(rel.x, rel.y, this.defaultId)) { continue }
-            rel.oldId = this.defaultId
-            elm.deadCell(rel)
+            if (!this.confirmElm(hbx, hby, this.defaultId, 1)) {
+              continue
+            }
+            elm.deadCell({
+              x: hbx,
+              y: hby,
+              oldId: this.defaultId
+            })
             typedUpdatedDead[currentPixId][index] = oldValue | bitMask
           }
         }
@@ -1152,49 +1096,16 @@ export class PixelManipulator {
   /** The rendering context for the canvas */
   ctx: CanvasRenderingContext2D|null=null
   /**
-  * A [[Uint32Array]] that is the length of width times height of the canvas.
-  * Holds the element id of each element on screen, from left to right, top to
+  * A List of [[Uint32Array]]s each the length of width times height of the
+  * canvas. Frame 0 is the new frame, frame one is the prior, etc. Each item
+  * holds the element id of each element on screen, from left to right, top to
   * bottom.
   */
-  currentElements: Uint32Array=new Uint32Array(0)
-  /**
-  * A [[Uint32Array]] that is the length of width times height of the canvas.
-  * Holds the **last frame's** element id of each element on screen, from left
-  * to right, top to bottom.
-  */
-  oldElements: Uint32Array=new Uint32Array(0)
+  frames: Uint32Array[]=[new Uint32Array(0), new Uint32Array(0)]
   /** The zoom-ed in render target */
   zoomelm: HTMLCanvasElement|undefined
   /** The rendering context for [[PixelManipulator.zoomelm]] */
   zoomctx: CanvasRenderingContext2D|null=null
-  /**
-  * @returns the [[ElementData.number]] of the element at a given location
-  *
-  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * \> effect the result of this function.
-  */
-  getPixelId: getPixelId=this.__GetPixelId(this.oldElements)
-  /**
-  * @returns the [[ElementData.color]] of the element at a given location
-  *
-  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * \> effect the result of this function.
-  */
-  getPixel: getPixel|undefined
-  /**
-  * @returns Does the cell at `x` and `y` position match `ident`?
-  *
-  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * \> effect the result of this function.
-  */
-  confirmElm: confirmElm=this.__ConfirmElm(this.getPixelId)
-  /**
-  * @returns Name of element at passed-in location. See [[ElementData.name]]
-  *
-  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * \> effect the result of this function.
-  */
-  whatIs: whatIs|undefined
   /**
   * Defines the starting values of the library and is run on
   * [[PixelManipulator.reset]]
@@ -1202,8 +1113,8 @@ export class PixelManipulator {
   updateData (): void {
     const w = this.get_width()
     const h = this.get_height()
-    this.currentElements = new Uint32Array(w * h)
-    this.oldElements = new Uint32Array(w * h)
+    this.frames[0] = new Uint32Array(w * h)
+    this.frames[1] = new Uint32Array(w * h)
     if (this.ctx !== null) {
       this.imageData = this.ctx.getImageData(0, 0, w, h)
       this.ctx.imageSmoothingEnabled = false
@@ -1212,10 +1123,6 @@ export class PixelManipulator {
       this.zoomctx.imageSmoothingEnabled = false
       this.zoomctx.strokeStyle = this.zoomctxStrokeStyle
     }
-    this.getPixelId = this.__GetPixelId(this.currentElements)
-    this.getPixel = this.__GetPixel(this.getPixelId)
-    this.confirmElm = this.__ConfirmElm(this.getPixelId)
-    this.whatIs = this.__WhatIs(this.getPixelId)
   };
 
   /** Tells PixelManipulator what canvas(es) to use.
@@ -1232,7 +1139,9 @@ export class PixelManipulator {
   }): void {
     // Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
     this._canvas = e.canvas
-    if (typeof this._canvas !== 'undefined') { this.ctx = this._canvas.getContext('2d') }
+    if (this._canvas != null) {
+      this.ctx = this._canvas.getContext('2d')
+    }
     if (typeof e.zoom !== 'undefined') {
       this.zoomelm = e.zoom
       this.zoomctx = this.zoomelm.getContext('2d')

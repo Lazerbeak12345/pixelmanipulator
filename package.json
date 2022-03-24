@@ -22,7 +22,8 @@
     },
     "demo": {
       "source": "src/demo/pixelmanipulator.html",
-      "publicUrl": "https://lazerbeak12345.github.io/pixelmanipulator"
+      "publicUrl": ".",
+      "context": "browser"
     }
   },
   "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
@@ -78,7 +79,7 @@
   "scripts": {
     "pretest": "yarn build",
     "test": "exit 1",
-    "watch": "parcel src/demo/pixelmanipulator.html",
+    "watch": "parcel --target demo",
     "prebuild": "eslint .",
     "build:docs": "typedoc --name PixelManipulator --out docs --media media --includeVersion src/lib/pixelmanipulator.ts",
     "build:parcel": "parcel build",
