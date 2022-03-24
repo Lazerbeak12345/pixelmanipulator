@@ -173,28 +173,23 @@ export interface ElementDataUnknown{
 export interface ElementDataUnknownNameMandatory extends ElementDataUnknown{
   name: string
 }
-interface templatea{
-  __index__: Function
-  _convertNumListToBf: Function
-}
-interface templateb{
-  __index__: Function
+function _convertNumListToBf (nl: string): number {
+  // While I used to use string with each digit in it, I found that since
+  // there are 0-8, I could use a 9bit field (remember: off by one)
+  let out = 0
+  for (let i = 0; i < nl.length; i++) {
+    const item = nl[i]
+    out |= 1 << parseInt(item)
+  }
+  return out
 }
 const templates: {
-  [index: string]: templatea|templateb
+  [index: string]: {
+    __index__: Function
+  }
 } = { // an object containing the different templates that are currently in the system
   __LIFE__: { // Things like Conway's Game of Life
-    _convertNumListToBf: function (nl: number[]): number {
-      // While I used to use string with each digit in it, I found that since
-      // there are 0-8, I could use a 9bit field (remember: off by one)
-      let out = 0
-      for (let i = 0; i < nl.length; i++) {
-        const item = nl[i]
-        out |= 1 << item
-      }
-      return out
-    },
-    __index__: function (this: templatea, p: PixelManipulator, elm: number, data: ElementData) {
+    __index__: function (p: PixelManipulator, elm: number, data: ElementData) {
       if (typeof data.pattern === 'undefined' || data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1) {
         return []
       }
@@ -203,8 +198,8 @@ const templates: {
       if (data.hitbox != null) {
         data.hitbox = moore()
       }
-      const bfdie = this._convertNumListToBf(numbers[2])
-      const bflive = this._convertNumListToBf(numbers[1])
+      const bfdie = _convertNumListToBf(numbers[2])
+      const bflive = _convertNumListToBf(numbers[1])
       console.log('Life Pattern found: ', data.name, data)
       return [
         function llive ({ x, y }: Rel) {
