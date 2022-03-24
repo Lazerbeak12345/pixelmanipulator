@@ -354,14 +354,21 @@ p.addMultipleElements({
     liveCell: ({ x, y, oldId }) => {
       const randsAcid = new Uint8Array(3)
       window.crypto.getRandomValues(randsAcid)
-      const newx = x + (randsAcid[0] % 3) - 1
-      let newy = y + randsAcid[1] % 4
+      const newLoc = {
+        x: x + (randsAcid[0] % 3) - 1,
+        y: y + randsAcid[1] % 4,
+        loop: false
+      }
       const h = p.get_height()
-      while ((newy >= h || p.confirmElm(newx, newy, oldId, 0, false)) && newy - 1 >= y) newy--
-      if (!p.confirmElm(newx, newy, oldId, 0, false)) {
-        p.setPixel(x, y, p.defaultId, false)
-        p.setPixel(newx, newy, oldId, false)
-      } else if (randsAcid[2] % 100 === 0)p.setPixel(newx, newy, p.defaultId)
+      while ((newLoc.y >= h || p.confirmElm(newLoc, oldId)) && newLoc.y - 1 >= y) {
+        newLoc.y--
+      }
+      if (!p.confirmElm(newLoc, oldId)) {
+        p.setPixel({ x, y, loop: false }, p.defaultId)
+        p.setPixel(newLoc, oldId)
+      } else if (randsAcid[2] % 100 === 0) {
+        p.setPixel(newLoc, p.defaultId)
+      }
     }
   },
   Blocks: {
@@ -372,12 +379,12 @@ p.addMultipleElements({
     // not quite white
     color: [254, 254, 254, 255],
     // Cells that were in the dying state go into the off state
-    liveCell: rel => p.setPixel(rel.x, rel.y, p.defaultId, false)
+    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, p.defaultId)
   },
   "Brian's Brain (on)": {
     color: [0, 0, 254, 255], // not quite blue
     // All cells that were "on" go into the "dying" state, which is not counted as an "on" cell in the neighbor count, and prevents any cell from being born there.
-    liveCell: rel => p.setPixel(rel.x, rel.y, "Brian's Brain (dying)", false),
+    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, "Brian's Brain (dying)"),
     pattern: 'B2/S' // same pattern as seeds
   },
   Seeds: {
@@ -390,23 +397,24 @@ p.addMultipleElements({
   },
   'Wireworld Conductor': {
     color: [67, 75, 77, 255],
-    liveCell: ({ x, y }) => {
+    liveCell: loc => {
       const num = p.getElementByName('Wireworld Electricity')?.number
       if (num == null) return
-      const conductorNearbyTotal = p.mooreNearbyCounter(x, y, num, 1)
+      const { x, y } = loc
+      const conductorNearbyTotal = p.mooreNearbyCounter({ x, y, frame: 1 }, num)
       // copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
       if (conductorNearbyTotal === 1 || conductorNearbyTotal === 2) {
-        p.setPixel(x, y, num)
+        p.setPixel(loc, num)
       }
     }
   },
   'Wireworld Electricity': {
     color: [148, 133, 0, 255],
-    liveCell: rel => p.setPixel(rel.x, rel.y, 'Wireworld FadingElectricity', false)
+    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld FadingElectricity')
   },
   'Wireworld FadingElectricity': {
     color: [148, 133, 0, 254],
-    liveCell: rel => p.setPixel(rel.x, rel.y, 'Wireworld Conductor', false)
+    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld Conductor')
   },
   Highlife: {
     color: [0, 255, 128, 255],
@@ -438,13 +446,18 @@ p.addMultipleElements({
     liveCell: ({ x, y, oldId }) => {
       const randsWater = new Uint8Array(2)
       window.crypto.getRandomValues(randsWater)
-      const newx = x + (randsWater[0] % 3) - 1
-      let newy = y + randsWater[1] % 4
+      const newLoc = {
+        x: x + (randsWater[0] % 3) - 1,
+        y: y + randsWater[1] % 4,
+        loop: false
+      }
       const h = p.get_height()
-      while ((newy >= h || !p.confirmElm(newx, newy, p.defaultId, 0, false)) && newy - 1 >= y) newy--
-      if (p.confirmElm(newx, newy, p.defaultId, 0, false)) {
-        p.setPixel(x, y, p.defaultId, false)
-        p.setPixel(newx, newy, oldId, false)
+      while ((newLoc.y >= h || !p.confirmElm(newLoc, p.defaultId)) && newLoc.y - 1 >= y) {
+        newLoc.y--
+      }
+      if (p.confirmElm(newLoc, p.defaultId)) {
+        p.setPixel({ x, y, loop: false }, p.defaultId)
+        p.setPixel(newLoc, oldId)
       }
     }
   }
@@ -454,17 +467,17 @@ function onZoomClick (e: MouseEvent, rel: {x: number, y: number}): string { // a
   if (e.ctrlKey && ctrlSelect != null) active = (ctrlSelect as HTMLSelectElement).value
   else if (e.altKey && altSelect != null) active = (altSelect as HTMLSelectElement).value
   else if (normalSelect != null) active = (normalSelect as HTMLSelectElement).value
-  if (p.confirmElm(rel.x, rel.y, active)) active = p.elementNumList[p.defaultId]
+  if (p.confirmElm(rel, active)) active = p.elementNumList[p.defaultId]
   return active
 }
 function zoomClick (e: MouseEvent): void {
-  const zoomXPos =
-    Math.floor(e.offsetX / p.zoomScaleFactor) +
-    Math.floor(p.zoomX - (p.zoomScaleFactor / 2))
-  const zoomYPos =
-    Math.floor(e.offsetY / p.zoomScaleFactor) +
-    Math.floor(p.zoomY - (p.zoomScaleFactor / 2))
-  p.setPixel(zoomXPos, zoomYPos, onZoomClick(e, { x: zoomXPos, y: zoomYPos }))
+  const zoomPos = {
+    x: Math.floor(e.offsetX / p.zoomScaleFactor) +
+      Math.floor(p.zoomX - (p.zoomScaleFactor / 2)),
+    y: Math.floor(e.offsetY / p.zoomScaleFactor) +
+      Math.floor(p.zoomY - (p.zoomScaleFactor / 2))
+  }
+  p.setPixel(zoomPos, onZoomClick(e, zoomPos))
   p.update()
   p.zoom()
 }
