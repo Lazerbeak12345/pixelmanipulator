@@ -184,82 +184,77 @@ function _convertNumListToBf (nl: string): number {
   return out
 }
 const templates: {
-  [index: string]: {
-    __index__: Function
-  }
+  [index: string]: Function
 } = { // an object containing the different templates that are currently in the system
-  __LIFE__: { // Things like Conway's Game of Life
-    __index__: function (p: PixelManipulator, elm: number, data: ElementData) {
-      if (typeof data.pattern === 'undefined' || data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1) {
-        return []
-      }
-      const numbers = data.pattern.split(/\/?[a-z]/gi)// "B",born,die
-      data.loop = data.loop ?? true
-      if (data.hitbox != null) {
-        data.hitbox = moore()
-      }
-      const bfdie = _convertNumListToBf(numbers[2])
-      const bflive = _convertNumListToBf(numbers[1])
-      console.log('Life Pattern found: ', data.name, data)
-      return [
-        function llive ({ x, y }: Rel) {
-          // if any match (of how many moore are nearby) is found, it dies
-          if ((bfdie & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) === 0) {
-            p.setPixel({ x, y }, p.defaultId)
-          }
-        },
-        function ldead ({ x, y }: Rel) {
-          // if any match (of how many moore are nearby) is found, it lives
-          if ((bflive & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) > 0) {
-            p.setPixel({ x, y }, elm)
-          }
-        }
-      ]
+  // Things like Conway's Game of Life
+  __LIFE__: function (p: PixelManipulator, elm: number, data: ElementData) {
+    if (typeof data.pattern === 'undefined' || data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1) {
+      return []
     }
+    const numbers = data.pattern.split(/\/?[a-z]/gi)// "B",born,die
+    data.loop = data.loop ?? true
+    if (data.hitbox != null) {
+      data.hitbox = moore()
+    }
+    const bfdie = _convertNumListToBf(numbers[2])
+    const bflive = _convertNumListToBf(numbers[1])
+    console.log('Life Pattern found: ', data.name, data)
+    return [
+      function llive ({ x, y }: Rel) {
+        // if any match (of how many moore are nearby) is found, it dies
+        if ((bfdie & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) === 0) {
+          p.setPixel({ x, y }, p.defaultId)
+        }
+      },
+      function ldead ({ x, y }: Rel) {
+        // if any match (of how many moore are nearby) is found, it lives
+        if ((bflive & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) > 0) {
+          p.setPixel({ x, y }, elm)
+        }
+      }
+    ]
   },
-  __WOLFRAM__: {
-    __index__: function (p: PixelManipulator, elm: number, data: ElementData) {
-      if (typeof data.pattern === 'undefined' || data.pattern.search(/Rule \d*/gi) <= -1) {
-        return []
-      }
-      const binStates = parseInt(data.pattern.split(/Rule /gi)[1])
-      data.loop = data.loop ?? true
-      if (data.hitbox == null) {
-        data.hitbox = wolfram(1, 1)
-      }
-      console.log('Wolfram pattern found: ', data.name, data)
-      return [
-        function wlive ({ x, y }: Rel) {
-          if (y === 0) return
-          // for every possible state
-          for (let binDex = 0; binDex < 8; binDex++) {
-            if (
-              // if the state is "off". Use a bit mask and shift it
-              (binStates & 1 << binDex) === 0 &&
-              // if there is a wolfram match (wolfram code goes from 111 to 000)
-              p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
-            ) {
-              p.setPixel({ x, y, loop: data.loop }, p.defaultId)
-              return// No more logic needed, it is done.
-            }
-          }
-        },
-        function wdead ({ x, y }: Rel) {
-          // for every possible state
-          for (let binDex = 0; binDex < 8; binDex++) {
-            if (
-              // if the state is "on". Use a bit mask and shift it
-              (binStates & 1 << binDex) > 0 &&
-              // if there is a wolfram match (wolfram code goes from 111 to 000)
-              p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
-            ) {
-              p.setPixel({ x, y, loop: data.loop }, elm)
-              return// No more logic needed, it is done.
-            }
+  __WOLFRAM__: function (p: PixelManipulator, elm: number, data: ElementData) {
+    if (typeof data.pattern === 'undefined' || data.pattern.search(/Rule \d*/gi) <= -1) {
+      return []
+    }
+    const binStates = parseInt(data.pattern.split(/Rule /gi)[1])
+    data.loop = data.loop ?? true
+    if (data.hitbox == null) {
+      data.hitbox = wolfram(1, 1)
+    }
+    console.log('Wolfram pattern found: ', data.name, data)
+    return [
+      function wlive ({ x, y }: Rel) {
+        if (y === 0) return
+        // for every possible state
+        for (let binDex = 0; binDex < 8; binDex++) {
+          if (
+            // if the state is "off". Use a bit mask and shift it
+            (binStates & 1 << binDex) === 0 &&
+            // if there is a wolfram match (wolfram code goes from 111 to 000)
+            p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
+          ) {
+            p.setPixel({ x, y, loop: data.loop }, p.defaultId)
+            return// No more logic needed, it is done.
           }
         }
-      ]
-    }
+      },
+      function wdead ({ x, y }: Rel) {
+        // for every possible state
+        for (let binDex = 0; binDex < 8; binDex++) {
+          if (
+            // if the state is "on". Use a bit mask and shift it
+            (binStates & 1 << binDex) > 0 &&
+            // if there is a wolfram match (wolfram code goes from 111 to 000)
+            p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
+          ) {
+            p.setPixel({ x, y, loop: data.loop }, elm)
+            return// No more logic needed, it is done.
+          }
+        }
+      }
+    ]
   }
 }
 /** Sizes to set the canvases to. If a value below is absent, old value is used.
