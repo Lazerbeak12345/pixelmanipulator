@@ -184,12 +184,12 @@ function _convertNumListToBf (nl: string): number {
   return out
 }
 const templates: {
-  [index: string]: Function
+  [index: string]: (p: PixelManipulator, elm: number, data: ElementDataUnknown) => boolean
 } = { // an object containing the different templates that are currently in the system
   // Things like Conway's Game of Life
-  __LIFE__: function (p: PixelManipulator, elm: number, data: ElementData) {
+  __LIFE__: function (p, elm, data) {
     if (typeof data.pattern === 'undefined' || data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1) {
-      return []
+      return false
     }
     const numbers = data.pattern.split(/\/?[a-z]/gi)// "B",born,die
     data.loop = data.loop ?? true
@@ -199,24 +199,23 @@ const templates: {
     const bfdie = _convertNumListToBf(numbers[2])
     const bflive = _convertNumListToBf(numbers[1])
     console.log('Life Pattern found: ', data.name, data)
-    return [
-      function llive ({ x, y }: Rel) {
-        // if any match (of how many moore are nearby) is found, it dies
-        if ((bfdie & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) === 0) {
-          p.setPixel({ x, y }, p.defaultId)
-        }
-      },
-      function ldead ({ x, y }: Rel) {
-        // if any match (of how many moore are nearby) is found, it lives
-        if ((bflive & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) > 0) {
-          p.setPixel({ x, y }, elm)
-        }
+    data.liveCell = function llive ({ x, y }) {
+      // if any match (of how many moore are nearby) is found, it dies
+      if ((bfdie & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) === 0) {
+        p.setPixel({ x, y }, p.defaultId)
       }
-    ]
+    }
+    data.deadCell = function ldead ({ x, y }) {
+      // if any match (of how many moore are nearby) is found, it lives
+      if ((bflive & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) > 0) {
+        p.setPixel({ x, y }, elm)
+      }
+    }
+    return true
   },
-  __WOLFRAM__: function (p: PixelManipulator, elm: number, data: ElementData) {
+  __WOLFRAM__: function (p, elm, data) {
     if (typeof data.pattern === 'undefined' || data.pattern.search(/Rule \d*/gi) <= -1) {
-      return []
+      return false
     }
     const binStates = parseInt(data.pattern.split(/Rule /gi)[1])
     data.loop = data.loop ?? true
@@ -224,37 +223,36 @@ const templates: {
       data.hitbox = wolfram(1, 1)
     }
     console.log('Wolfram pattern found: ', data.name, data)
-    return [
-      function wlive ({ x, y }: Rel) {
-        if (y === 0) return
-        // for every possible state
-        for (let binDex = 0; binDex < 8; binDex++) {
-          if (
-            // if the state is "off". Use a bit mask and shift it
-            (binStates & 1 << binDex) === 0 &&
-            // if there is a wolfram match (wolfram code goes from 111 to 000)
-            p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
-          ) {
-            p.setPixel({ x, y, loop: data.loop }, p.defaultId)
-            return// No more logic needed, it is done.
-          }
-        }
-      },
-      function wdead ({ x, y }: Rel) {
-        // for every possible state
-        for (let binDex = 0; binDex < 8; binDex++) {
-          if (
-            // if the state is "on". Use a bit mask and shift it
-            (binStates & 1 << binDex) > 0 &&
-            // if there is a wolfram match (wolfram code goes from 111 to 000)
-            p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
-          ) {
-            p.setPixel({ x, y, loop: data.loop }, elm)
-            return// No more logic needed, it is done.
-          }
+    data.liveCell = function wlive ({ x, y }) {
+      if (y === 0) return
+      // for every possible state
+      for (let binDex = 0; binDex < 8; binDex++) {
+        if (
+          // if the state is "off". Use a bit mask and shift it
+          (binStates & 1 << binDex) === 0 &&
+          // if there is a wolfram match (wolfram code goes from 111 to 000)
+          p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
+        ) {
+          p.setPixel({ x, y, loop: data.loop }, p.defaultId)
+          return// No more logic needed, it is done.
         }
       }
-    ]
+    }
+    data.deadCell = function wdead ({ x, y }) {
+      // for every possible state
+      for (let binDex = 0; binDex < 8; binDex++) {
+        if (
+          // if the state is "on". Use a bit mask and shift it
+          (binStates & 1 << binDex) > 0 &&
+          // if there is a wolfram match (wolfram code goes from 111 to 000)
+          p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
+        ) {
+          p.setPixel({ x, y, loop: data.loop }, elm)
+          return// No more logic needed, it is done.
+        }
+      }
+    }
+    return true
   }
 }
 /** Sizes to set the canvases to. If a value below is absent, old value is used.
@@ -497,12 +495,9 @@ export class PixelManipulator {
       oldData.liveCell = data.liveCell
       oldData.deadCell = data.deadCell
       for (const tempNam in templates) {
-        const out = templates[tempNam].__index__(this, id, oldData)
-        if (out.length === 0) continue// if the output was [], then go on.
-        // Checking if `data` has the cell update functions because we _want_ to
-        // override the ones in `oldData`
-        if (typeof data.liveCell === 'undefined' && typeof out[0] === 'function') { oldData.liveCell = out[0] }
-        if (typeof data.deadCell === 'undefined' && typeof out[1] === 'function') { oldData.deadCell = out[1] }
+        if (templates[tempNam](this, id, oldData)) {
+          break
+        }
       }
       // In case nothing matches the pattern
       if (typeof oldData.hitbox === 'undefined' && typeof hb !== 'undefined') { oldData.hitbox = hb }
