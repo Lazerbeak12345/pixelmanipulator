@@ -176,13 +176,9 @@ export interface ElementDataUnknownNameMandatory extends ElementDataUnknown{
 interface templatea{
   __index__: Function
   _convertNumListToBf: Function
-  __LIVE__: Function
-  __DEAD__: Function
 }
 interface templateb{
   __index__: Function
-  __LIVE__: Function
-  __DEAD__: Function
 }
 const templates: {
   [index: string]: templatea|templateb
