@@ -120,7 +120,7 @@ export interface ElementDataUnknown{
   * Wolfram Rules don't use the Moore area formula, they use the Wolfram
   * area formula.
   *
-  * ```txt
+  * ```
   * XXX
   *  O
   * ```
