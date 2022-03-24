@@ -208,7 +208,9 @@ const templates: {
       }
       const numbers = data.pattern.split(/\/?[a-z]/gi)// "B",born,die
       data.loop = typeof data.loop !== 'undefined' ? data.loop : true
-      if (typeof data.hitbox !== 'undefined') { data.hitbox = p.neighborhoods.moore() }
+      if (data.hitbox != null) {
+        data.hitbox = neighborhoods.moore()
+      }
       console.log('Life Pattern found: ', data.name, data)
       return [
         this.__LIVE__(
@@ -249,7 +251,9 @@ const templates: {
       }
       const binStates = parseInt(data.pattern.split(/Rule /gi)[1])
       data.loop = typeof data.loop !== 'undefined' ? data.loop : false
-      if (typeof data.hitbox === 'undefined') { data.hitbox = p.neighborhoods.wolfram(1, 1) }
+      if (data.hitbox == null) {
+        data.hitbox = neighborhoods.wolfram(1, 1)
+      }
       console.log('Wolfram pattern found: ', data.name, data)
       return [
         this.__LIVE__(p, elm, binStates, data.loop),
@@ -302,6 +306,136 @@ export interface CanvasSizes{
   zoomW?: number
   /** height of the zoom canvas (size in zoomed pixels) */
   zoomH?: number
+}
+/**
+* An object containing several functions to generate lists of relative positions
+* for a neighborhood hitbox.
+*
+* See [[hitbox]].
+*/
+export const neighborhoods = {
+  /**
+  * Makes a wolfram neighborhood.
+  *
+  * Area is f(x)=2x-1
+  *
+  * @param radius - Count of how many to the right and left to include. Defaults
+  * @param yval - Count of how many to offset the y value by. Defaults to -1.
+  * @param includeSelf - Should this include the center pixel? Defaults to true.
+  * @returns A hitbox shaped like this under defaults:
+  *
+  * ```
+  * XXX
+  *  O
+  * ```
+  */
+  wolfram: function (radius?: number, yval?: number, includeSelf?: boolean): hitbox {
+    if (typeof radius === 'undefined') { radius = 1 }
+    if (typeof yval === 'undefined') { yval = -1 }
+    const output = []
+    for (let i = radius; i > 0; i--) {
+      output.push({ x: -1 * i, y: yval })
+    }
+    if (typeof includeSelf === 'undefined' || includeSelf) {
+      output.push({ x: 0, y: yval })
+    }
+    for (let i = radius; i > 0; i--) {
+      output.push({ x: i, y: yval })
+    }
+    return output
+  },
+  /**
+  * Makes a moore neighborhood.
+  *
+  * Area is f(x)=(2r+1)^2
+  *
+  * @param radius - Count of how many rings around the center to include defaults
+  * to 1.
+  * @param includeSelf - Should this include the center pixel? Defaults to false.
+  * @returns A hitbox shaped like this under defaults:
+  *
+  * ```
+  * XXX
+  * XOX
+  * XXX
+  * ```
+  */
+  moore: function (radius?: number, includeSelf?: boolean): hitbox {
+    if (typeof radius === 'undefined') { radius = 1 }
+    if (typeof includeSelf === 'undefined') { includeSelf = false }
+    const output: hitbox = []
+    // Note: no need to calculate the Chebyshev distance. All pixels in this
+    // range are "magically" within.
+    for (let x = -1 * radius; x <= radius; x++) {
+      for (let y = -1 * radius; y <= radius; y++) {
+        if (includeSelf || !(x === 0 && y === 0)) { output.push({ x: x, y: y }) }
+      }
+    }
+    return output
+    // And to think that this used to be hard... Perhaps they had a different
+    // goal? Or just weren't using higher-order algorithims?
+  },
+  /**
+  * Makes a vonNeumann neighborhood.
+  *
+  * Area is f(x)=r^2+(r+1)^2
+  *
+  * @param radius - Count of how many rings around the center to include. defaults
+  * to 1.
+  * @param includeSelf - Should this include the center pixel? Defaults to false.
+  * @returns A hitbox shaped like this under defaults:
+  *
+  * ```
+  *  X
+  * XOX
+  *  X
+  * ```
+  */
+  vonNeumann: function (radius?: number, includeSelf?: boolean): hitbox {
+    if (typeof radius === 'undefined') { radius = 1 }
+    if (typeof includeSelf === 'undefined') { includeSelf = false }
+    const output: hitbox = []
+    // A Von Neumann neighborhood of a given distance always fits inside of a
+    // Moore neighborhood of the same. (This is a bit brute-force)
+    for (let x = -1 * radius; x <= radius; x++) {
+      for (let y = -1 * radius; y <= radius; y++) {
+        if (
+          (includeSelf || !(x === 0 && y === 0)) &&
+          (Math.abs(x) + Math.abs(y) <= radius) // Taxicab distance
+        ) { output.push({ x: x, y: y }) }
+      }
+    }
+    return output
+  },
+  /**
+  * Makes a euclidean neighborhood.
+  *
+  * Area is not quite that of a circle. TODO find math for exact value.
+  *
+  * @param radius - Count of how many rings around the center to include. defaults
+  * to 1.
+  * @param includeSelf - Should this include the center pixel? Defaults to false.
+  * @returns A hitbox where all pixels fit within a circle of the given
+  * radius, where the precise euclidean distance is `<=` the radias.
+  */
+  euclidean: function (radius?: number, includeSelf?: boolean): hitbox {
+    if (typeof radius === 'undefined') { radius = 1 }
+    if (typeof includeSelf === 'undefined') { includeSelf = false }
+    const output: hitbox = []
+    // A circle of a given diameter always fits inside of a square of the same
+    // side-length. (This is a bit brute-force)
+    for (let x = -1 * radius; x <= radius; x++) {
+      for (let y = -1 * radius; y <= radius; y++) {
+        if (
+          (includeSelf || !(x === 0 && y === 0)) &&
+          (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= radius) // Euclidean distance
+        ) { output.push({ x: x, y: y }) }
+      }
+    }
+    return output
+  }
+  // TODO https://www.npmjs.com/package/compute-minkowski-distance ?
+  // TODO Non-Euclidean distance algorithim?
 }
 /** A cellular automata engine */
 export class PixelManipulator {
@@ -387,136 +521,6 @@ export class PixelManipulator {
   onIterate: () => void=() => {}
   /** Called after [[PixelManipulator.iterate]] does its work. */
   onAfterIterate: () => void=function () {}
-  /**
-  * An object containing several functions to generate lists of relative positions
-  * for a neighborhood hitbox.
-  *
-  * See [[hitbox]].
-  */
-  neighborhoods={
-    /**
-    * Makes a wolfram neighborhood.
-    *
-    * Area is f(x)=2x-1
-    *
-    * @param radius - Count of how many to the right and left to include. Defaults
-    * @param yval - Count of how many to offset the y value by. Defaults to -1.
-    * @param includeSelf - Should this include the center pixel? Defaults to true.
-    * @returns A hitbox shaped like this under defaults:
-    *
-    * ```txt
-    * XXX
-    *  O
-    * ```
-    */
-    wolfram: function (radius?: number, yval?: number, includeSelf?: boolean): hitbox {
-      if (typeof radius === 'undefined') { radius = 1 }
-      if (typeof yval === 'undefined') { yval = -1 }
-      const output = []
-      for (let i = radius; i > 0; i--) {
-        output.push({ x: -1 * i, y: yval })
-      }
-      if (typeof includeSelf === 'undefined' || includeSelf) {
-        output.push({ x: 0, y: yval })
-      }
-      for (let i = radius; i > 0; i--) {
-        output.push({ x: i, y: yval })
-      }
-      return output
-    },
-    /**
-    * Makes a moore neighborhood.
-    *
-    * Area is f(x)=(2r+1)^2
-    *
-    * @param radius - Count of how many rings around the center to include defaults
-    * to 1.
-    * @param includeSelf - Should this include the center pixel? Defaults to false.
-    * @returns A hitbox shaped like this under defaults:
-    *
-    * ```txt
-    * XXX
-    * XOX
-    * XXX
-    * ```
-    */
-    moore: function (radius?: number, includeSelf?: boolean): hitbox {
-      if (typeof radius === 'undefined') { radius = 1 }
-      if (typeof includeSelf === 'undefined') { includeSelf = false }
-      const output: hitbox = []
-      // Note: no need to calculate the Chebyshev distance. All pixels in this
-      // range are "magically" within.
-      for (let x = -1 * radius; x <= radius; x++) {
-        for (let y = -1 * radius; y <= radius; y++) {
-          if (includeSelf || !(x === 0 && y === 0)) { output.push({ x: x, y: y }) }
-        }
-      }
-      return output
-      // And to think that this used to be hard... Perhaps they had a different
-      // goal? Or just weren't using higher-order algorithims?
-    },
-    /**
-    * Makes a vonNeumann neighborhood.
-    *
-    * Area is f(x)=r^2+(r+1)^2
-    *
-    * @param radius - Count of how many rings around the center to include. defaults
-    * to 1.
-    * @param includeSelf - Should this include the center pixel? Defaults to false.
-    * @returns A hitbox shaped like this under defaults:
-    *
-    * ```txt
-    *  X
-    * XOX
-    *  X
-    * ```
-    */
-    vonNeumann: function (radius?: number, includeSelf?: boolean): hitbox {
-      if (typeof radius === 'undefined') { radius = 1 }
-      if (typeof includeSelf === 'undefined') { includeSelf = false }
-      const output: hitbox = []
-      // A Von Neumann neighborhood of a given distance always fits inside of a
-      // Moore neighborhood of the same. (This is a bit brute-force)
-      for (let x = -1 * radius; x <= radius; x++) {
-        for (let y = -1 * radius; y <= radius; y++) {
-          if (
-            (includeSelf || !(x === 0 && y === 0)) &&
-            (Math.abs(x) + Math.abs(y) <= radius) // Taxicab distance
-          ) { output.push({ x: x, y: y }) }
-        }
-      }
-      return output
-    },
-    /**
-    * Makes a euclidean neighborhood.
-    *
-    * Area is not quite that of a circle. TODO find math for exact value.
-    *
-    * @param radius - Count of how many rings around the center to include. defaults
-    * to 1.
-    * @param includeSelf - Should this include the center pixel? Defaults to false.
-    * @returns A hitbox where all pixels fit within a circle of the given
-    * radius, where the precise euclidean distance is `<=` the radias.
-    */
-    euclidean: function (radius?: number, includeSelf?: boolean): hitbox {
-      if (typeof radius === 'undefined') { radius = 1 }
-      if (typeof includeSelf === 'undefined') { includeSelf = false }
-      const output: hitbox = []
-      // A circle of a given diameter always fits inside of a square of the same
-      // side-length. (This is a bit brute-force)
-      for (let x = -1 * radius; x <= radius; x++) {
-        for (let y = -1 * radius; y <= radius; y++) {
-          if (
-            (includeSelf || !(x === 0 && y === 0)) &&
-            (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= radius) // Euclidean distance
-          ) { output.push({ x: x, y: y }) }
-        }
-      }
-      return output
-    }
-    // TODO https://www.npmjs.com/package/compute-minkowski-distance ?
-    // TODO Non-Euclidean distance algorithim?
-  }
 
   /** Gets called after a call to [[PixelManipulator.modifyElement]]. The ID is
   * passed as the only argument.
@@ -680,7 +684,9 @@ export class PixelManipulator {
         if (typeof dc !== 'undefined') { oldData.deadCell = dc }
       }
     }
-    if (typeof oldData.hitbox === 'undefined') { oldData.hitbox = this.neighborhoods.moore() }
+    if (oldData.hitbox == null) {
+      oldData.hitbox = neighborhoods.moore()
+    }
     this.elementTypeMap.set((oldData as ElementData).name, oldData as ElementData) // These casts might be dangerous.
     this.onElementModified(id)
   };
@@ -916,7 +922,7 @@ export class PixelManipulator {
   * @param name - element to look for
   * @returns Number of elements in moore radius */
   mooreNearbyCounter ({ x, y, frame, loop }: Location, name: number|string|Color): number {
-    return this.neighborhoods.moore()
+    return neighborhoods.moore()
       .map(rel => ({ x: x + rel.x, y: y + rel.y, frame, loop }))
       .map(loc => this.confirmElm(loc, name))
       .map(boolToNumber)
@@ -933,7 +939,7 @@ export class PixelManipulator {
       binDex = boolToNumber(binDex[0] === '1') << 2 | boolToNumber(binDex[1] === '1') << 1 | boolToNumber(binDex[2] === '1') << 0
     }
     loop = loop ?? false // one-dimentional detectors by default don't loop around edges
-    return this.neighborhoods.wolfram()
+    return neighborhoods.wolfram()
       .map(rel => ({ x: x + rel.x, y: y + rel.y, frame, loop }))
       .map(loc => this.confirmElm(loc, name))
       .map((elm, i) => elm === (((binDex as number) & 1 << (2 - i)) > 0))
