@@ -373,7 +373,7 @@ export class PixelManipulator {
     if (typeof name === 'undefined') {
       throw new Error(`Invalid ID ${id}`)
     }
-    const oldData: ElementDataUnknown = this.elementTypeMap.get(name)
+    const oldData: ElementDataUnknown = this.elementTypeMap.get(name) as ElementData
     this.elementTypeMap.delete(name) // Needs to be gone for color check
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
       this.aliasElements(oldData as ElementData, data as ElementDataUnknownNameMandatory)
