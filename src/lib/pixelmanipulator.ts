@@ -390,13 +390,13 @@ export class PixelManipulator {
     if (data.hitbox == null) {
       data.hitbox = moore()
     }
-    oldData.name = data.name
-    oldData.color = data.color
-    oldData.hitbox = data.hitbox
-    oldData.liveCell = data.liveCell
-    oldData.deadCell = data.deadCell
-    oldData.number = data.number
-    oldData.madeWithRule = data.madeWithRule
+    oldData.name = data.name ?? oldData.name
+    oldData.color = data.color ?? oldData.color
+    oldData.hitbox = data.hitbox ?? oldData.hitbox
+    oldData.liveCell = data.liveCell ?? oldData.liveCell
+    oldData.deadCell = data.deadCell ?? oldData.deadCell
+    oldData.number = data.number ?? oldData.number
+    oldData.madeWithRule = data.madeWithRule ?? oldData.madeWithRule
     this.elementTypeMap.set((oldData as ElementData).name, oldData as ElementData) // These casts might be dangerous.
     this.onElementModified(id)
   };
