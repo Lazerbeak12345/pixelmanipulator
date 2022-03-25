@@ -1,4 +1,4 @@
-import { PixelManipulator, Color, version } from '../lib/pixelmanipulator'
+import { PixelManipulator, Color, version, rules } from '../lib/pixelmanipulator'
 
 const canvas = document.getElementById('canvas')
 
@@ -18,11 +18,6 @@ const customizeColorAlpha = document.getElementById('customColorAlpha')
 const customizeColorAlphaText = document.getElementById('customColorAlphaText')
 /// Name of element
 const customizeName = document.getElementById('customizeName')
-
-/// Within are elements only shown if there is a pattern in use
-const customizeSection = document.getElementById('customizePatternSection')
-/// Should this pattern loop?
-const customizeLoop = document.getElementById('customizeLoop')
 
 /// Zoomed in canvas
 const zoom = document.getElementById('zoom')
@@ -246,12 +241,6 @@ function updateCustomizer (): void {
   if (customizeColorAlpha != null) (customizeColorAlpha as HTMLInputElement).value = alphaVal// Raw alpha value
   if (customizeColorAlphaText != null) (customizeColorAlphaText as HTMLSpanElement).innerText = alphaVal
   if (customizeName != null) (customizeName as HTMLInputElement).value = elm.name
-  if (customizeSection != null) {
-    if (typeof elm.pattern === 'string') {
-      customizeSection.classList.remove('hidden')
-      if (customizeLoop != null) (customizeLoop as HTMLInputElement).checked = elm.loop ?? false
-    } else customizeSection.classList.add('hidden')
-  }
 }
 if (p.zoomelm != null) {
   p.zoomelm.addEventListener('click', zoomClick)
@@ -306,18 +295,6 @@ function changeColor (): void {
 }
 if (customizeColor != null) customizeColor.addEventListener('change', changeColor)
 if (customizeColorAlpha != null) customizeColorAlpha.addEventListener('change', changeColor)
-if (customizeLoop != null) {
-  customizeLoop.addEventListener('change', function (this: HTMLInputElement) {
-    console.group('change loop', this.checked)
-    const num = p.elementTypeMap.get((customSelect as HTMLSelectElement).value)?.number
-    if (num != null) {
-      p.modifyElement(num, {
-        loop: this.checked
-      })
-    }
-    console.groupEnd()
-  })
-}
 if (shtargeterElm != null) {
   shtargeterElm.addEventListener('click', function (this: HTMLInputElement) {
     const state = this.checked ? 'hidden' : 'visible'
@@ -382,18 +359,18 @@ p.addMultipleElements({
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, p.defaultId)
   },
   "Brian's Brain (on)": {
+    ...rules.lifelike(p, 'B2/S'), // same pattern as seeds
     color: [0, 0, 254, 255], // not quite blue
     // All cells that were "on" go into the "dying" state, which is not counted as an "on" cell in the neighbor count, and prevents any cell from being born there.
-    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, "Brian's Brain (dying)"),
-    pattern: 'B2/S' // same pattern as seeds
+    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, "Brian's Brain (dying)")
   },
   Seeds: {
-    color: [194, 178, 128],
-    pattern: 'B2/S'
+    ...rules.lifelike(p, 'B2/S'),
+    color: [194, 178, 128]
   },
   "Conway's Game Of Life": {
-    color: [0, 255, 0, 255],
-    pattern: 'B3/S23' // born on 3, survives on 2 or 3
+    ...rules.lifelike(p, 'B3/S23'), // born on 3, survives on 2 or 3
+    color: [0, 255, 0, 255]
   },
   'Wireworld Conductor': {
     color: [67, 75, 77, 255],
@@ -417,29 +394,28 @@ p.addMultipleElements({
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld Conductor')
   },
   Highlife: {
-    color: [0, 255, 128, 255],
-    pattern: 'B36/S23' // born on 3 or 6, survives on 2 or 3
+    ...rules.lifelike(p, 'B36/S23'), // born on 3 or 6, survives on 2 or 3
+    color: [0, 255, 128, 255]
   },
   "No-loop Conway's Game Of Life": {
-    color: [0, 150, 0, 255],
-    pattern: 'B3/S23', // same as Conway's Game Of Life, but with a no-loop boolean
-    loop: false
+    ...rules.lifelike(p, 'B3/S23', false), // same as Conway's Game Of Life, but with a no-loop boolean
+    color: [0, 150, 0, 255]
   },
   'Rule 30': {
-    color: [255, 0, 255, 255],
-    pattern: 'Rule 30'
+    ...rules.wolfram(p, 'Rule 30', false),
+    color: [255, 0, 255, 255]
   },
   'Rule 90': {
-    color: [147, 112, 219, 255],
-    pattern: 'Rule 90'
+    ...rules.wolfram(p, 'Rule 90', false),
+    color: [147, 112, 219, 255]
   },
   'Rule 110': {
-    color: [128, 0, 128, 255],
-    pattern: 'Rule 110'
+    ...rules.wolfram(p, 'Rule 110', false),
+    color: [128, 0, 128, 255]
   },
   'Rule 184': {
-    color: [255, 51, 153, 255],
-    pattern: 'Rule 184'
+    ...rules.wolfram(p, 'Rule 184', false),
+    color: [255, 51, 153, 255]
   },
   Water: {
     color: [23, 103, 167, 255],

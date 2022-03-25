@@ -41,6 +41,7 @@ export interface Rel{
   * shows string comparision is a bottleneck.
   */
   oldId: number
+  thisId: number
 }
 export type Color=[number, number, number, number]|[number, number, number]|[number, number]|[number]|[]
 /** Much like [[ElementDataUnknown]] but all fields except [[ElementData.loop]],
@@ -48,8 +49,6 @@ export type Color=[number, number, number, number]|[number, number, number]|[num
 export interface ElementData extends ElementDataUnknown {
   name: string
   color: Color
-  pattern?: string
-  loop?: boolean
   hitbox: hitbox
   liveCell?: (rel: Rel) => void
   deadCell?: (rel: Rel) => void
@@ -57,7 +56,6 @@ export interface ElementData extends ElementDataUnknown {
 }
 /** Information about an element. */
 export interface ElementDataUnknown{
-  [index: string]: string|number[]|boolean|hitbox|((rel: Rel) => void)|number|undefined
   /** The name of the element. */
   name?: string
   /** The rgba color of the element. If there is less than 4 values in this
@@ -66,85 +64,6 @@ export interface ElementDataUnknown{
   * SAME COLOR (Starting in version 3 this will throw an error)
   */
   color?: Color
-  /**
-  * A simple way of automatically generating values for
-  * [[ElementDataUnknown.livecell]] and [[ElementDataUnknown.deadcell]]
-  *
-  * There are two types of patterns:
-  *
-  * ## Lifelike
-  *
-  * One can initialize an instance of Conway's Game of Life by doing the
-  * following:
-  *
-  * ```ts
-  * p.addElement("Conway's Game Of Life",{
-  *   color:[0,255,0,255],
-  *   pattern:"B3/S23"
-  * })
-  * ```
-  *
-  * This uses the moore neighborhood (see
-  * [[PixelManipulator.neighborhoods.moore]]) to calculate the quantity of
-  * nearby cells of this same type. The non-case sensative pattern you see above
-  * can be read as "A cell is born (or switches from an off state to an on
-  * state) if there are exactly three nearby neighbors of this same cell type,
-  * and it will survive (or continue to stay as an on state) if there are
-  * exactly two or exactly three cells of this same type nearby."
-  *
-  * This can accept any number of numbers for either input, as long as they
-  * are whole numbers from zero(0) to eight(8), due to the fact that that is
-  * the physical limit.
-  *
-  * \> Note that the presence of the number 9 will fail silently, and act as if
-  * \> that digit is not present.
-  *
-  * ## Wolfram
-  *
-  * Uses the Wolfram neighborhood to calculate the previous state. See
-  * [[PixelManipulator.neighborhoods.wolfram]]
-  *
-  * ```ts
-  * p.addElement("Rule 30",{
-  *   color:[255,0,255,255],
-  *   pattern:"Rule 30",
-  * })
-  * ```
-  *
-  * The pattern must start with the word (not case sensitive) "Rule" followed by
-  * a space. It then must be followed by a number from 0 to 255.
-  *
-  * This number will be transalated into a binary string. In the case of the
-  * example above, "`00011110`."
-  *
-  * Wolfram Rules don't use the Moore area formula, they use the Wolfram
-  * area formula.
-  *
-  * ```
-  * XXX
-  *  O
-  * ```
-  *
-  * This remarkably different formula relies that per each frame, only one line
-  * changes at a time. Each cell, as shown above, depends on the 1(same element
-  * type present) or 0(same element type not present) state of the cells
-  * directly, and to either side above this cell.
-  *
-  * We then iterate through each digit of the above number, while counting up
-  * from `000` in binary. (For example, `000` and `0`, `001` and `0`, `010` and
-  * `0`, `011` and `1`, etc).
-  *
-  * If the three-digit binary number correctly matches the state of the cells
-  * above this one, then the state of this cell becomes the value of the
-  * corrosponding digit in the long binary string. (for example, if it matches
-  * in a `000` pattern than it remains dead., but if it matches in a `011`
-  * pattern, then the cell becomes alive.)
-  */
-  pattern?: string
-  /** Assuming that [[ElementDataUnknownNameMandatory.pattern]]
-  * is present, should this pattern loop?
-  */
-  loop?: boolean
   /** [[ElementDataUnknownNameMandatory.deadCell]] will only be called on empty
   * pixels within the hitbox of a live cell. Array of relative coordinate pairs.
   * Optional, defaults to the result of [[PixelManipulator.neighborhoods.moore]]
@@ -168,6 +87,7 @@ export interface ElementDataUnknown{
   /** Ignored by [[PixelManipulator.addElement]], this is the unique, constant
   * reference number to this element. */
   number?: number
+  madeWithRule?: true
 }
 /** Much like [[ElementDataUnknown]] but the name is mandatory. */
 export interface ElementDataUnknownNameMandatory extends ElementDataUnknown{
@@ -183,76 +103,63 @@ function _convertNumListToBf (nl: string): number {
   }
   return out
 }
-const templates: {
-  [index: string]: (p: PixelManipulator, elm: number, data: ElementDataUnknown) => boolean
-} = { // an object containing the different templates that are currently in the system
-  // Things like Conway's Game of Life
-  __LIFE__: function (p, elm, data) {
-    if (typeof data.pattern === 'undefined' || data.pattern.search(/B\d{0,9}\/S\d{0,9}/gi) <= -1) {
-      return false
-    }
-    const numbers = data.pattern.split(/\/?[a-z]/gi)// "B",born,die
-    data.loop = data.loop ?? true
-    if (data.hitbox != null) {
-      data.hitbox = moore()
-    }
+export const rules = {
+  lifelike: function (p: PixelManipulator, pattern: string, loop?: boolean): ElementDataUnknown {
+    const numbers = pattern.split(/\/?[a-z]/gi)// "B",born,die
     const bfdie = _convertNumListToBf(numbers[2])
     const bflive = _convertNumListToBf(numbers[1])
-    console.log('Life Pattern found: ', data.name, data)
-    data.liveCell = function llive ({ x, y }) {
-      // if any match (of how many moore are nearby) is found, it dies
-      if ((bfdie & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) === 0) {
-        p.setPixel({ x, y }, p.defaultId)
+    return {
+      madeWithRule: true,
+      hitbox: moore(),
+      liveCell: function llive ({ x, y, thisId }) {
+        // if any match (of how many moore are nearby) is found, it dies
+        if ((bfdie & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop }, thisId)) === 0) {
+          p.setPixel({ x, y }, p.defaultId)
+        }
+      },
+      deadCell: function ldead ({ x, y, thisId }) {
+        // if any match (of how many moore are nearby) is found, it lives
+        if ((bflive & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop }, thisId)) > 0) {
+          p.setPixel({ x, y }, thisId)
+        }
       }
     }
-    data.deadCell = function ldead ({ x, y }) {
-      // if any match (of how many moore are nearby) is found, it lives
-      if ((bflive & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm)) > 0) {
-        p.setPixel({ x, y }, elm)
-      }
-    }
-    return true
   },
-  __WOLFRAM__: function (p, elm, data) {
-    if (typeof data.pattern === 'undefined' || data.pattern.search(/Rule \d*/gi) <= -1) {
-      return false
-    }
-    const binStates = parseInt(data.pattern.split(/Rule /gi)[1])
-    data.loop = data.loop ?? true
-    if (data.hitbox == null) {
-      data.hitbox = wolfram(1, 1)
-    }
-    console.log('Wolfram pattern found: ', data.name, data)
-    data.liveCell = function wlive ({ x, y }) {
-      if (y === 0) return
-      // for every possible state
-      for (let binDex = 0; binDex < 8; binDex++) {
-        if (
-          // if the state is "off". Use a bit mask and shift it
-          (binStates & 1 << binDex) === 0 &&
-          // if there is a wolfram match (wolfram code goes from 111 to 000)
-          p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
-        ) {
-          p.setPixel({ x, y, loop: data.loop }, p.defaultId)
-          return// No more logic needed, it is done.
+  wolfram: function (p: PixelManipulator, pattern: string, loop?: boolean): ElementDataUnknown {
+    const binStates = parseInt(pattern.split(/Rule /gi)[1])
+    return {
+      madeWithRule: true,
+      hitbox: wolfram(1, 1),
+      liveCell: function wlive ({ x, y, thisId }) {
+        if (y === 0) return
+        // for every possible state
+        for (let binDex = 0; binDex < 8; binDex++) {
+          if (
+            // if the state is "off". Use a bit mask and shift it
+            (binStates & 1 << binDex) === 0 &&
+            // if there is a wolfram match (wolfram code goes from 111 to 000)
+            p.wolframNearbyCounter({ x, y, frame: 1, loop }, thisId, binDex)
+          ) {
+            p.setPixel({ x, y, loop }, p.defaultId)
+            return// No more logic needed, it is done.
+          }
+        }
+      },
+      deadCell: function wdead ({ x, y, thisId }) {
+        // for every possible state
+        for (let binDex = 0; binDex < 8; binDex++) {
+          if (
+            // if the state is "on". Use a bit mask and shift it
+            (binStates & 1 << binDex) > 0 &&
+            // if there is a wolfram match (wolfram code goes from 111 to 000)
+            p.wolframNearbyCounter({ x, y, frame: 1, loop }, thisId, binDex)
+          ) {
+            p.setPixel({ x, y, loop }, thisId)
+            return// No more logic needed, it is done.
+          }
         }
       }
     }
-    data.deadCell = function wdead ({ x, y }) {
-      // for every possible state
-      for (let binDex = 0; binDex < 8; binDex++) {
-        if (
-          // if the state is "on". Use a bit mask and shift it
-          (binStates & 1 << binDex) > 0 &&
-          // if there is a wolfram match (wolfram code goes from 111 to 000)
-          p.wolframNearbyCounter({ x, y, frame: 1, loop: data.loop }, elm, binDex)
-        ) {
-          p.setPixel({ x, y, loop: data.loop }, elm)
-          return// No more logic needed, it is done.
-        }
-      }
-    }
-    return true
   }
 }
 /** Sizes to set the canvases to. If a value below is absent, old value is used.
@@ -466,7 +373,7 @@ export class PixelManipulator {
     if (typeof name === 'undefined') {
       throw new Error(`Invalid ID ${id}`)
     }
-    const oldData: ElementDataUnknown = this.elementTypeMap.get(name) as ElementData
+    const oldData: ElementDataUnknown = this.elementTypeMap.get(name)
     this.elementTypeMap.delete(name) // Needs to be gone for color check
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
       this.aliasElements(oldData as ElementData, data as ElementDataUnknownNameMandatory)
@@ -480,40 +387,16 @@ export class PixelManipulator {
         throw new Error(`The color ${data.color.toString()} is already in use!`)
       }
     }
-    if (typeof data.loop !== 'undefined' && typeof data.pattern === 'undefined') { data.pattern = oldData.pattern }
-    for (const di in data) {
-      if (Object.prototype.hasOwnProperty.call(data, di)) {
-        oldData[di] = data[di]
-      }
+    if (data.hitbox == null) {
+      data.hitbox = moore()
     }
-    if (typeof data.pattern === 'string') {
-      const hb = oldData.hitbox
-      const lc = oldData.liveCell
-      const dc = oldData.deadCell
-      // Even if it's undefined. If it's undefined the template will fill it.
-      oldData.hitbox = data.hitbox
-      oldData.liveCell = data.liveCell
-      oldData.deadCell = data.deadCell
-      for (const tempNam in templates) {
-        if (templates[tempNam](this, id, oldData)) {
-          break
-        }
-      }
-      // In case nothing matches the pattern
-      if (typeof oldData.hitbox === 'undefined' && typeof hb !== 'undefined') { oldData.hitbox = hb }
-      // These functions come in pairs. If either are defined, don't use the old
-      // ones.
-      if (
-        typeof oldData.liveCell === 'undefined' &&
-        typeof oldData.deadCell === 'undefined'
-      ) {
-        if (typeof lc !== 'undefined') { oldData.liveCell = lc }
-        if (typeof dc !== 'undefined') { oldData.deadCell = dc }
-      }
-    }
-    if (oldData.hitbox == null) {
-      oldData.hitbox = moore()
-    }
+    oldData.name = data.name
+    oldData.color = data.color
+    oldData.hitbox = data.hitbox
+    oldData.liveCell = data.liveCell
+    oldData.deadCell = data.deadCell
+    oldData.number = data.number
+    oldData.madeWithRule = data.madeWithRule
     this.elementTypeMap.set((oldData as ElementData).name, oldData as ElementData) // These casts might be dangerous.
     this.onElementModified(id)
   };
@@ -760,7 +643,7 @@ export class PixelManipulator {
   * @param name - element to look for
   * @param bindex - Either a string like `"001"` to match to, or the same encoded as a number.
   * @returns Number of elements in moore radius */
-  wolframNearbyCounter ({ x, y, frame, loop }: Location, name: number, binDex: number|string): boolean {
+  wolframNearbyCounter ({ x, y, frame, loop }: Location, name: number|string|Color, binDex: number|string): boolean {
     if (typeof binDex === 'string') {
       // Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
       binDex = boolToNumber(binDex[0] === '1') << 2 | boolToNumber(binDex[1] === '1') << 1 | boolToNumber(binDex[2] === '1') << 0
@@ -888,7 +771,8 @@ export class PixelManipulator {
           elm.liveCell({
             x,
             y,
-            oldId: currentPixId
+            oldId: currentPixId,
+            thisId: currentPixId
           })
         }
         if (typeof this.pixelCounts[currentPixId] === 'undefined') {
@@ -915,7 +799,8 @@ export class PixelManipulator {
             elm.deadCell({
               x: hbx,
               y: hby,
-              oldId: this.defaultId
+              oldId: this.defaultId,
+              thisId: currentPixId
             })
             typedUpdatedDead[currentPixId][index] = oldValue | bitMask
           }
