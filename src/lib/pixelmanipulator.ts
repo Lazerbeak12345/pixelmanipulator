@@ -165,13 +165,109 @@ export interface CanvasSizes{
   canvasW?: number
   /** height of the canvas */
   canvasH?: number
-  /** width of the zoom canvas (size in zoomed pixels) */
-  zoomW?: number
-  /** height of the zoom canvas (size in zoomed pixels) */
-  zoomH?: number
+}
+export abstract class Renderer {
+  /** Renders a pixel on a given location. */
+  abstract renderPixel (location: Location, id: number): void
+  /** Reset the render target */
+  abstract reset (): void
+  /** Update the render target */
+  abstract update (): void
+  /** @param value - The new width of the canvas */
+  abstract set_width (value: number): void
+  /** @returns the width of the canvas */
+  abstract get_width (): number
+  /** @param value - The new height of the canvas */
+  abstract set_height (value: number): void
+  /** @returns the height of the canvas */
+  abstract get_height (): number
+  attachPixelManipulator (pm: PixelManipulator): void {
+    this.pm = pm
+  }
+
+  getPixelManipulator (): PixelManipulator {
+    if (this.pm == null) {
+      throw new Error('This operation requires the renderer to be attached to a PixelManipulator instance')
+    }
+    return this.pm
+  }
+
+  private pm: PixelManipulator | null = null
+}
+export class Ctx2dRenderer extends Renderer {
+  // TODO idToColor
+  constructor (canvas: HTMLCanvasElement) {
+    super()
+    this.canvas = canvas
+    const ctx = canvas.getContext('2d')
+    if (ctx == null) {
+      throw new Error('CanvasRenderingContext2D not supported in enviroment')
+    }
+    this.ctx = ctx
+    this.imageData = this.ctx.getImageData(0, 0, this.get_width(), this.get_height())
+  }
+
+  /** The last known image data from [[PixelManipulator.ctx]] */
+  imageData: ImageData
+  /** The rendering context for the canvas */
+  ctx: CanvasRenderingContext2D
+  canvas: HTMLCanvasElement
+  renderPixel ({ x, y }: Location, id: number): void {
+    const pm = this.getPixelManipulator()
+    const color = pm.idToColor(id)
+    if (color == null) {
+      throw new Error('Invalid ID')
+    }
+    // allows for arrays that are too small
+    while (color.length < 4) {
+      (color as [number]).push(255)
+    }
+    const w = this.get_width()
+    // arry.length is always going to be 4. Checking wastes time.
+    const pixelOffset = ((w * y) + x) * 4
+    for (let i = 0; i < 4; ++i) {
+      this.imageData.data[pixelOffset + i] = color[i]
+    }
+  }
+
+  reset (): void {
+    this.imageData = this.ctx.getImageData(0, 0, this.get_width(), this.get_height())
+    this.ctx.imageSmoothingEnabled = false
+  }
+
+  update (): void {
+    this.ctx.putImageData(this.imageData, 0, 0)
+  }
+
+  private _width: number=1
+  set_width (value: number): void {
+    this.canvas.width = value
+    this._width = value
+  }
+
+  get_width (): number {
+    return this._width
+  }
+
+  private _height: number=1
+  set_height (value: number): void {
+    this.canvas.height = value
+    this._height = value
+  }
+
+  get_height (): number {
+    return this._height
+  }
 }
 /** A cellular automata engine */
 export class PixelManipulator {
+  constructor (renderer: Renderer, width: number, height: number) {
+    this.renderer = renderer
+    this.renderer.attachPixelManipulator(this)
+    this.reset({ canvasW: width, canvasH: height })
+  }
+
+  renderer: Renderer
   /**
   * This is the number that indicates what animation frame the iterate function
   * is being called with.
@@ -180,18 +276,6 @@ export class PixelManipulator {
   * \> `cancelAnimationFrame(this.loopint)` (not reccommended)
   */
   loopint=0
-  /**
-  * The X coordinate of where the center of the [[PixelManipulator.zoomelm]] is
-  * windowed at.
-  */
-  zoomX=0
-  /**
-  * The Y coordinate of where the center of the [[PixelManipulator.zoomelm]] is
-  * windowed at.
-  */
-  zoomY=0
-  _width=1// Must be at least one pixel for startup to work
-  _height=1
   /**
   * A low-level listing of the availiable elements.
   *
@@ -223,12 +307,6 @@ export class PixelManipulator {
   */
   mode: 'playing'|'paused'='paused'
   /**
-  * How many times bigger should the zoom elm be as compared to the actual size found in the normal canvas?
-  */
-  zoomScaleFactor=20
-  /** The color of the lines drawn on the zoom elm. */
-  zoomctxStrokeStyle='gray'
-  /**
   * The elm that pixelmanipulator will fill the screen with upon initialization,
   * and what elements should return to when they are "dead". Default value is
   * 0, an element with the color `#000F`
@@ -243,27 +321,24 @@ export class PixelManipulator {
   * passed as the only argument.
   */
   onElementModified: (id: number) => void=function () {}
-  _canvas: undefined|HTMLCanvasElement
   /** @returns the width of the canvas */
   get_width (): number {
-    return this._width
+    return this.renderer.get_width()
   }
 
   /** @param value - The new width of the canvas */
   set_width (value: number): void {
-    if (typeof this._canvas !== 'undefined') { this._canvas.width = value }
-    this._width = value
+    this.renderer.set_width(value)
   }
 
   /** @returns the height of the canvas */
   get_height (): number {
-    return this._height
+    return this.renderer.get_height()
   }
 
   /** @param value - The new height of the canvas */
   set_height (value: number): void {
-    if (typeof this._canvas !== 'undefined') { this._canvas.height = value }
-    this._height = value
+    this.renderer.set_height(value)
   }
 
   /// fills the screen with value, at an optional given percent
@@ -438,25 +513,20 @@ export class PixelManipulator {
   reset (canvasSizes?: CanvasSizes): void {
     if (typeof canvasSizes === 'undefined') { canvasSizes = {} }
     this.pause()
-    const w = this.get_width()
-    const h = this.get_height()
-    this.set_width(canvasSizes.canvasW ?? w)
-    this.set_height(canvasSizes.canvasH ?? h)
-    if (typeof this.zoomelm !== 'undefined') {
-      this.zoomelm.width = (canvasSizes.zoomW ?? this.zoomelm.width / this.zoomScaleFactor) * this.zoomScaleFactor
-      this.zoomelm.height = (canvasSizes.zoomH ?? this.zoomelm.height / this.zoomScaleFactor) * this.zoomScaleFactor
-    }
-    this.updateData()
+    const w = canvasSizes.canvasW ?? this.get_width()
+    const h = canvasSizes.canvasH ?? this.get_height()
+    this.set_width(w)
+    this.set_height(h)
+    this.frames[0] = new Uint32Array(w * h)
+    this.frames[1] = new Uint32Array(w * h)
+    this.renderer.reset()
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) {
         this.setPixel({ x, y }, this.defaultId)
       }
     }
     this.update()
-    if (this.ctx !== null && typeof this.imageData !== 'undefined') {
-      this.ctx.putImageData(this.imageData, 0, 0)
-    }
-  };
+  }
 
   /** pause canvas iterations
   * Sets [[PixelManipulator.mode]] to `"paused"` and cancels the animation frame
@@ -465,56 +535,6 @@ export class PixelManipulator {
   pause (): void {
     this.mode = 'paused'
     window.cancelAnimationFrame(this.loopint)
-  };
-
-  /**
-  * Initially a click envent handler from mid to late version 0 all the way to
-  * early version 1, zoom takes in an object that contains `x` and `y`. If these
-  * values are missing, the last values (saved at [[PixelManipulator.zoomX]] and
-  * [[PixelManipulator.zoomY]], respectivly) are used.
-  *
-  * Also renders a grid on the zoom element.
-  *
-  * @param e - Tells pixelmanipulator where to focus the center of the zoomElm (or
-  * zoom-box).
-  */
-  zoom (e?: {
-    /** Position to center the zoom elm on. (If absent, uses
-    * [[PixelManipulator.zoomX]]) */
-    x?: number
-    /** Position to center the zoom elm on. (If absent, uses
-    * [[PixelManipulator.zoomY]]) */
-    y?: number
-  }): void {
-    if (typeof this.zoomelm === 'undefined' || typeof this.zoomelm.height === 'undefined') return
-    if (typeof e === 'undefined') e = {}
-    e.x = e.x ?? this.zoomX
-    e.y = e.y ?? this.zoomY
-    if (e.x >= 0 && e.y >= 0) {
-      this.zoomX = e.x
-      this.zoomY = e.y
-    }
-    if (this.get_height() < 2) this.set_height(400)// it would be pointless to have a canvas this small
-    if (this.get_width() < 2) this.set_width(400)
-    if (typeof this._canvas !== 'undefined' && this.zoomctx !== null) {
-      this.zoomctx.clearRect(0, 0, this.zoomelm.width, this.zoomelm.height)// clear the screen
-      this.zoomctx.drawImage(this._canvas, // draw the selected section of the canvas onto the zoom canvas
-        (this.zoomX - Math.floor(this.zoomScaleFactor / 2)),
-        (this.zoomY - Math.floor(this.zoomScaleFactor / 2)),
-        Math.floor(this.zoomelm.width / this.zoomScaleFactor), Math.floor(this.zoomelm.height / this.zoomScaleFactor),
-        0, 0,
-        this.zoomelm.width, this.zoomelm.height)
-      this.zoomctx.beginPath()// draw the grid
-      for (let i = 1; i < (this.zoomelm.width / this.zoomScaleFactor); i++) {
-        this.zoomctx.moveTo(i * this.zoomScaleFactor, 0)
-        this.zoomctx.lineTo(i * this.zoomScaleFactor, this.zoomelm.height)
-      }
-      for (let i = 1; i < (this.zoomelm.height / this.zoomScaleFactor); i++) {
-        this.zoomctx.moveTo(0, i * this.zoomScaleFactor)
-        this.zoomctx.lineTo(this.zoomelm.width, i * this.zoomScaleFactor)
-      }
-      this.zoomctx.stroke()
-    }
   };
 
   colorToId (colors: Color): number|undefined {
@@ -560,19 +580,11 @@ export class PixelManipulator {
   }
 
   /**
-  * Applies any changes made with [[PixelManipulator.setPixel]] to the canvas,
-  * and shows them on the [[PixelManipulator.zoomelm]] if it is present.
-  *
-  * In the demo, this is used to show changes the users make when they click on
-  * the zoomElm.
-  *
-  * \> calls [[PixelManipulator.zoom]] automatically, but only if there is a zoom
-  * \> elm
+  * Applies any changes made with [[PixelManipulator.setPixel]] to the canvas
   */
   update (): void {
-    if (this.ctx !== null && typeof this.imageData !== 'undefined') { this.ctx.putImageData(this.imageData, 0, 0) }
-    if (typeof this.zoomelm !== 'undefined') this.zoom()
-  };
+    this.renderer.update()
+  }
 
   compareColors (a?: number[], b?: number[]): boolean {
     if (typeof a === 'undefined') { a = [] }
@@ -627,35 +639,6 @@ export class PixelManipulator {
       .reduce((a, b) => a && b)
   }
 
-  /** Draws a pixel to a given location **without adding it to
-  * [[PixelManipulator.currentElements]]**.
-  *
-  * The sole purpose of this function is to allow future seperation between what
-  * the render target is, and the current enviroment.
-  *
-  * \> If you want to try somethin' real hacky, overriding this function *might*
-  * \> be enough to change what the render target _is_. I'd love to see if anyone
-  * \> give this a try.
-  */
-  renderPixel (x: number, y: number, id: number): void {
-    const color = this.idToColor(id)
-    if (color == null) {
-      throw new Error('Invalid ID')
-    }
-    // allows for arrays that are too small
-    while (color.length < 4) {
-      (color as [number]).push(255)
-    }
-    const w = this.get_width()
-    // arry.length is always going to be 4. Checking wastes time.
-    const pixelOffset = ((w * y) + x) * 4
-    if (typeof this.imageData !== 'undefined') {
-      for (let i = 0; i < 4; ++i) {
-        this.imageData.data[pixelOffset + i] = color[i]
-      }
-    }
-  };
-
   /** Set a pixel in a given location.
   *
   * @param x - X position.
@@ -692,7 +675,7 @@ export class PixelManipulator {
       y %= h
       if (y < 0)y += h
     } else if (x < 0 || x >= w || y < 0 || y >= h) return // if it can't loop, and it's outside of the boundaries, exit
-    this.renderPixel(x, y, id)
+    this.renderer.renderPixel({ x, y }, id)
     this.frames[0][(w * y) + x] = id
   };
 
@@ -782,10 +765,6 @@ export class PixelManipulator {
     }
   };
 
-  /** The last known image data from [[PixelManipulator.ctx]] */
-  imageData: ImageData|undefined
-  /** The rendering context for the canvas */
-  ctx: CanvasRenderingContext2D|null=null
   /**
   * A List of [[Uint32Array]]s each the length of width times height of the
   * canvas. Frame 0 is the new frame, frame one is the prior, etc. Each item
@@ -793,58 +772,6 @@ export class PixelManipulator {
   * bottom.
   */
   frames: Uint32Array[]=[new Uint32Array(0), new Uint32Array(0)]
-  /** The zoom-ed in render target */
-  zoomelm: HTMLCanvasElement|undefined
-  /** The rendering context for [[PixelManipulator.zoomelm]] */
-  zoomctx: CanvasRenderingContext2D|null=null
-  /**
-  * Defines the starting values of the library and is run on
-  * [[PixelManipulator.reset]]
-  */
-  updateData (): void {
-    const w = this.get_width()
-    const h = this.get_height()
-    this.frames[0] = new Uint32Array(w * h)
-    this.frames[1] = new Uint32Array(w * h)
-    if (this.ctx !== null) {
-      this.imageData = this.ctx.getImageData(0, 0, w, h)
-      this.ctx.imageSmoothingEnabled = false
-    }
-    if (this.zoomctx !== null) {
-      this.zoomctx.imageSmoothingEnabled = false
-      this.zoomctx.strokeStyle = this.zoomctxStrokeStyle
-    }
-  };
-
-  /** Tells PixelManipulator what canvas(es) to use.
-  *
-  * This function calls [[PixelManipulator.updateData]] automatically.
-  *
-  * @param e - An object holding the canvas(es) to use.
-  */
-  canvasPrep (e: {
-    /** An html5 canvas to render on. (To scale) */
-    canvas: HTMLCanvasElement
-    /** An html5 canvas, zoomed-in. A movable, scaled viewport. */
-    zoom?: HTMLCanvasElement
-  }): void {
-    // Use e.canvas for the normal canvas, and e.zoom for the zoomed-in canvas. (at least e.canvas is required)
-    this._canvas = e.canvas
-    if (this._canvas != null) {
-      this.ctx = this._canvas.getContext('2d')
-    }
-    if (typeof e.zoom !== 'undefined') {
-      this.zoomelm = e.zoom
-      this.zoomctx = this.zoomelm.getContext('2d')
-    }
-    this.updateData()
-    if (typeof e.zoom !== 'undefined' && typeof this.zoomelm !== 'undefined') {
-      this.zoom({ // zoom at the center
-        x: Math.floor(this.zoomelm.width / 2) - (Math.floor(this.zoomelm.width / 2) * this.zoomScaleFactor),
-        y: Math.floor(this.zoomelm.height / 2) - (Math.floor(this.zoomelm.height / 2) * this.zoomScaleFactor)
-      })
-    }
-  };
 }// end class PixelManipulator
 /** Version of library **for logging purposes only**. Uses semver. */
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion

@@ -1,6 +1,6 @@
-import { PixelManipulator, Color, version, rules } from '../lib/pixelmanipulator'
+import { PixelManipulator, Color, version, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
 
-const canvas = document.getElementById('canvas')
+const canvas = document.getElementById('canvas') as HTMLCanvasElement
 
 /// Grey overlay lines over the canvas
 const smallxline = document.getElementById('smallxline')
@@ -20,7 +20,7 @@ const customizeColorAlphaText = document.getElementById('customColorAlphaText')
 const customizeName = document.getElementById('customizeName')
 
 /// Zoomed in canvas
-const zoom = document.getElementById('zoom')
+const zoom = document.getElementById('zoom') as HTMLCanvasElement
 
 /// Grey overlay over zoom canvas
 const largexlineElm = document.getElementById('largexline')
@@ -82,28 +82,41 @@ const largexlinesty = largexlineElm?.style
 const largexline1sty = largexline1Elm?.style
 const largeyline1sty = largeyline1Elm?.style
 const largeylinesty = largeylineElm?.style
-
 const elmdrops = document.getElementsByClassName('elmDrop')
 
-const p: PixelManipulator = new PixelManipulator()
+if (canvas == null) throw new Error('canvas could not be found!')
+const p: PixelManipulator = new PixelManipulator(
+  new Ctx2dRenderer(canvas),
+  1, 1 // The width and height are changed later
+)
 const timedebug = true
 let framecount = 0
 
 if (backendversion != null) backendversion.innerText = version
-if (canvas == null) throw new Error('canvas could not be found!')
-p.canvasPrep(zoom == null
-  ? { canvas: canvas as HTMLCanvasElement }
-  : {
-      zoom: zoom as HTMLCanvasElement,
-      canvas: canvas as HTMLCanvasElement
-    })
+if (zoom == null) {
+  throw new Error('zoom canvas could not be found')
+}
+const zoomctx = zoom.getContext('2d')
+if (zoomctx == null) {
+  throw new Error('rendering context not supported')
+}
+/**
+* How many times bigger should the zoom elm be as compared to the actual size found in the normal canvas?
+*/
+const zoomScaleFactor = 20
+oldZoom({ // zoom at the center
+  x: Math.floor(zoom.width / 2) -
+    (Math.floor(zoom.width / 2) * zoomScaleFactor),
+  y: Math.floor(zoom.height / 2) -
+    (Math.floor(zoom.height / 2) * zoomScaleFactor)
+})
 
 function updateBox (): void {
-  if (selectorboxSty != null && p.zoomelm != null) {
-    selectorboxSty.width = `${p.zoomelm.width / p.zoomScaleFactor}px`
-    selectorboxSty.height = `${p.zoomelm.height / p.zoomScaleFactor}px`
-    selectorboxSty.left = `${p.zoomX - (p.zoomelm.width / (2 * p.zoomScaleFactor))}px`
-    selectorboxSty.top = `${p.zoomY - (p.zoomelm.height / (2 * p.zoomScaleFactor))}px`
+  if (selectorboxSty != null && zoom != null) {
+    selectorboxSty.width = `${zoom.width / zoomScaleFactor}px`
+    selectorboxSty.height = `${zoom.height / zoomScaleFactor}px`
+    selectorboxSty.left = `${zoomX - (zoom.width / (2 * zoomScaleFactor))}px`
+    selectorboxSty.top = `${zoomY - (zoom.height / (2 * zoomScaleFactor))}px`
   }
 }
 interface PageLoc{
@@ -115,96 +128,89 @@ function updateSmallLines (e: MouseEvent|PageLoc): void {
     smallxline.style.left = `${e.pageX}px`
     smallyline.style.top = `${e.pageY}px`
   }
-  const x = e.pageX - p.zoomX + (p.zoomScaleFactor / 2)
-  const y = e.pageY - p.zoomY + (p.zoomScaleFactor / 2)
-  if (p.zoomelm == null) return
+  const x = e.pageX - zoomX + (zoomScaleFactor / 2)
+  const y = e.pageY - zoomY + (zoomScaleFactor / 2)
   if (
-    e.pageX < ((p.zoomelm.width / (2 * p.zoomScaleFactor)) + p.zoomX) &&
-    e.pageX > ((p.zoomelm.width / (-2 * p.zoomScaleFactor)) + p.zoomX)
+    e.pageX < ((zoom.width / (2 * zoomScaleFactor)) + zoomX) &&
+    e.pageX > ((zoom.width / (-2 * zoomScaleFactor)) + zoomX)
   ) {
     // for when the line is inside the box, but the cursor isn't.
     updateLargeLinesX(x, y)
   } else updateLargeLinesX(-1, y)
   if (
-    e.pageY < ((p.zoomelm.height / (2 * p.zoomScaleFactor)) + p.zoomY) &&
-    e.pageY > ((p.zoomelm.height / (-2 * p.zoomScaleFactor)) + p.zoomY)
+    e.pageY < ((zoom.height / (2 * zoomScaleFactor)) + zoomY) &&
+    e.pageY > ((zoom.height / (-2 * zoomScaleFactor)) + zoomY)
   ) {
     updateLargeLinesY(x, y)
   } else updateLargeLinesY(x, -1)
 }
 function updateLargeLinesX (x: number, y: number): void {
-  if (p.zoomelm == null) return
-  const zh = p.zoomelm.height
-  const zw = p.zoomelm.width
-  const zsf = p.zoomScaleFactor
-  let h = zh - ((1 + y) * zsf)
-  let t = zsf * (y + 1)
-  let h2 = y * zsf
-  const rightVal = zw - zsf * (x + 1)
-  if (y < 0 || y > zh / zsf) {
+  const zh = zoom.height
+  const zw = zoom.width
+  let h = zh - ((1 + y) * zoomScaleFactor)
+  let t = zoomScaleFactor * (y + 1)
+  let h2 = y * zoomScaleFactor
+  const rightVal = zw - zoomScaleFactor * (x + 1)
+  if (y < 0 || y > zh / zoomScaleFactor) {
     h = zh
     t = 0
     h2 = 0
   }
 
   if (largexlinesty != null) {
-    largexlinesty.width = `${p.zoomScaleFactor}px`
+    largexlinesty.width = `${zoomScaleFactor}px`
     largexlinesty.height = `${h}px`
     largexlinesty.right = `${rightVal}px`
     largexlinesty.top = `${t}px`
   }
 
   if (largexline1sty != null) {
-    largexline1sty.width = `${p.zoomScaleFactor}px`
+    largexline1sty.width = `${zoomScaleFactor}px`
     largexline1sty.height = `${h2}px`
     largexline1sty.right = `${rightVal}px`
     largexline1sty.top = '0'
   }
 }
 function updateLargeLinesY (x: number, y: number): void {
-  if (p.zoomelm == null) return
-  const zw = p.zoomelm.width
-  const zsf = p.zoomScaleFactor
-  let w = zw - ((1 + x) * zsf)
-  let l = zw - zsf * x
-  let w2 = x * zsf
-  if (x < 0 || x > zw / zsf) {
+  const zw = zoom.width
+  let w = zw - ((1 + x) * zoomScaleFactor)
+  let l = zw - zoomScaleFactor * x
+  let w2 = x * zoomScaleFactor
+  if (x < 0 || x > zw / zoomScaleFactor) {
     w = zw
     l = 0
     w2 = 0
   }
 
   if (largeylinesty != null) {
-    largeylinesty.height = `${p.zoomScaleFactor}px`
+    largeylinesty.height = `${zoomScaleFactor}px`
     largeylinesty.width = `${w}px`
-    largeylinesty.top = `${p.zoomScaleFactor * y}px`
+    largeylinesty.top = `${zoomScaleFactor * y}px`
     largeylinesty.right = '0'
   }
 
   if (largeyline1sty != null) {
-    largeyline1sty.height = `${p.zoomScaleFactor}px`
+    largeyline1sty.height = `${zoomScaleFactor}px`
     largeyline1sty.width = `${w2}px`
-    largeyline1sty.top = `${p.zoomScaleFactor * y}px`
+    largeyline1sty.top = `${zoomScaleFactor * y}px`
     largeyline1sty.right = `${l}px`
   }
 }
 function selectorClicked (e: MouseEvent): void {
-  p.zoom({
+  oldZoom({
     x: e.pageX,
     y: e.pageY
   })
   updateBox()
 }
 function updateBothLargeLines (e: MouseEvent): void {
-  const x = Math.floor(e.offsetX / p.zoomScaleFactor)
-  const y = Math.floor(e.offsetY / p.zoomScaleFactor)
-  if (p.zoomelm != null) {
-    updateSmallLines({
-      pageX: x + p.zoomX - (p.zoomelm.width / (2 * p.zoomScaleFactor)),
-      pageY: y + p.zoomY - (p.zoomelm.width / (2 * p.zoomScaleFactor))
-    })
-  }
-};
+  const x = Math.floor(e.offsetX / zoomScaleFactor)
+  const y = Math.floor(e.offsetY / zoomScaleFactor)
+  updateSmallLines({
+    pageX: x + zoomX - (zoom.width / (2 * zoomScaleFactor)),
+    pageY: y + zoomY - (zoom.width / (2 * zoomScaleFactor))
+  })
+}
 function bigLineGotHovered (e: MouseEvent): void {
   // get the element out of the way so the canvas below will A: still be clickable and B: move this elm to the correct place
   if (e.target != null) (e.target as HTMLDivElement).style.height = '0'
@@ -242,13 +248,11 @@ function updateCustomizer (): void {
   if (customizeColorAlphaText != null) (customizeColorAlphaText as HTMLSpanElement).innerText = alphaVal
   if (customizeName != null) (customizeName as HTMLInputElement).value = elm.name
 }
-if (p.zoomelm != null) {
-  p.zoomelm.addEventListener('click', zoomClick)
-  p.zoomelm.addEventListener('drag', zoomClick)
-}
+zoom.addEventListener('click', zoomClick)
+zoom.addEventListener('drag', zoomClick)
 canvas.addEventListener('click', updateBox)
 canvas.addEventListener('click', (event) =>
-  p.zoom({
+  oldZoom({
     x: event.offsetX,
     y: event.offsetY
   }))
@@ -266,7 +270,7 @@ if (smallyline != null) {
   smallyline.addEventListener('mousemove', updateSmallLines)
   smallyline.addEventListener('click', selectorClicked)
 }
-if (p.zoomelm != null) p.zoomelm.addEventListener('mousemove', updateBothLargeLines)
+zoom.addEventListener('mousemove', updateBothLargeLines)
 if (largexlineElm != null) largexlineElm.addEventListener('mousemove', bigLineGotHovered)
 if (largexline1Elm != null) largexline1Elm.addEventListener('mousemove', bigLineGotHovered)
 if (largeylineElm != null)largeylineElm.addEventListener('mousemove', bigLineGotHovered)
@@ -322,8 +326,14 @@ if (customizeT != null) {
     } else customizer.classList.add('hidden')
   })
 }
-p.zoomX = 10
-p.zoomY = 10
+/**
+* The X coordinate of where the center of [[zoom]] is windowed at.
+*/
+let zoomX = 10
+/**
+* The Y coordinate of where the center of the [[zoom]] is windowed at.
+*/
+let zoomY = 10
 p.addMultipleElements({
   Acid: {
     color: [110, 162, 10, 255],
@@ -438,6 +448,55 @@ p.addMultipleElements({
     }
   }
 })
+/**
+* Initially a click envent handler from mid to late version 0 all the way to
+* early version 1, zoom takes in an object that contains `x` and `y`. If these
+* values are missing, the last values (saved at [[PixelManipulator.zoomX]] and
+* [[PixelManipulator.zoomY]], respectivly) are used.
+*
+* Also renders a grid on the zoom element.
+*
+* @param e - Tells pixelmanipulator where to focus the center of the zoomElm (or
+* zoom-box).
+*/
+function oldZoom (e?: {
+  /** Position to center the zoom elm on. (If absent, uses
+  * [[PixelManipulator.zoomX]]) */
+  x?: number
+  /** Position to center the zoom elm on. (If absent, uses
+  * [[PixelManipulator.zoomY]]) */
+  y?: number
+}): void {
+  if (zoomctx == null) return
+  zoomctx.imageSmoothingEnabled = false
+  zoomctx.strokeStyle = 'gray'
+  if (typeof e === 'undefined') e = {}
+  e.x = e.x ?? zoomX
+  e.y = e.y ?? zoomY
+  if (e.x >= 0 && e.y >= 0) {
+    zoomX = e.x
+    zoomY = e.y
+  }
+  if (zoomctx !== null) {
+    zoomctx.clearRect(0, 0, zoom.width, zoom.height)// clear the screen
+    zoomctx.drawImage(canvas, // draw the selected section of the canvas onto the zoom canvas
+      (zoomX - Math.floor(zoomScaleFactor / 2)),
+      (zoomY - Math.floor(zoomScaleFactor / 2)),
+      Math.floor(zoom.width / zoomScaleFactor), Math.floor(zoom.height / zoomScaleFactor),
+      0, 0,
+      zoom.width, zoom.height)
+    zoomctx.beginPath()// draw the grid
+    for (let i = 1; i < (zoom.width / zoomScaleFactor); i++) {
+      zoomctx.moveTo(i * zoomScaleFactor, 0)
+      zoomctx.lineTo(i * zoomScaleFactor, zoom.height)
+    }
+    for (let i = 1; i < (zoom.height / zoomScaleFactor); i++) {
+      zoomctx.moveTo(0, i * zoomScaleFactor)
+      zoomctx.lineTo(zoom.width, i * zoomScaleFactor)
+    }
+    zoomctx.stroke()
+  }
+}
 /** an event-like function that returns what should be set where the zoom ctx
 * was clicked */
 function onZoomClick (e: MouseEvent, rel: {x: number, y: number}): string|number {
@@ -454,14 +513,14 @@ function onZoomClick (e: MouseEvent, rel: {x: number, y: number}): string|number
 }
 function zoomClick (e: MouseEvent): void {
   const zoomPos = {
-    x: Math.floor(e.offsetX / p.zoomScaleFactor) +
-      Math.floor(p.zoomX - (p.zoomScaleFactor / 2)),
-    y: Math.floor(e.offsetY / p.zoomScaleFactor) +
-      Math.floor(p.zoomY - (p.zoomScaleFactor / 2))
+    x: Math.floor(e.offsetX / zoomScaleFactor) +
+      Math.floor(zoomX - (zoomScaleFactor / 2)),
+    y: Math.floor(e.offsetY / zoomScaleFactor) +
+      Math.floor(zoomY - (zoomScaleFactor / 2))
   }
   p.setPixel(zoomPos, onZoomClick(e, zoomPos))
   p.update()
-  p.zoom()
+  oldZoom()
 }
 let lasttime = performance.now()
 p.onIterate = () => {
@@ -470,6 +529,7 @@ p.onIterate = () => {
 }
 if (pixelCounterT != null && pixelCounter != null) {
   p.onAfterIterate = () => {
+    oldZoom()
     if (!(pixelCounterT as HTMLInputElement).checked) {
       let text = ''
       for (const id in p.pixelCounts) {
@@ -499,17 +559,15 @@ if (resetBtn != null) {
     if (widthE != null && heightE != null) {
       const canvasW = parseInt((widthE as HTMLInputElement).value)
       const canvasH = parseInt((heightE as HTMLInputElement).value)
-      p.reset(zwE == null || zhE == null
-        ? {
-            canvasW,
-            canvasH
-          }
-        : {
-            canvasW,
-            canvasH,
-            zoomW: parseInt((zwE as HTMLInputElement).value),
-            zoomH: parseInt((zhE as HTMLInputElement).value)
-          }) // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
+      const zoomW = parseInt((zwE as HTMLInputElement).value)
+      const zoomH = parseInt((zhE as HTMLInputElement).value)
+      p.reset({
+        canvasW,
+        canvasH
+      })
+      // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
+      zoom.width = (zoomW ?? zoom.width / zoomScaleFactor) * zoomScaleFactor
+      zoom.height = (zoomH ?? zoom.height / zoomScaleFactor) * zoomScaleFactor
     }
     updateBox()
     if (playBtn != null) (playBtn as HTMLButtonElement).disabled = false
@@ -535,6 +593,7 @@ if (normalFill != null && normalSelect != null && normalFillP != null) {
       parseInt((normalFillP as HTMLInputElement).value) ?? 15
     )
     p.update() // needed after any changes are made
+    oldZoom()
   })
 }
 if (ctrlFill != null && ctrlSelect != null && ctrlFillP != null) {
@@ -544,6 +603,7 @@ if (ctrlFill != null && ctrlSelect != null && ctrlFillP != null) {
       parseInt((ctrlFillP as HTMLInputElement).value) ?? 15
     )
     p.update()
+    oldZoom()
   })
 }
 if (altFill != null && altSelect != null && altFillP != null) {
@@ -553,6 +613,7 @@ if (altFill != null && altSelect != null && altFillP != null) {
       parseInt((altFillP as HTMLInputElement).value) ?? 15
     )
     p.update()
+    oldZoom()
   })
 }
 p.onElementModified = () => {
