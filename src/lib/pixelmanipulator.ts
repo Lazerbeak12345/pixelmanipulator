@@ -52,7 +52,6 @@ export interface ElementData extends ElementDataUnknown {
   hitbox: hitbox
   liveCell?: (rel: Rel) => void
   deadCell?: (rel: Rel) => void
-  number: number
 }
 /** Information about an element. */
 export interface ElementDataUnknown{
@@ -84,9 +83,6 @@ export interface ElementDataUnknown{
   * calling the same dead pixel twice.
   */
   deadCell?: (rel: Rel) => void
-  /** Ignored by [[PixelManipulator.addElement]], this is the unique, constant
-  * reference number to this element. */
-  number?: number
   madeWithRule?: true
 }
 /** Much like [[ElementDataUnknown]] but the name is mandatory. */
@@ -199,33 +195,17 @@ export class PixelManipulator {
   /**
   * A low-level listing of the availiable elements.
   *
-  * \> This has been around since late version 0!
-  *
   * Format is much like the argument to
   * [[PixelManipulator.addMultipleElements]], but is not sanitized.
-  *
-  * Includes a `number` value that serves as the element's ID number and a `name`
-  * value for convenience in making general components of elements. See [[ElementData.number]]
-  *
-  * \> Warning! Does not respect the [[PixelManipulator.nameAliases]] object!
   */
-  elementTypeMap: Map<string, ElementData>=new Map([
-    [
-      'blank',
-      {
-        color: [0, 0, 0, 255],
-        number: 0, // Index in this.elementNumList
-        hitbox: [],
-        name: 'blank'
-      }
-    ]
-  ])
+  elements: ElementData[]=[
+    {
+      color: [0, 0, 0, 255],
+      hitbox: [],
+      name: 'blank'
+    }
+  ]
 
-  /**
-  * A list of all string-names in [[PixelManipulator.elementTypeMap]], in order
-  * of ID number.
-  */
-  elementNumList=['blank']
   /**
   * A mapping from old names for elements to new names for elements.
   *
@@ -345,17 +325,14 @@ export class PixelManipulator {
     if (typeof elm === 'undefined') throw new Error('Name is required for element')
     if (typeof data.name === 'undefined') data.name = elm
     if (typeof data.color === 'undefined') data.color = [255, 255, 255, 255]// color of the element
-    data.number = this.elementNumList.length
-    this.elementNumList.push(elm)
     // Must be this value exactly for modifyElement to work
     const tmpData: ElementDataUnknown = {
       name: elm,
-      number: data.number,
       color: data.color
     }
-    this.elementTypeMap.set(elm, tmpData as ElementData) // hitbox must be undefined for modifyElement to be able to correctly assign it
-    this.modifyElement(data.number, data as ElementDataUnknown)
-    return data.number
+    this.elements.push(tmpData as ElementData)
+    this.modifyElement(this.elements.length - 1, data as ElementDataUnknown)
+    return this.elements.length - 1
   };
 
   /** Any values present in the object will be applied to the pre-existing
@@ -369,21 +346,15 @@ export class PixelManipulator {
   * callbacks.
   */
   modifyElement (id: number, data: ElementDataUnknown): void {
-    const name = this.elementNumList[id]
-    if (typeof name === 'undefined') {
-      throw new Error(`Invalid ID ${id}`)
-    }
-    const oldData: ElementDataUnknown = this.elementTypeMap.get(name) as ElementData
-    this.elementTypeMap.delete(name) // Needs to be gone for color check
+    const oldData = this.elements[id]
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
-      this.aliasElements(oldData as ElementData, data as ElementDataUnknownNameMandatory)
-      this.elementNumList[id] = data.name
+      this.aliasElements(oldData, data as ElementDataUnknownNameMandatory)
     }
     if (typeof data.color !== 'undefined') {
       while (data.color.length < 4) {
         (data.color as [number]).push(255)
       }
-      if (typeof this.colorToId(data.color) !== 'undefined') {
+      if (this.colorToId(data.color) !== id) {
         throw new Error(`The color ${data.color.toString()} is already in use!`)
       }
     }
@@ -395,9 +366,8 @@ export class PixelManipulator {
     oldData.hitbox = data.hitbox ?? oldData.hitbox
     oldData.liveCell = data.liveCell ?? oldData.liveCell
     oldData.deadCell = data.deadCell ?? oldData.deadCell
-    oldData.number = data.number ?? oldData.number
     oldData.madeWithRule = data.madeWithRule ?? oldData.madeWithRule
-    this.elementTypeMap.set((oldData as ElementData).name, oldData as ElementData) // These casts might be dangerous.
+    this.elements[id] = oldData
     this.onElementModified(id)
   };
 
@@ -407,12 +377,23 @@ export class PixelManipulator {
   * Adds element to [[PixelManipulator.nameAliases]], and ensures no alias loops are present.
   */
   aliasElements (oldData: ElementDataUnknownNameMandatory, newData: ElementDataUnknownNameMandatory): void {
-    if (this.elementTypeMap.has(newData.name)) {
+    // Intentionally ignores aliases when checking for duplicate name.
+    if (this.elements.find(elm => elm.name === newData.name) != null) {
       throw new Error('The name ' + newData.name + ' is already in use!')
     }
     this.nameAliases.delete(newData.name)
     this.nameAliases.set(oldData.name, newData.name)
   };
+
+  /** Respecting aliases, convert an element name into its number. */
+  nameToId (name: string): number {
+    let unaliased: string|undefined = name
+    while (typeof unaliased !== 'undefined') {
+      name = unaliased
+      unaliased = this.nameAliases.get(name)
+    }
+    return this.elements.findIndex(elm => elm.name === name)
+  }
 
   /**
   * @param name - Name of the (possibly aliased) element.
@@ -420,13 +401,8 @@ export class PixelManipulator {
   * aliases in [[PixelManipulator.nameAliases]], or [[undefined]] if not found.
   */
   getElementByName (name: string): ElementData|undefined {
-    let unaliased: string|undefined = name
-    while (typeof unaliased !== 'undefined') {
-      name = unaliased
-      unaliased = this.nameAliases.get(name)
-    }
-    return this.elementTypeMap.get(name)
-  };
+    return this.elements[this.nameToId(name)]
+  }
 
   /**
   *
@@ -435,7 +411,7 @@ export class PixelManipulator {
   * @returns Name of element at passed-in location. See [[ElementData.name]]
   */
   whatIs (loc: Location): string {
-    return this.elementNumList[this.getPixelId(loc)]
+    return this.elements[this.getPixelId(loc)].name
   }
 
   /** Start iterations on all of the elements on the canvas.
@@ -542,16 +518,11 @@ export class PixelManipulator {
   };
 
   colorToId (colors: Color): number|undefined {
-    for (let i = 0; i < this.elementNumList.length; i++) {
-      if (this.compareColors(colors, this.idToColor(i))) {
-        return i
-      }
-    }
-    return undefined
+    return this.elements.findIndex(elm => this.compareColors(colors, elm.color))
   };
 
   idToColor (id: number): Color|undefined {
-    return this.getElementByName(this.elementNumList[id])?.color
+    return this.elements[id]?.color
   };
 
   /**
@@ -618,7 +589,7 @@ export class PixelManipulator {
   confirmElm (loc: Location, id: number|string|Color): boolean {
     let tmp: number|undefined
     switch (typeof id) {
-      case 'string': tmp = this.getElementByName(id)?.number; break
+      case 'string': tmp = this.nameToId(id); break
       case 'object': tmp = this.colorToId(id); break
       case 'number': tmp = id
     }
@@ -700,20 +671,16 @@ export class PixelManipulator {
   setPixel ({ x, y, loop }: Location, ident: string|number|Color): void {
     let id = 0
     if (typeof ident === 'string') {
-      if (this.getElementByName(ident) == null) {
-        throw new Error('Color name ' + ident + ' invalid!')
+      id = this.nameToId(ident)
+      if (id === -1) {
+        throw new Error(`Element name ${ident} is invalid`)
       }
-      const tmp = this.getElementByName(ident)
-      if (typeof tmp === 'undefined') {
-        throw new Error(`Color ${ident} is invalid`)
-      }
-      id = tmp.number
     } else if (typeof ident === 'number') {
       id = ident
     } else if (typeof ident === 'object') {
       const tmp = this.colorToId(ident)
       if (typeof tmp === 'undefined') {
-        throw new Error(`Color ${id} is invalid`)
+        throw new Error(`Color ${JSON.stringify(ident)} is invalid`)
       }
       id = tmp
     } else throw new Error(`Color type ${typeof ident} is invalid!`)
@@ -752,15 +719,14 @@ export class PixelManipulator {
     }
     const w = this.get_width()
     const h = this.get_height()
-    const typedUpdatedDead = new Array<Uint8Array>(this.elementNumList.length)
+    const typedUpdatedDead = new Array<Uint8Array>(this.elements.length)
     this.pixelCounts = {}
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) { // iterate through x and y
         const currentPixId = this.getPixelId({ x, y, frame: 1 })
         if (currentPixId === this.defaultId) continue
-        const currentPix = this.elementNumList[currentPixId]
-        const elm = this.getElementByName(currentPix)
-        if (typeof elm === 'undefined') {
+        const elm = this.elements[currentPixId]
+        if (elm == null) {
           throw new Error(
             'This isn\'t supposed to happen, but the internal pixel buffer was ' +
             'currupted. This is likely a bug, or a symptom of improper direct ' +

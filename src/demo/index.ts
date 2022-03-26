@@ -234,7 +234,7 @@ function hex2rgba (hex: string, alpha: number): Color|null {
 }
 function updateCustomizer (): void {
   if (customSelect == null) return
-  const elm = p.elementTypeMap.get((customSelect as HTMLSelectElement).value)
+  const elm = p.getElementByName((customSelect as HTMLSelectElement).value)
   if (elm == null) return
   if (customizeColor != null) (customizeColor as HTMLInputElement).value = rgb2hex(elm.color)
   const alphaVal = (elm.color[3] ?? 255).toString()
@@ -274,8 +274,8 @@ if (largeyline1Elm != null)largeyline1Elm.addEventListener('mousemove', bigLineG
 if (customizeName != null) {
   customizeName.addEventListener('change', function (this: HTMLInputElement) {
     console.log('change name', this.value)
-    const num = p.elementTypeMap.get((customSelect as HTMLSelectElement).value)?.number
-    if (num != null) {
+    const num = p.nameToId((customSelect as HTMLSelectElement).value)
+    if (num > -1) {
       p.modifyElement(num, {
         name: this.value
       })
@@ -285,9 +285,9 @@ if (customizeName != null) {
 }
 function changeColor (): void {
   console.log('change color')
-  const num = p.elementTypeMap.get((customSelect as HTMLSelectElement).value)?.number
+  const num = p.nameToId((customSelect as HTMLSelectElement).value)
   const color = hex2rgba((customizeColor as HTMLInputElement).value, parseInt((customizeColorAlpha as HTMLInputElement).value))
-  if (num != null && color != null) {
+  if (num > -1 && color != null) {
     p.modifyElement(num, {
       color
     })
@@ -375,8 +375,8 @@ p.addMultipleElements({
   'Wireworld Conductor': {
     color: [67, 75, 77, 255],
     liveCell: loc => {
-      const num = p.getElementByName('Wireworld Electricity')?.number
-      if (num == null) return
+      const num = p.nameToId('Wireworld Electricity')
+      if (num === -1) return
       const { x, y } = loc
       const conductorNearbyTotal = p.mooreNearbyCounter({ x, y, frame: 1 }, num)
       // copper stays as copper unless it has just one or two neighbours that are electron heads,in which case it becomes an electron head
@@ -438,12 +438,18 @@ p.addMultipleElements({
     }
   }
 })
-function onZoomClick (e: MouseEvent, rel: {x: number, y: number}): string { // an event-like function that returns what should be set where the zoom ctx was clicked
-  let active = ''
-  if (e.ctrlKey && ctrlSelect != null) active = (ctrlSelect as HTMLSelectElement).value
-  else if (e.altKey && altSelect != null) active = (altSelect as HTMLSelectElement).value
-  else if (normalSelect != null) active = (normalSelect as HTMLSelectElement).value
-  if (p.confirmElm(rel, active)) active = p.elementNumList[p.defaultId]
+/** an event-like function that returns what should be set where the zoom ctx
+* was clicked */
+function onZoomClick (e: MouseEvent, rel: {x: number, y: number}): string|number {
+  let active: string|number = p.defaultId
+  if (e.ctrlKey && ctrlSelect != null) {
+    active = (ctrlSelect as HTMLSelectElement).value
+  } else if (e.altKey && altSelect != null) {
+    active = (altSelect as HTMLSelectElement).value
+  } else if (normalSelect != null) {
+    active = (normalSelect as HTMLSelectElement).value
+  }
+  if (p.confirmElm(rel, active)) return p.defaultId
   return active
 }
 function zoomClick (e: MouseEvent): void {
@@ -467,7 +473,7 @@ if (pixelCounterT != null && pixelCounter != null) {
     if (!(pixelCounterT as HTMLInputElement).checked) {
       let text = ''
       for (const id in p.pixelCounts) {
-        const elm = p.elementNumList[parseInt(id)]
+        const elm = p.elements[parseInt(id)].name
         text += `${elm} : ${p.pixelCounts[id]}\n`
       }
       text += `\n\nFrames:${framecount}`
@@ -572,12 +578,11 @@ p.onElementModified = () => {
   }
   for (let i = 0; i < elmdrops.length; i++) {
     elmdrops[i].innerHTML = ''
-    for (let ni = 0; ni < p.elementNumList.length; ni++) {
-      const elementName = p.elementNumList[ni]
+    p.elements.forEach(elm => {
       const newElement = document.createElement('option')
-      newElement.innerText = elementName
+      newElement.innerText = elm.name
       elmdrops[i].appendChild(newElement)
-    }
+    })
   }
   // Restore that selection, accounting for aliases
   if (nsv != null) (normalSelect as HTMLSelectElement).value = p.getElementByName(nsv)?.name ?? ''
