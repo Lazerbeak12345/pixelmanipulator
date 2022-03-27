@@ -169,14 +169,6 @@ export abstract class Renderer<T> {
   abstract reset (): void
   /** Update the render target */
   abstract update (): void
-  /** @param value - The new width of the canvas */
-  abstract set_width (value: number): void
-  /** @returns the width of the canvas */
-  abstract get_width (): number
-  /** @param value - The new height of the canvas */
-  abstract set_height (value: number): void
-  /** @returns the height of the canvas */
-  abstract get_height (): number
   abstract defaultRenderAs: T
   renderInfo: T[] = []
   modifyElement (id: number, newRenderAs: T): T {
@@ -187,6 +179,27 @@ export abstract class Renderer<T> {
     } else throw new Error('Renderer received elements out of order!')
     return newRenderAs
   }
+  private _width: number=1
+  /** @param value - The new width of the canvas */
+  set_width (value: number): void {
+    this._width = value
+  }
+  /** @returns the width of the canvas */
+  get_width (): number {
+    return this._width
+  }
+  private _height: number=1
+  /** @param value - The new height of the canvas */
+  set_height (value: number): void {
+    this._height = value
+  }
+  /** @returns the height of the canvas */
+  get_height (): number {
+    return this._height
+  }
+}
+function location2Index({ x, y }:Location,width:number) {
+  return ((width * y) + x)
 }
 export class Ctx2dRenderer extends Renderer<Color> {
   constructor (canvas: HTMLCanvasElement) {
@@ -219,7 +232,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
     return super.modifyElement(id, newRenderAs)
   }
 
-  renderPixel ({ x, y }: Location, id: number): void {
+  renderPixel (loc: Location, id: number): void {
     const color = this.renderInfo[id]
     if (color == null) {
       throw new Error(`Invalid ID ${id}`)
@@ -230,7 +243,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
     }
     const w = this.get_width()
     // arry.length is always going to be 4. Checking wastes time.
-    const pixelOffset = ((w * y) + x) * 4
+    const pixelOffset = location2Index(loc, w) * 4
     for (let i = 0; i < 4; ++i) {
       this.imageData.data[pixelOffset + i] = color[i]
     }
@@ -245,24 +258,42 @@ export class Ctx2dRenderer extends Renderer<Color> {
     this.ctx.putImageData(this.imageData, 0, 0)
   }
 
-  private _width: number=1
-  set_width (value: number): void {
+  override set_width (value: number): void {
     this.canvas.width = value
-    this._width = value
+    super.set_width(value)
   }
 
-  get_width (): number {
-    return this._width
-  }
-
-  private _height: number=1
-  set_height (value: number): void {
+  override set_height (value: number): void {
     this.canvas.height = value
-    this._height = value
+    super.set_height(value)
   }
-
-  get_height (): number {
-    return this._height
+}
+export class StringRenderer extends Renderer<string> {
+  defaultRenderAs = ' '
+  private _chars:string[][] = []
+  private _callback: (string:string)=>void
+  constructor (callback:(string:string)=>void){
+    super()
+    this._callback = callback
+  }
+  override modifyElement(id: number, newRenderAs: string): string {
+    if(newRenderAs.length !== 1) { // TODO measure rendered chars, not length
+      throw new Error("Element must be a single char")
+    }
+    return super.modifyElement(id, newRenderAs)
+  }
+  reset () {
+    const w = this.get_width()
+    const h = this.get_height()
+    this._chars = new Array(h)
+      .fill(0)
+      .map(()=>new Array(w).fill(this.defaultRenderAs))
+  }
+  renderPixel ({ x, y }:Location, id:number): void {
+    this._chars[y][x] = this.renderInfo[id]
+  }
+  update (): void {
+    this._callback(this._chars.map(l=>l.join('')).join('\n'))
   }
 }
 /** A cellular automata engine */
@@ -315,6 +346,8 @@ export class PixelManipulator<T> {
   * The elm that pixelmanipulator will fill the screen with upon initialization,
   * and what elements should return to when they are "dead". Default value is
   * 0, an element with the color `#000F`
+  *
+  * If you update this, be sure to update [[PixelManipulator.renderer.defaultRenderAs]]
   */
   defaultId: number
   /** Called before [[PixelManipulator.iterate]] does its work. */
@@ -550,7 +583,7 @@ export class PixelManipulator<T> {
     } else if (x < 0 || x >= w || y < 0 || x >= h) {
       return this.defaultId
     }
-    return this.frames[frame ?? 0][(w * y) + x]
+    return this.frames[frame ?? 0][location2Index({ x, y }, w)]
   }
 
   /**
@@ -637,7 +670,7 @@ export class PixelManipulator<T> {
       if (y < 0)y += h
     } else if (x < 0 || x >= w || y < 0 || y >= h) return // if it can't loop, and it's outside of the boundaries, exit
     this.renderer.renderPixel({ x, y }, id)
-    this.frames[0][(w * y) + x] = id
+    this.frames[0][location2Index({ x, y }, w)] = id
   };
 
   pixelCounts: {
