@@ -37,7 +37,6 @@ export interface Rel{
   oldId: number
   thisId: number
 }
-export type Color=[number, number, number, number]|[number, number, number]|[number, number]|[number]|[]
 /** Much like [[ElementDataUnknown]] but all fields except [[ElementData.loop]],
 * [[ElementData.liveCell]] and [[ElementData.liveCell]] are mandatory. */
 export interface ElementData<T> extends ElementDataUnknown<T> {
@@ -59,14 +58,10 @@ export interface ElementDataUnknown<T>{
   * called with no arguments.
   */
   hitbox?: hitbox
-  /** When present, overrules the value [[ElementDataUnknown.pattern]] suppied.
-  *
-  * Every frame of animation, pixelmanipulator iterates through each and every pixel on the screen. If this element is found, it calls this function.
+  /** Every frame of animation, pixelmanipulator iterates through each and every pixel on the screen. If this element is found, it calls this function.
   */
   liveCell?: (rel: Rel) => void
-  /** When present, overrules the value [[ElementDataUnknown.pattern]] suppied.
-  *
-  * Every frame of animation, pixelmanipulator iterates through each and every
+  /** Every frame of animation, pixelmanipulator iterates through each and every
   * pixel on the screen. If this element is found, it calls this function on
   * each of the locations defined in [[ElementDataUnknown.hitbox]] so long as
   * the pixel matches the value in [[PixelManipulator.defaultId]], without
@@ -321,7 +316,7 @@ export class PixelManipulator<T> {
   modifyElement (id: number, data: ElementDataUnknown<T>): void {
     const oldData = this.elements[id]
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
-      this.aliasElements(oldData, data as ElementDataUnknownNameMandatory<T>)
+      this.aliasElements(oldData.name, data.name)
     }
     if (data.hitbox == null) {
       data.hitbox = moore()
@@ -336,19 +331,21 @@ export class PixelManipulator<T> {
     this.onElementModified(id)
   };
 
-  /** Takes the old data object and the new one. (currently only accesses
-  * [[ElementDataUnknownNameMandatory.name]])
+  /**
+  * @param oldName - The old [[ElementData.name]]
+  * @param newName - The new [[ElementData.name]]
   *
-  * Adds element to [[PixelManipulator.nameAliases]], and ensures no alias loops are present.
+  * Adds the name to [[PixelManipulator.nameAliases]], and ensures no alias
+  * loops are present.
   */
-  aliasElements (oldData: ElementDataUnknownNameMandatory<T>, newData: ElementDataUnknownNameMandatory<T>): void {
+  aliasElements (oldName: string, newName: string): void {
     // Intentionally ignores aliases when checking for duplicate name.
-    if (this.elements.find(elm => elm.name === newData.name) != null) {
-      throw new Error('The name ' + newData.name + ' is already in use!')
+    if (this.elements.find(elm => elm.name === newName) != null) {
+      throw new Error('The name ' + newName + ' is already in use!')
     }
-    this.nameAliases.delete(newData.name)
-    this.nameAliases.set(oldData.name, newData.name)
-  };
+    this.nameAliases.delete(newName)
+    this.nameAliases.set(oldName, newName)
+  }
 
   /** Respecting aliases, convert an element name into its number. */
   nameToId (name: string): number {
