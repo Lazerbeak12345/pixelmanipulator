@@ -179,26 +179,30 @@ export abstract class Renderer<T> {
     } else throw new Error('Renderer received elements out of order!')
     return newRenderAs
   }
+
   private _width: number=1
   /** @param value - The new width of the canvas */
   set_width (value: number): void {
     this._width = value
   }
+
   /** @returns the width of the canvas */
   get_width (): number {
     return this._width
   }
+
   private _height: number=1
   /** @param value - The new height of the canvas */
   set_height (value: number): void {
     this._height = value
   }
+
   /** @returns the height of the canvas */
   get_height (): number {
     return this._height
   }
 }
-function location2Index({ x, y }:Location,width:number) {
+function location2Index ({ x, y }: Location, width: number): number {
   return ((width * y) + x)
 }
 export class Ctx2dRenderer extends Renderer<Color> {
@@ -220,13 +224,13 @@ export class Ctx2dRenderer extends Renderer<Color> {
   canvas: HTMLCanvasElement
   defaultRenderAs = [0, 0, 0, 255] as Color
 
-  override modifyElement(id: number, newRenderAs: Color): Color {
+  override modifyElement (id: number, newRenderAs: Color): Color {
     // allows for arrays that are too small
     while (newRenderAs.length < 4) {
       (newRenderAs as [number]).push(255)
     }
     const indexOfColor = this.renderInfo.indexOf(newRenderAs)
-    if (!(indexOfColor == id || indexOfColor == -1)) {
+    if (!(indexOfColor === id || indexOfColor === -1)) {
       throw new Error(`The color ${JSON.stringify(newRenderAs)} is already in use!`)
     }
     return super.modifyElement(id, newRenderAs)
@@ -270,30 +274,34 @@ export class Ctx2dRenderer extends Renderer<Color> {
 }
 export class StringRenderer extends Renderer<string> {
   defaultRenderAs = ' '
-  private _chars:string[][] = []
-  private _callback: (string:string)=>void
-  constructor (callback:(string:string)=>void){
+  private _chars: string[][] = []
+  readonly _callback: (string: string) => void
+  constructor (callback: (string: string) => void) {
     super()
     this._callback = callback
   }
-  override modifyElement(id: number, newRenderAs: string): string {
-    if(newRenderAs.length !== 1) { // TODO measure rendered chars, not length
-      throw new Error("Element must be a single char")
+
+  override modifyElement (id: number, newRenderAs: string): string {
+    if (newRenderAs.length !== 1) { // TODO measure rendered chars, not length
+      throw new Error('Element must be a single char')
     }
     return super.modifyElement(id, newRenderAs)
   }
-  reset () {
+
+  reset (): void {
     const w = this.get_width()
     const h = this.get_height()
     this._chars = new Array(h)
       .fill(0)
-      .map(()=>new Array(w).fill(this.defaultRenderAs))
+      .map(() => new Array(w).fill(this.defaultRenderAs))
   }
-  renderPixel ({ x, y }:Location, id:number): void {
+
+  renderPixel ({ x, y }: Location, id: number): void {
     this._chars[y][x] = this.renderInfo[id]
   }
+
   update (): void {
-    this._callback(this._chars.map(l=>l.join('')).join('\n'))
+    this._callback(this._chars.map(l => l.join('')).join('\n'))
   }
 }
 /** A cellular automata engine */
