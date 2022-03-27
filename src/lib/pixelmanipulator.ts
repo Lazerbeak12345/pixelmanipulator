@@ -304,6 +304,43 @@ export class StringRenderer extends Renderer<string> {
     this._callback(this._chars.map(l => l.join('')).join('\n'))
   }
 }
+/** render on two different targets (which may also be [[SplitRenderer]]) */
+export class SplitRenderer<A, B> extends Renderer<{ a: A, b: B}> {
+  defaultRenderAs: { a: A, b: B}
+  a: Renderer<A>
+  b: Renderer<B>
+  constructor (a: Renderer<A>, b: Renderer<B>) {
+    super()
+    this.a = a
+    this.b = b
+    this.defaultRenderAs = {
+      a: a.defaultRenderAs,
+      b: b.defaultRenderAs
+    }
+  }
+
+  renderPixel (loc: Location, id: number): void {
+    this.a.renderPixel(loc, id)
+    this.b.renderPixel(loc, id)
+  }
+
+  reset (): void {
+    this.a.reset()
+    this.b.reset()
+  }
+
+  update (): void {
+    this.a.update()
+    this.b.update()
+  }
+
+  override modifyElement (id: number, { a, b }: { a: A, b: B }): { a: A, b: B } {
+    return super.modifyElement(id, {
+      a: this.a.modifyElement(id, a),
+      b: this.b.modifyElement(id, b)
+    })
+  }
+}
 /** A cellular automata engine */
 export class PixelManipulator<T> {
   constructor (renderer: Renderer<T>, width: number, height: number) {
