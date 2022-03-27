@@ -85,7 +85,7 @@ const largeylinesty = largeylineElm?.style
 const elmdrops = document.getElementsByClassName('elmDrop')
 
 if (canvas == null) throw new Error('canvas could not be found!')
-const p: PixelManipulator = new PixelManipulator(
+const p: PixelManipulator<Color> = new PixelManipulator(
   new Ctx2dRenderer(canvas),
   1, 1 // The width and height are changed later
 )
@@ -242,8 +242,8 @@ function updateCustomizer (): void {
   if (customSelect == null) return
   const elm = p.getElementByName((customSelect as HTMLSelectElement).value)
   if (elm == null) return
-  if (customizeColor != null) (customizeColor as HTMLInputElement).value = rgb2hex(elm.color)
-  const alphaVal = (elm.color[3] ?? 255).toString()
+  if (customizeColor != null) (customizeColor as HTMLInputElement).value = rgb2hex(elm.renderAs)
+  const alphaVal = (elm.renderAs[3] ?? 255).toString()
   if (customizeColorAlpha != null) (customizeColorAlpha as HTMLInputElement).value = alphaVal// Raw alpha value
   if (customizeColorAlphaText != null) (customizeColorAlphaText as HTMLSpanElement).innerText = alphaVal
   if (customizeName != null) (customizeName as HTMLInputElement).value = elm.name
@@ -290,10 +290,10 @@ if (customizeName != null) {
 function changeColor (): void {
   console.log('change color')
   const num = p.nameToId((customSelect as HTMLSelectElement).value)
-  const color = hex2rgba((customizeColor as HTMLInputElement).value, parseInt((customizeColorAlpha as HTMLInputElement).value))
-  if (num > -1 && color != null) {
+  const renderAs = hex2rgba((customizeColor as HTMLInputElement).value, parseInt((customizeColorAlpha as HTMLInputElement).value))
+  if (num > -1 && renderAs != null) {
     p.modifyElement(num, {
-      color
+      renderAs
     })
   }
 }
@@ -336,7 +336,7 @@ let zoomX = 10
 let zoomY = 10
 p.addMultipleElements({
   Acid: {
-    color: [110, 162, 10, 255],
+    renderAs: [110, 162, 10, 255],
     // current Pixel Matches
     liveCell: ({ x, y, oldId }) => {
       const randsAcid = new Uint8Array(3)
@@ -360,30 +360,30 @@ p.addMultipleElements({
   },
   Blocks: {
     // does nothing
-    color: [127, 127, 127, 255]
+    renderAs: [127, 127, 127, 255]
   },
   "Brian's Brain (dying)": {
     // not quite white
-    color: [254, 254, 254, 255],
+    renderAs: [254, 254, 254, 255],
     // Cells that were in the dying state go into the off state
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, p.defaultId)
   },
   "Brian's Brain (on)": {
     ...rules.lifelike(p, 'B2/S'), // same pattern as seeds
-    color: [0, 0, 254, 255], // not quite blue
+    renderAs: [0, 0, 254, 255], // not quite blue
     // All cells that were "on" go into the "dying" state, which is not counted as an "on" cell in the neighbor count, and prevents any cell from being born there.
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, "Brian's Brain (dying)")
   },
   Seeds: {
     ...rules.lifelike(p, 'B2/S'),
-    color: [194, 178, 128]
+    renderAs: [194, 178, 128]
   },
   "Conway's Game Of Life": {
     ...rules.lifelike(p, 'B3/S23'), // born on 3, survives on 2 or 3
-    color: [0, 255, 0, 255]
+    renderAs: [0, 255, 0, 255]
   },
   'Wireworld Conductor': {
-    color: [67, 75, 77, 255],
+    renderAs: [67, 75, 77, 255],
     liveCell: loc => {
       const num = p.nameToId('Wireworld Electricity')
       if (num === -1) return
@@ -396,39 +396,39 @@ p.addMultipleElements({
     }
   },
   'Wireworld Electricity': {
-    color: [148, 133, 0, 255],
+    renderAs: [148, 133, 0, 255],
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld FadingElectricity')
   },
   'Wireworld FadingElectricity': {
-    color: [148, 133, 0, 254],
+    renderAs: [148, 133, 0, 254],
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld Conductor')
   },
   Highlife: {
     ...rules.lifelike(p, 'B36/S23'), // born on 3 or 6, survives on 2 or 3
-    color: [0, 255, 128, 255]
+    renderAs: [0, 255, 128, 255]
   },
   "No-loop Conway's Game Of Life": {
     ...rules.lifelike(p, 'B3/S23', false), // same as Conway's Game Of Life, but with a no-loop boolean
-    color: [0, 150, 0, 255]
+    renderAs: [0, 150, 0, 255]
   },
   'Rule 30': {
     ...rules.wolfram(p, 'Rule 30', false),
-    color: [255, 0, 255, 255]
+    renderAs: [255, 0, 255, 255]
   },
   'Rule 90': {
     ...rules.wolfram(p, 'Rule 90', false),
-    color: [147, 112, 219, 255]
+    renderAs: [147, 112, 219, 255]
   },
   'Rule 110': {
     ...rules.wolfram(p, 'Rule 110', false),
-    color: [128, 0, 128, 255]
+    renderAs: [128, 0, 128, 255]
   },
   'Rule 184': {
     ...rules.wolfram(p, 'Rule 184', false),
-    color: [255, 51, 153, 255]
+    renderAs: [255, 51, 153, 255]
   },
   Water: {
-    color: [23, 103, 167, 255],
+    renderAs: [23, 103, 167, 255],
     liveCell: ({ x, y, oldId }) => {
       const randsWater = new Uint8Array(2)
       window.crypto.getRandomValues(randsWater)

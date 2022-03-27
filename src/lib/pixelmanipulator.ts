@@ -46,23 +46,19 @@ export interface Rel{
 export type Color=[number, number, number, number]|[number, number, number]|[number, number]|[number]|[]
 /** Much like [[ElementDataUnknown]] but all fields except [[ElementData.loop]],
 * [[ElementData.liveCell]] and [[ElementData.liveCell]] are mandatory. */
-export interface ElementData extends ElementDataUnknown {
+export interface ElementData<T> extends ElementDataUnknown<T> {
   name: string
-  color: Color
+  renderAs: T
   hitbox: hitbox
   liveCell?: (rel: Rel) => void
   deadCell?: (rel: Rel) => void
 }
 /** Information about an element. */
-export interface ElementDataUnknown{
+export interface ElementDataUnknown<T>{
   /** The name of the element. */
   name?: string
-  /** The rgba color of the element. If there is less than 4 values in this
-  * array, the end of the array is padded with the number 255. (if missing
-  * entirely, the color is white) NOTE THAT NO TWO ELEMENTS MAY HAVE EXACTLY THE
-  * SAME COLOR (Starting in version 3 this will throw an error)
-  */
-  color?: Color
+  /** Information on how to render this element (Such as a [[Color]]) */
+  renderAs?: T
   /** [[ElementDataUnknownNameMandatory.deadCell]] will only be called on empty
   * pixels within the hitbox of a live cell. Array of relative coordinate pairs.
   * Optional, defaults to the result of [[PixelManipulator.neighborhoods.moore]]
@@ -86,7 +82,7 @@ export interface ElementDataUnknown{
   madeWithRule?: true
 }
 /** Much like [[ElementDataUnknown]] but the name is mandatory. */
-export interface ElementDataUnknownNameMandatory extends ElementDataUnknown{
+export interface ElementDataUnknownNameMandatory<T> extends ElementDataUnknown<T>{
   name: string
 }
 function _convertNumListToBf (nl: string): number {
@@ -100,7 +96,7 @@ function _convertNumListToBf (nl: string): number {
   return out
 }
 export const rules = {
-  lifelike: function (p: PixelManipulator, pattern: string, loop?: boolean): ElementDataUnknown {
+  lifelike: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const numbers = pattern.split(/\/?[a-z]/gi)// "B",born,die
     const bfdie = _convertNumListToBf(numbers[2])
     const bflive = _convertNumListToBf(numbers[1])
@@ -121,7 +117,7 @@ export const rules = {
       }
     }
   },
-  wolfram: function (p: PixelManipulator, pattern: string, loop?: boolean): ElementDataUnknown {
+  wolfram: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const binStates = parseInt(pattern.split(/Rule /gi)[1])
     return {
       madeWithRule: true,
@@ -166,7 +162,7 @@ export interface CanvasSizes{
   /** height of the canvas */
   canvasH?: number
 }
-export abstract class Renderer {
+export abstract class Renderer<T> {
   /** Renders a pixel on a given location. */
   abstract renderPixel (location: Location, id: number): void
   /** Reset the render target */
@@ -181,21 +177,18 @@ export abstract class Renderer {
   abstract set_height (value: number): void
   /** @returns the height of the canvas */
   abstract get_height (): number
-  attachPixelManipulator (pm: PixelManipulator): void {
-    this.pm = pm
+  abstract defaultRenderAs: T
+  renderInfo: T[] = []
+  modifyElement (id: number, newRenderAs: T): T {
+    if (this.renderInfo.length === id) {
+      this.renderInfo.push(newRenderAs)
+    } else if (this.renderInfo.length > id) {
+      this.renderInfo[id] = newRenderAs
+    } else throw new Error('Renderer received elements out of order!')
+    return newRenderAs
   }
-
-  getPixelManipulator (): PixelManipulator {
-    if (this.pm == null) {
-      throw new Error('This operation requires the renderer to be attached to a PixelManipulator instance')
-    }
-    return this.pm
-  }
-
-  private pm: PixelManipulator | null = null
 }
-export class Ctx2dRenderer extends Renderer {
-  // TODO idToColor
+export class Ctx2dRenderer extends Renderer<Color> {
   constructor (canvas: HTMLCanvasElement) {
     super()
     this.canvas = canvas
@@ -212,11 +205,24 @@ export class Ctx2dRenderer extends Renderer {
   /** The rendering context for the canvas */
   ctx: CanvasRenderingContext2D
   canvas: HTMLCanvasElement
+  defaultRenderAs = [0, 0, 0, 255] as Color
+
+  override modifyElement(id: number, newRenderAs: Color): Color {
+    // allows for arrays that are too small
+    while (newRenderAs.length < 4) {
+      (newRenderAs as [number]).push(255)
+    }
+    const indexOfColor = this.renderInfo.indexOf(newRenderAs)
+    if (!(indexOfColor == id || indexOfColor == -1)) {
+      throw new Error(`The color ${JSON.stringify(newRenderAs)} is already in use!`)
+    }
+    return super.modifyElement(id, newRenderAs)
+  }
+
   renderPixel ({ x, y }: Location, id: number): void {
-    const pm = this.getPixelManipulator()
-    const color = pm.idToColor(id)
+    const color = this.renderInfo[id]
     if (color == null) {
-      throw new Error('Invalid ID')
+      throw new Error(`Invalid ID ${id}`)
     }
     // allows for arrays that are too small
     while (color.length < 4) {
@@ -260,14 +266,19 @@ export class Ctx2dRenderer extends Renderer {
   }
 }
 /** A cellular automata engine */
-export class PixelManipulator {
-  constructor (renderer: Renderer, width: number, height: number) {
+export class PixelManipulator<T> {
+  constructor (renderer: Renderer<T>, width: number, height: number) {
     this.renderer = renderer
-    this.renderer.attachPixelManipulator(this)
+    this.defaultId = this.addElement({
+      renderAs: this.renderer.defaultRenderAs,
+      hitbox: [],
+      name: 'blank'
+    })
     this.reset({ canvasW: width, canvasH: height })
   }
 
-  renderer: Renderer
+  /** An instanace of the object that shows the state to the user. */
+  renderer: Renderer<T>
   /**
   * This is the number that indicates what animation frame the iterate function
   * is being called with.
@@ -282,13 +293,7 @@ export class PixelManipulator {
   * Format is much like the argument to
   * [[PixelManipulator.addMultipleElements]], but is not sanitized.
   */
-  elements: ElementData[]=[
-    {
-      color: [0, 0, 0, 255],
-      hitbox: [],
-      name: 'blank'
-    }
-  ]
+  readonly elements: Array<ElementData<T>>= []
 
   /**
   * A mapping from old names for elements to new names for elements.
@@ -311,7 +316,7 @@ export class PixelManipulator {
   * and what elements should return to when they are "dead". Default value is
   * 0, an element with the color `#000F`
   */
-  defaultId=0
+  defaultId: number
   /** Called before [[PixelManipulator.iterate]] does its work. */
   onIterate: () => void=() => {}
   /** Called after [[PixelManipulator.iterate]] does its work. */
@@ -342,7 +347,7 @@ export class PixelManipulator {
   }
 
   /// fills the screen with value, at an optional given percent
-  randomlyFill (value: string|number|Color, pr?: number): void {
+  randomlyFill (value: string|number, pr?: number): void {
     pr = pr ?? 15
     const w = this.get_width()
     const h = this.get_height()
@@ -372,10 +377,10 @@ export class PixelManipulator {
   * does not require the name). Value is passed to
   * [[PixelManipulator.addElement]]
   */
-  addMultipleElements (elements: {[index: string]: ElementDataUnknown}): void {
+  addMultipleElements (elements: {[index: string]: ElementDataUnknown<T>}): void {
     for (const elm in elements) {
       elements[elm].name = elm
-      this.addElement(elements[elm] as ElementDataUnknownNameMandatory)
+      this.addElement(elements[elm] as ElementDataUnknownNameMandatory<T>)
     }
   };
 
@@ -394,19 +399,18 @@ export class PixelManipulator {
   * @returns The generated [[ElementData.number]]
   */
   addElement (
-    data: ElementDataUnknownNameMandatory
+    data: ElementDataUnknownNameMandatory<T>
   ): number { // adds a single element
     const elm = data.name// name of the element
     if (typeof elm === 'undefined') throw new Error('Name is required for element')
     if (typeof data.name === 'undefined') data.name = elm
-    if (typeof data.color === 'undefined') data.color = [255, 255, 255, 255]// color of the element
     // Must be this value exactly for modifyElement to work
-    const tmpData: ElementDataUnknown = {
+    const tmpData: ElementDataUnknown<T> = {
       name: elm,
-      color: data.color
+      renderAs: data.renderAs
     }
-    this.elements.push(tmpData as ElementData)
-    this.modifyElement(this.elements.length - 1, data as ElementDataUnknown)
+    this.elements.push(tmpData as ElementData<T>)
+    this.modifyElement(this.elements.length - 1, data as ElementDataUnknown<T>)
     return this.elements.length - 1
   };
 
@@ -420,24 +424,16 @@ export class PixelManipulator {
   * the [[ElementDataUnknown.liveCell]] and [[ElementDataUnknown.deadCell]]
   * callbacks.
   */
-  modifyElement (id: number, data: ElementDataUnknown): void {
+  modifyElement (id: number, data: ElementDataUnknown<T>): void {
     const oldData = this.elements[id]
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
-      this.aliasElements(oldData, data as ElementDataUnknownNameMandatory)
-    }
-    if (typeof data.color !== 'undefined') {
-      while (data.color.length < 4) {
-        (data.color as [number]).push(255)
-      }
-      if (this.colorToId(data.color) !== id) {
-        throw new Error(`The color ${data.color.toString()} is already in use!`)
-      }
+      this.aliasElements(oldData, data as ElementDataUnknownNameMandatory<T>)
     }
     if (data.hitbox == null) {
       data.hitbox = moore()
     }
     oldData.name = data.name ?? oldData.name
-    oldData.color = data.color ?? oldData.color
+    oldData.renderAs = this.renderer.modifyElement(id, data.renderAs ?? oldData.renderAs)
     oldData.hitbox = data.hitbox ?? oldData.hitbox
     oldData.liveCell = data.liveCell ?? oldData.liveCell
     oldData.deadCell = data.deadCell ?? oldData.deadCell
@@ -451,7 +447,7 @@ export class PixelManipulator {
   *
   * Adds element to [[PixelManipulator.nameAliases]], and ensures no alias loops are present.
   */
-  aliasElements (oldData: ElementDataUnknownNameMandatory, newData: ElementDataUnknownNameMandatory): void {
+  aliasElements (oldData: ElementDataUnknownNameMandatory<T>, newData: ElementDataUnknownNameMandatory<T>): void {
     // Intentionally ignores aliases when checking for duplicate name.
     if (this.elements.find(elm => elm.name === newData.name) != null) {
       throw new Error('The name ' + newData.name + ' is already in use!')
@@ -475,7 +471,7 @@ export class PixelManipulator {
   * @returns The element from [[PixelManipulator.elementTypeMap]], respecting
   * aliases in [[PixelManipulator.nameAliases]], or [[undefined]] if not found.
   */
-  getElementByName (name: string): ElementData|undefined {
+  getElementByName (name: string): ElementData<T>|undefined {
     return this.elements[this.nameToId(name)]
   }
 
@@ -537,14 +533,6 @@ export class PixelManipulator {
     window.cancelAnimationFrame(this.loopint)
   };
 
-  colorToId (colors: Color): number|undefined {
-    return this.elements.findIndex(elm => this.compareColors(colors, elm.color))
-  };
-
-  idToColor (id: number): Color|undefined {
-    return this.elements[id]?.color
-  };
-
   /**
   * @returns the [[ElementData.number]] of the element at a given location
   *
@@ -566,31 +554,11 @@ export class PixelManipulator {
   }
 
   /**
-  * @returns the [[ElementData.color]] of the element at a given location
-  *
-  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * \> effect the result of this function.
-  */
-  getPixel (loc: Location): Color {
-    const tmp = this.idToColor(this.getPixelId(loc))
-    if (typeof tmp === 'undefined') {
-      throw new Error("Can't get pixel color from pixel id in get pixel (should never happen).")
-    }
-    return tmp
-  }
-
-  /**
   * Applies any changes made with [[PixelManipulator.setPixel]] to the canvas
   */
   update (): void {
     this.renderer.update()
   }
-
-  compareColors (a?: number[], b?: number[]): boolean {
-    if (typeof a === 'undefined') { a = [] }
-    if (typeof b === 'undefined') { b = [] }
-    return (a[0] ?? 0) === (b[0] ?? 0) && (a[1] ?? 0) === (b[1] ?? 0) && (a[2] ?? 0) === (b[2] ?? 0) && (a[3] ?? 255) === (b[3] ?? 255)
-  };
 
   /**
   * @returns Does the cell at `x` and `y` position match `ident`?
@@ -598,11 +566,10 @@ export class PixelManipulator {
   * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
   * \> effect the result of this function.
   */
-  confirmElm (loc: Location, id: number|string|Color): boolean {
+  confirmElm (loc: Location, id: number|string): boolean {
     let tmp: number|undefined
     switch (typeof id) {
       case 'string': tmp = this.nameToId(id); break
-      case 'object': tmp = this.colorToId(id); break
       case 'number': tmp = id
     }
     if (tmp == null) {
@@ -614,7 +581,7 @@ export class PixelManipulator {
   /** @param loop - Should this check wrap around canvas edges?
   * @param name - element to look for
   * @returns Number of elements in moore radius */
-  mooreNearbyCounter ({ x, y, frame, loop }: Location, name: number|string|Color): number {
+  mooreNearbyCounter ({ x, y, frame, loop }: Location, name: number|string): number {
     return moore()
       .map(rel => ({ x: x + rel.x, y: y + rel.y, frame, loop }))
       .map(loc => this.confirmElm(loc, name))
@@ -626,7 +593,7 @@ export class PixelManipulator {
   * @param name - element to look for
   * @param bindex - Either a string like `"001"` to match to, or the same encoded as a number.
   * @returns Number of elements in moore radius */
-  wolframNearbyCounter ({ x, y, frame, loop }: Location, name: number|string|Color, binDex: number|string): boolean {
+  wolframNearbyCounter ({ x, y, frame, loop }: Location, name: number|string, binDex: number|string): boolean {
     if (typeof binDex === 'string') {
       // Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
       binDex = boolToNumber(binDex[0] === '1') << 2 | boolToNumber(binDex[1] === '1') << 1 | boolToNumber(binDex[2] === '1') << 0
@@ -651,22 +618,16 @@ export class PixelManipulator {
   *
   * @param loop - Defaults to [[true]]. Wraps `x` and `y` around canvas borders.
   */
-  setPixel ({ x, y, loop }: Location, ident: string|number|Color): void {
+  setPixel ({ x, y, loop }: Location, ident: string|number): void {
     let id = 0
     if (typeof ident === 'string') {
       id = this.nameToId(ident)
       if (id === -1) {
         throw new Error(`Element name ${ident} is invalid`)
       }
-    } else if (typeof ident === 'number') {
+    } else {
       id = ident
-    } else if (typeof ident === 'object') {
-      const tmp = this.colorToId(ident)
-      if (typeof tmp === 'undefined') {
-        throw new Error(`Color ${JSON.stringify(ident)} is invalid`)
-      }
-      id = tmp
-    } else throw new Error(`Color type ${typeof ident} is invalid!`)
+    }
     const w = this.get_width()
     const h = this.get_height()
     if (loop ?? true) {
