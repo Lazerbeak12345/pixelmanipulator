@@ -114,11 +114,7 @@ function updateBox (): void {
   selectorboxSty.left = `${zoomX - (zoom.width / (2 * zoomScaleFactor))}px`
   selectorboxSty.top = `${zoomY - (zoom.height / (2 * zoomScaleFactor))}px`
 }
-interface PageLoc{
-  pageX: number
-  pageY: number
-}
-function updateSmallLines (e: MouseEvent|PageLoc): void {
+function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void {
   smallxline.style.left = `${e.pageX}px`
   smallyline.style.top = `${e.pageY}px`
   const x = e.pageX - zoomX + (zoomScaleFactor / 2)
@@ -188,14 +184,6 @@ function selectorClicked (e: MouseEvent): void {
   })
   updateBox()
 }
-function updateBothLargeLines (e: MouseEvent): void {
-  const x = Math.floor(e.offsetX / zoomScaleFactor)
-  const y = Math.floor(e.offsetY / zoomScaleFactor)
-  updateSmallLines({
-    pageX: x + zoomX - (zoom.width / (2 * zoomScaleFactor)),
-    pageY: y + zoomY - (zoom.width / (2 * zoomScaleFactor))
-  })
-}
 function bigLineGotHovered (e: MouseEvent): void {
   // get the element out of the way so the canvas below will A: still be clickable and B: move this elm to the correct place
   if (e.target != null) (e.target as HTMLDivElement).style.height = '0'
@@ -205,28 +193,13 @@ function boxHoverOrClick (e: MouseEvent): void {
   updateLargeLinesX(e.offsetX, e.offsetY)
   updateLargeLinesY(e.offsetX, e.offsetY)
 };
-function rgb2hex (color: Color): string {
-  return '#' +
-    (color[0] ?? 255).toString(16).padStart(2, '0') +
-    (color[1] ?? 255).toString(16).padStart(2, '0') +
-    (color[2] ?? 255).toString(16).padStart(2, '0')
-}
-function hex2rgba (hex: string, alpha: number): Color|null {
-  const matches = hex.match(/#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i)
-  if (matches == null) return null
-  const output: Color = [
-    // The 0th is just the whole string
-    parseInt(matches[1], 16),
-    parseInt(matches[2], 16),
-    parseInt(matches[3], 16)
-  ]
-  if (alpha != null) output.push(alpha)
-  return output
-}
 function updateCustomizer (): void {
   const elm = p.getElementByName(customSelect.value)
   if (elm == null) return
-  customizeColor.value = rgb2hex(elm.renderAs)
+  customizeColor.value = '#' +
+    (elm.renderAs[0] ?? 255).toString(16).padStart(2, '0') +
+    (elm.renderAs[1] ?? 255).toString(16).padStart(2, '0') +
+    (elm.renderAs[2] ?? 255).toString(16).padStart(2, '0')
   const alphaVal = (elm.renderAs[3] ?? 255).toString()
   customizeColorAlpha.value = alphaVal// Raw alpha value
   customizeColorAlphaText.innerText = alphaVal
@@ -248,7 +221,14 @@ smallxline.addEventListener('mousemove', updateSmallLines)
 smallxline.addEventListener('click', selectorClicked)
 smallyline.addEventListener('mousemove', updateSmallLines)
 smallyline.addEventListener('click', selectorClicked)
-zoom.addEventListener('mousemove', updateBothLargeLines)
+zoom.addEventListener('mousemove', e => {
+  const x = Math.floor(e.offsetX / zoomScaleFactor)
+  const y = Math.floor(e.offsetY / zoomScaleFactor)
+  updateSmallLines({
+    pageX: x + zoomX - (zoom.width / (2 * zoomScaleFactor)),
+    pageY: y + zoomY - (zoom.width / (2 * zoomScaleFactor))
+  })
+})
 largexline.addEventListener('mousemove', bigLineGotHovered)
 largexline1.addEventListener('mousemove', bigLineGotHovered)
 largeyline.addEventListener('mousemove', bigLineGotHovered)
@@ -266,12 +246,18 @@ customizeName.addEventListener('change', function (this: HTMLInputElement) {
 function changeColor (): void {
   console.log('change color')
   const num = p.nameToId(customSelect.value)
-  const renderAs = hex2rgba(customizeColor.value, parseInt(customizeColorAlpha.value))
-  if (num > -1 && renderAs != null) {
-    p.modifyElement(num, {
-      renderAs
-    })
-  }
+  if (num == -1) return
+  const matches = customizeColor.value.match(/#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i)
+  if (matches == null) return
+  p.modifyElement(num, {
+    renderAs: [
+      // The 0th is just the whole string
+      parseInt(matches[1], 16),
+      parseInt(matches[2], 16),
+      parseInt(matches[3], 16),
+      parseInt(customizeColorAlpha.value)
+    ]
+  })
 }
 customizeColor.addEventListener('change', changeColor)
 customizeColorAlpha.addEventListener('change', changeColor)
@@ -466,20 +452,6 @@ function oldZoom (e?: {
     zoomctx.stroke()
   }
 }
-/** an event-like function that returns what should be set where the zoom ctx
-* was clicked */
-function onZoomClick (e: MouseEvent, rel: {x: number, y: number}): string|number {
-  let active: string|number = p.defaultId
-  if (e.ctrlKey) {
-    active = ctrlSelect.value
-  } else if (e.altKey) {
-    active = altSelect.value
-  } else {
-    active = normalSelect.value
-  }
-  if (p.confirmElm(rel, active)) return p.defaultId
-  return active
-}
 function zoomClick (e: MouseEvent): void {
   const zoomPos = {
     x: Math.floor(e.offsetX / zoomScaleFactor) +
@@ -487,7 +459,18 @@ function zoomClick (e: MouseEvent): void {
     y: Math.floor(e.offsetY / zoomScaleFactor) +
       Math.floor(zoomY - (zoomScaleFactor / 2))
   }
-  p.setPixel(zoomPos, onZoomClick(e, zoomPos))
+  let active: string
+  if (e.ctrlKey) {
+    active = ctrlSelect.value
+  } else if (e.altKey) {
+    active = altSelect.value
+  } else {
+    active = normalSelect.value
+  }
+  let pixel: string|number
+  if (p.confirmElm(zoomPos, active)) pixel = p.defaultId
+  else pixel = active
+  p.setPixel(zoomPos, pixel)
   p.update()
   oldZoom()
 }
