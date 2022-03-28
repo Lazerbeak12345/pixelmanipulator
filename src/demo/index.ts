@@ -222,7 +222,6 @@ const elmdrops = document.getElementsByClassName('elmDrop')
 const timedebug = true
 let framecount = 0
 
-
 const zoomctx = zoom.getContext('2d')
 if (zoomctx == null) {
   throw new Error('rendering context not supported')
@@ -338,7 +337,7 @@ function updateCustomizer (): void {
 function changeColor (): void {
   console.log('change color')
   const num = p.nameToId(customSelect.value)
-  if (num == -1) return
+  if (num === -1) return
   const matches = customizeColor.value.match(/#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i)
   if (matches == null) return
   p.modifyElement(num, {
