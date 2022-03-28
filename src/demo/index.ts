@@ -1,38 +1,133 @@
-import { PixelManipulator, Color, version, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
+import { PixelManipulator, version, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
+canvas.addEventListener('click', updateBox)
+canvas.addEventListener('click', (event) =>
+  oldZoom({
+    x: event.offsetX,
+    y: event.offsetY
+  }))
+canvas.addEventListener('mousemove', updateSmallLines)
+const p = new PixelManipulator(
+  new Ctx2dRenderer(canvas),
+  1, 1 // The width and height are changed later
+)
+p.onAfterIterate = () => {
+  oldZoom()
+  if (!pixelCounterT.checked) {
+    let text = ''
+    for (const id in p.pixelCounts) {
+      const elm = p.elements[parseInt(id)].name
+      text += `${elm} : ${p.pixelCounts[id]}\n`
+    }
+    text += `\n\nFrames:${framecount}`
+    if (timedebug) text += `\nFps:${1 / ((performance.now() - lasttime) / 1000)}`
+    pixelCounter.innerText = text
+  } else pixelCounter.innerText = ''
+}
 
 /// Grey overlay lines over the canvas
 const smallxline = document.getElementById('smallxline') as HTMLDivElement
+smallxline.addEventListener('mousemove', updateSmallLines)
+smallxline.addEventListener('click', selectorClicked)
 const smallyline = document.getElementById('smallyline') as HTMLDivElement
+smallyline.addEventListener('mousemove', updateSmallLines)
+smallyline.addEventListener('click', selectorClicked)
 /// Grey box showing where zoom elm is looking at
 const selectorBox = document.getElementById('selectorBox') as HTMLDivElement
+selectorBox.addEventListener('click', selectorClicked)
+selectorBox.addEventListener('mousemove', boxHoverOrClick)
+selectorBox.addEventListener('click', boxHoverOrClick)
+const selectorboxSty = selectorBox.style
 
 const customizer = document.getElementById('customizer') as HTMLDivElement
 /// Select the element to customize
 const customSelect = document.getElementById('customSelect') as HTMLSelectElement
+customSelect.addEventListener('change', () => updateCustomizer())
 /// Change the color
 const customizeColor = document.getElementById('customizeColor') as HTMLInputElement
+customizeColor.addEventListener('change', changeColor)
 const customizeColorAlpha = document.getElementById('customColorAlpha') as HTMLInputElement
+customizeColorAlpha.addEventListener('change', changeColor)
 /// Name for the alpha field of the color
 const customizeColorAlphaText = document.getElementById('customColorAlphaText') as HTMLSpanElement
 /// Name of element
 const customizeName = document.getElementById('customizeName') as HTMLInputElement
+customizeName.addEventListener('change', function (this: HTMLInputElement) {
+  console.log('change name', this.value)
+  const num = p.nameToId(customSelect.value)
+  if (num > -1) {
+    p.modifyElement(num, {
+      name: this.value
+    })
+  }
+  updateCustomizer()
+})
 
 /// Zoomed in canvas
 const zoom = document.getElementById('zoom') as HTMLCanvasElement
+zoom.addEventListener('click', zoomClick)
+zoom.addEventListener('drag', zoomClick)
+zoom.addEventListener('mousemove', e => {
+  const x = Math.floor(e.offsetX / zoomScaleFactor)
+  const y = Math.floor(e.offsetY / zoomScaleFactor)
+  updateSmallLines({
+    pageX: x + zoomX - (zoom.width / (2 * zoomScaleFactor)),
+    pageY: y + zoomY - (zoom.width / (2 * zoomScaleFactor))
+  })
+})
 
 /// Grey overlay over zoom canvas
 const largexline = document.getElementById('largexline') as HTMLDivElement
+largexline.addEventListener('mousemove', bigLineGotHovered)
+const largexlinesty = largexline.style
 const largeyline = document.getElementById('largeyline') as HTMLDivElement
+largeyline.addEventListener('mousemove', bigLineGotHovered)
+const largeylinesty = largeyline.style
 const largexline1 = document.getElementById('largexline1') as HTMLDivElement
+largexline1.addEventListener('mousemove', bigLineGotHovered)
+const largexline1sty = largexline1.style
 const largeyline1 = document.getElementById('largeyline1') as HTMLDivElement
+largeyline1.addEventListener('mousemove', bigLineGotHovered)
+const largeyline1sty = largeyline1.style
 
 /// Actions box button.
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
+resetBtn.addEventListener('click', () => {
+  const canvasW = parseInt(widthE.value)
+  const canvasH = parseInt(heightE.value)
+  const zoomW = parseInt(zoomWidthElm.value)
+  const zoomH = parseInt(zoomHeightElm.value)
+  p.reset({
+    canvasW,
+    canvasH
+  })
+  // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
+  zoom.width = (zoomW ?? zoom.width / zoomScaleFactor) * zoomScaleFactor
+  zoom.height = (zoomH ?? zoom.height / zoomScaleFactor) * zoomScaleFactor
+  updateBox()
+  playBtn.disabled = false
+  oneFrameAtATime.disabled = false
+  resetBtn.disabled = false
+  pauseBtn.disabled = true
+  framecount = 0
+  p.iterate() // this will prevent new user confusion by showing the zoom box when the page loads
+})
 const playBtn = document.getElementById('play') as HTMLButtonElement
+playBtn.addEventListener('click', function (this: HTMLButtonElement) {
+  p.play()
+  this.disabled = true
+  pauseBtn.disabled = false
+})
+playBtn.disabled = false
 const pauseBtn = document.getElementById('pause') as HTMLButtonElement
+pauseBtn.addEventListener('click', function (this: HTMLButtonElement) {
+  this.disabled = true
+  playBtn.disabled = false
+  p.pause()
+})
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
+oneFrameAtATime.addEventListener('click', () => p.iterate())
 
 /// Sizes for render canvas
 const widthE = document.getElementById('width') as HTMLInputElement
@@ -45,6 +140,14 @@ const zoomWidthElm = document.getElementById('zoomWidthElm') as HTMLInputElement
 const normalSelect = document.getElementById('normalSelect') as HTMLSelectElement
 /// The button to fill canvas with normal elm of given percent
 const normalFill = document.getElementById('normalFill') as HTMLButtonElement
+normalFill.addEventListener('click', () => {
+  p.randomlyFill(
+    normalSelect.value,
+    parseInt(normalFillP.value) ?? 15
+  )
+  p.update() // needed after any changes are made
+  oldZoom()
+})
 /// The percent of normal elm to fill canvas with when normalFill clicked
 const normalFillP = document.getElementById('normalFillP') as HTMLInputElement
 
@@ -52,6 +155,14 @@ const normalFillP = document.getElementById('normalFillP') as HTMLInputElement
 const ctrlSelect = document.getElementById('ctrlSelect') as HTMLSelectElement
 /// The button to fill canvas with ctrl elm of given percent
 const ctrlFill = document.getElementById('ctrlFill') as HTMLButtonElement
+ctrlFill.addEventListener('click', () => {
+  p.randomlyFill(
+    ctrlSelect.value,
+    parseInt(ctrlFillP.value) ?? 15
+  )
+  p.update()
+  oldZoom()
+})
 /// The percent of ctrl elm to fill canvas with when ctrlFill clicked
 const ctrlFillP = document.getElementById('ctrlFillP') as HTMLInputElement
 
@@ -59,39 +170,58 @@ const ctrlFillP = document.getElementById('ctrlFillP') as HTMLInputElement
 const altSelect = document.getElementById('altSelect') as HTMLSelectElement
 /// The button to fill canvas with alt elm of given percent
 const altFill = document.getElementById('altFill') as HTMLButtonElement
+altFill.addEventListener('click', () => {
+  p.randomlyFill(
+    altSelect.value,
+    parseInt(altFillP.value) ?? 15
+  )
+  p.update()
+  oldZoom()
+})
 /// The percent of alt elm to fill canvas with when altFill clicked
 const altFillP = document.getElementById('altFillP') as HTMLInputElement
 
 /// Hide targeter lines
 const shtargeter = document.getElementById('shtargeter') as HTMLInputElement
+shtargeter.addEventListener('click', function () {
+  const state = this.checked ? 'hidden' : 'visible'
+  smallxline.style.visibility = state
+  smallyline.style.visibility = state
+  largexline.style.visibility = state
+  largexline1.style.visibility = state
+  largeyline.style.visibility = state
+  largeyline1.style.visibility = state
+})
 /// Hide focus box
 const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
+shfocusbox.addEventListener('click', function () {
+  const state = this.checked ? 'hidden' : 'visible'
+  selectorBox.style.visibility = state
+})
 /// Hide pixelCounter
 const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputElement
+pixelCounterT.addEventListener('click', p.onAfterIterate)
 /// Show element customizer
 const customizeT = document.getElementById('customizeT') as HTMLInputElement
+customizeT.addEventListener('click', function (this: HTMLInputElement) {
+  if (this.checked) {
+    customizer.classList.remove('hidden')
+    updateCustomizer()
+  } else customizer.classList.add('hidden')
+})
 
 /// Version of backend
 const backendversion = document.getElementById('backendversion') as HTMLSpanElement
+backendversion.innerText = version
 
 /// Text element for pixel totals
 const pixelCounter = document.getElementById('pixelCounter') as HTMLDivElement
 
-const selectorboxSty = selectorBox.style
-const largexlinesty = largexline.style
-const largexline1sty = largexline1.style
-const largeyline1sty = largeyline1.style
-const largeylinesty = largeyline.style
 const elmdrops = document.getElementsByClassName('elmDrop')
 
-const p = new PixelManipulator(
-  new Ctx2dRenderer(canvas),
-  1, 1 // The width and height are changed later
-)
 const timedebug = true
 let framecount = 0
 
-backendversion.innerText = version
 
 const zoomctx = zoom.getContext('2d')
 if (zoomctx == null) {
@@ -205,44 +335,6 @@ function updateCustomizer (): void {
   customizeColorAlphaText.innerText = alphaVal
   customizeName.value = elm.name
 }
-zoom.addEventListener('click', zoomClick)
-zoom.addEventListener('drag', zoomClick)
-canvas.addEventListener('click', updateBox)
-canvas.addEventListener('click', (event) =>
-  oldZoom({
-    x: event.offsetX,
-    y: event.offsetY
-  }))
-canvas.addEventListener('mousemove', updateSmallLines)
-selectorBox.addEventListener('click', selectorClicked)
-selectorBox.addEventListener('mousemove', boxHoverOrClick)
-selectorBox.addEventListener('click', boxHoverOrClick)
-smallxline.addEventListener('mousemove', updateSmallLines)
-smallxline.addEventListener('click', selectorClicked)
-smallyline.addEventListener('mousemove', updateSmallLines)
-smallyline.addEventListener('click', selectorClicked)
-zoom.addEventListener('mousemove', e => {
-  const x = Math.floor(e.offsetX / zoomScaleFactor)
-  const y = Math.floor(e.offsetY / zoomScaleFactor)
-  updateSmallLines({
-    pageX: x + zoomX - (zoom.width / (2 * zoomScaleFactor)),
-    pageY: y + zoomY - (zoom.width / (2 * zoomScaleFactor))
-  })
-})
-largexline.addEventListener('mousemove', bigLineGotHovered)
-largexline1.addEventListener('mousemove', bigLineGotHovered)
-largeyline.addEventListener('mousemove', bigLineGotHovered)
-largeyline1.addEventListener('mousemove', bigLineGotHovered)
-customizeName.addEventListener('change', function (this: HTMLInputElement) {
-  console.log('change name', this.value)
-  const num = p.nameToId(customSelect.value)
-  if (num > -1) {
-    p.modifyElement(num, {
-      name: this.value
-    })
-  }
-  updateCustomizer()
-})
 function changeColor (): void {
   console.log('change color')
   const num = p.nameToId(customSelect.value)
@@ -259,28 +351,6 @@ function changeColor (): void {
     ]
   })
 }
-customizeColor.addEventListener('change', changeColor)
-customizeColorAlpha.addEventListener('change', changeColor)
-shtargeter.addEventListener('click', function () {
-  const state = this.checked ? 'hidden' : 'visible'
-  smallxline.style.visibility = state
-  smallyline.style.visibility = state
-  largexline.style.visibility = state
-  largexline1.style.visibility = state
-  largeyline.style.visibility = state
-  largeyline1.style.visibility = state
-})
-shfocusbox.addEventListener('click', function () {
-  const state = this.checked ? 'hidden' : 'visible'
-  selectorBox.style.visibility = state
-})
-customSelect.addEventListener('change', () => updateCustomizer())
-customizeT.addEventListener('click', function (this: HTMLInputElement) {
-  if (this.checked) {
-    customizer.classList.remove('hidden')
-    updateCustomizer()
-  } else customizer.classList.add('hidden')
-})
 /**
 * The X coordinate of where the center of [[zoom]] is windowed at.
 */
@@ -289,6 +359,30 @@ let zoomX = 10
 * The Y coordinate of where the center of the [[zoom]] is windowed at.
 */
 let zoomY = 10
+p.onElementModified = () => {
+  let nsv = normalSelect.value
+  let csv = ctrlSelect.value
+  let asv = altSelect.value
+  let cusv = customSelect.value
+  if (nsv.length === 0) nsv = "Conway's Game Of Life"
+  if (csv.length === 0) csv = 'Blocks'
+  if (asv.length === 0) asv = 'Water'
+  if (cusv.length === 0) cusv = "Conway's Game Of Life"
+  for (let i = 0; i < elmdrops.length; i++) {
+    elmdrops[i].innerHTML = ''
+    p.elements.forEach(elm => {
+      const newElement = document.createElement('option')
+      newElement.innerText = elm.name
+      elmdrops[i].appendChild(newElement)
+    })
+  }
+  // Restore that selection, accounting for aliases
+  normalSelect.value = p.getElementByName(nsv)?.name ?? ''
+  ctrlSelect.value = p.getElementByName(csv)?.name ?? ''
+  altSelect.value = p.getElementByName(asv)?.name ?? ''
+  customSelect.value = p.getElementByName(cusv)?.name ?? ''
+  updateCustomizer()
+}
 p.addMultipleElements({
   Acid: {
     renderAs: [110, 162, 10, 255],
@@ -492,87 +586,5 @@ p.onAfterIterate = () => {
     pixelCounter.innerText = text
   } else pixelCounter.innerText = ''
 }
-pixelCounterT.addEventListener('click', p.onAfterIterate)
-playBtn.addEventListener('click', function (this: HTMLButtonElement) {
-  p.play()
-  this.disabled = true
-  pauseBtn.disabled = false
-})
-playBtn.disabled = false
-oneFrameAtATime.addEventListener('click', () => p.iterate())
-resetBtn.addEventListener('click', () => {
-  const canvasW = parseInt(widthE.value)
-  const canvasH = parseInt(heightE.value)
-  const zoomW = parseInt(zoomWidthElm.value)
-  const zoomH = parseInt(zoomHeightElm.value)
-  p.reset({
-    canvasW,
-    canvasH
-  })
-  // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
-  zoom.width = (zoomW ?? zoom.width / zoomScaleFactor) * zoomScaleFactor
-  zoom.height = (zoomH ?? zoom.height / zoomScaleFactor) * zoomScaleFactor
-  updateBox()
-  playBtn.disabled = false
-  oneFrameAtATime.disabled = false
-  resetBtn.disabled = false
-  pauseBtn.disabled = true
-  framecount = 0
-  p.iterate() // this will prevent new user confusion by showing the zoom box when the page loads
-})
 resetBtn.click()
-pauseBtn.addEventListener('click', function (this: HTMLButtonElement) {
-  this.disabled = true
-  playBtn.disabled = false
-  p.pause()
-})
-normalFill.addEventListener('click', () => {
-  p.randomlyFill(
-    normalSelect.value,
-    parseInt(normalFillP.value) ?? 15
-  )
-  p.update() // needed after any changes are made
-  oldZoom()
-})
-ctrlFill.addEventListener('click', () => {
-  p.randomlyFill(
-    ctrlSelect.value,
-    parseInt(ctrlFillP.value) ?? 15
-  )
-  p.update()
-  oldZoom()
-})
-altFill.addEventListener('click', () => {
-  p.randomlyFill(
-    altSelect.value,
-    parseInt(altFillP.value) ?? 15
-  )
-  p.update()
-  oldZoom()
-})
-p.onElementModified = () => {
-  let nsv = normalSelect.value
-  let csv = ctrlSelect.value
-  let asv = altSelect.value
-  let cusv = customSelect.value
-  if (nsv.length === 0) nsv = "Conway's Game Of Life"
-  if (csv.length === 0) csv = 'Blocks'
-  if (asv.length === 0) asv = 'Water'
-  if (cusv.length === 0) cusv = "Conway's Game Of Life"
-  for (let i = 0; i < elmdrops.length; i++) {
-    elmdrops[i].innerHTML = ''
-    p.elements.forEach(elm => {
-      const newElement = document.createElement('option')
-      newElement.innerText = elm.name
-      elmdrops[i].appendChild(newElement)
-    })
-  }
-  // Restore that selection, accounting for aliases
-  normalSelect.value = p.getElementByName(nsv)?.name ?? ''
-  ctrlSelect.value = p.getElementByName(csv)?.name ?? ''
-  altSelect.value = p.getElementByName(asv)?.name ?? ''
-  customSelect.value = p.getElementByName(cusv)?.name ?? ''
-  updateCustomizer()
-}
-p.onElementModified(parseInt(customSelect.value)) // Call it once to fill in dropdowns
 // vim: tabstop=2 shiftwidth=2 expandtab
