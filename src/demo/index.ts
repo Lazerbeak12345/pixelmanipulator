@@ -118,19 +118,13 @@ function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void
     updateLargeLinesY(x, y)
   } else updateLargeLinesY(x, -1)
 }
-const canvas = document.getElementById('canvas') as HTMLCanvasElement
-canvas.addEventListener('click', updateBox)
-canvas.addEventListener('click', (event) =>
-  oldZoom({
-    x: event.offsetX,
-    y: event.offsetY
-  }))
-canvas.addEventListener('mousemove', updateSmallLines)
-const p = new PixelManipulator(
-  new Ctx2dRenderer(canvas),
-  1, 1 // The width and height are changed later
-)
-p.onAfterIterate = () => {
+let framecount = 0
+let lasttime: number
+function beforeIterate (): void {
+  if (timedebug) lasttime = performance.now()
+  framecount++
+}
+function afterIterate (): void {
   oldZoom()
   if (!pixelCounterT.checked) {
     let text = ''
@@ -143,6 +137,18 @@ p.onAfterIterate = () => {
     pixelCounter.innerText = text
   } else pixelCounter.innerText = ''
 }
+const canvas = document.getElementById('canvas') as HTMLCanvasElement
+canvas.addEventListener('click', updateBox)
+canvas.addEventListener('click', (event) =>
+  oldZoom({
+    x: event.offsetX,
+    y: event.offsetY
+  }))
+canvas.addEventListener('mousemove', updateSmallLines)
+const p = new PixelManipulator(
+  new Ctx2dRenderer(canvas),
+  1, 1 // The width and height are changed later
+)
 
 function selectorClicked (e: MouseEvent): void {
   oldZoom({
@@ -384,7 +390,6 @@ shfocusbox.addEventListener('click', function () {
 })
 /// Hide pixelCounter
 const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputElement
-pixelCounterT.addEventListener('click', p.onAfterIterate)
 /// Show element customizer
 const customizeT = document.getElementById('customizeT') as HTMLInputElement
 customizeT.addEventListener('click', function (this: HTMLInputElement) {
@@ -404,7 +409,6 @@ const pixelCounter = document.getElementById('pixelCounter') as HTMLDivElement
 const elmdrops = document.getElementsByClassName('elmDrop')
 
 const timedebug = true
-let framecount = 0
 
 const zoomctx = zoom.getContext('2d')
 if (zoomctx == null) {
@@ -567,23 +571,8 @@ p.addMultipleElements({
     }
   }
 })
-let lasttime = performance.now()
-p.onIterate = () => {
-  if (timedebug) lasttime = performance.now()
-  framecount++
-}
-p.onAfterIterate = () => {
-  oldZoom()
-  if (!pixelCounterT.checked) {
-    let text = ''
-    for (const id in p.pixelCounts) {
-      const elm = p.elements[parseInt(id)].name
-      text += `${elm} : ${p.pixelCounts[id]}\n`
-    }
-    text += `\n\nFrames:${framecount}`
-    if (timedebug) text += `\nFps:${1 / ((performance.now() - lasttime) / 1000)}`
-    pixelCounter.innerText = text
-  } else pixelCounter.innerText = ''
-}
+p.onIterate = () => beforeIterate()
+p.onAfterIterate = () => afterIterate()
+lasttime = performance.now()
 resetBtn.click()
 // vim: tabstop=2 shiftwidth=2 expandtab
