@@ -124,8 +124,7 @@ function beforeIterate (): void {
   if (timedebug) lasttime = performance.now()
   framecount++
 }
-function afterIterate (): void {
-  oldZoom()
+function afterIterate<T> (p: PixelManipulator<T>): void {
   if (!pixelCounterT.checked) {
     let text = ''
     for (const id in p.pixelCounts) {
@@ -283,7 +282,7 @@ const largeyline1sty = largeyline1.style
 
 /// Actions box button.
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
-resetBtn.addEventListener('click', () => {
+resetBtn.addEventListener('click', function () {
   const canvasW = parseInt(widthE.value)
   const canvasH = parseInt(heightE.value)
   const zoomW = parseInt(zoomWidthElm.value)
@@ -298,7 +297,7 @@ resetBtn.addEventListener('click', () => {
   updateBox()
   playBtn.disabled = false
   oneFrameAtATime.disabled = false
-  resetBtn.disabled = false
+  this.disabled = false
   pauseBtn.disabled = true
   framecount = 0
   p.iterate() // this will prevent new user confusion by showing the zoom box when the page loads
@@ -572,7 +571,10 @@ p.addMultipleElements({
   }
 })
 p.onIterate = () => beforeIterate()
-p.onAfterIterate = () => afterIterate()
+p.onAfterIterate = () => {
+  oldZoom()
+  afterIterate(p)
+}
 lasttime = performance.now()
 resetBtn.click()
 // vim: tabstop=2 shiftwidth=2 expandtab
