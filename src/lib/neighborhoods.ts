@@ -1,21 +1,33 @@
-/**
-* An object containing several functions to generate lists of relative positions
-* for a neighborhood hitbox.
-*
-* See [[hitbox]].
-*/
-export interface xycoord{
-  x: number
-  y: number
-}
-export type hitbox=xycoord[]
+/** Several functions to generate lists of relative positions
+ *  for a neighborhood hitbox.
+ *
+ *  Copyright (C) 2018-2022  Nathan Fritzler
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see http://www.gnu.org/licenses/
+ */
+import { Location } from './renderers'
+/** A list of locations, usually relative around a pixel. */
+export type Hitbox=Location[]
 /**
 * Makes a wolfram neighborhood.
+*
+* Locations intentionally ordered to reflect use in higher-order functions.
 *
 * Area is f(x)=2x-1
 *
 * @param radius - Count of how many to the right and left to include. Defaults
-* @param yval - Count of how many to offset the y value by. Defaults to -1.
+* @param y - Count of how many to offset the y value by. Defaults to -1.
 * @param includeSelf - Should this include the center pixel? Defaults to true.
 * @returns A hitbox shaped like this under defaults:
 *
@@ -24,18 +36,22 @@ export type hitbox=xycoord[]
 *  O
 * ```
 */
-export function wolfram (radius?: number, yval?: number, includeSelf?: boolean): hitbox {
-  if (typeof radius === 'undefined') { radius = 1 }
-  if (typeof yval === 'undefined') { yval = -1 }
+export function wolfram (radius?: number, y?: number, includeSelf?: boolean): Hitbox {
+  if (radius == null) {
+    radius = 1
+  }
+  if (y == null) {
+    y = -1
+  }
   const output = []
   for (let i = radius; i > 0; i--) {
-    output.push({ x: -1 * i, y: yval })
+    output.push({ x: -1 * i, y })
   }
-  if (typeof includeSelf === 'undefined' || includeSelf) {
-    output.push({ x: 0, y: yval })
+  if (includeSelf == null || includeSelf) {
+    output.push({ x: 0, y })
   }
   for (let i = radius; i > 0; i--) {
-    output.push({ x: i, y: yval })
+    output.push({ x: i, y })
   }
   return output
 }
@@ -55,15 +71,21 @@ export function wolfram (radius?: number, yval?: number, includeSelf?: boolean):
 * XXX
 * ```
 */
-export function moore (radius?: number, includeSelf?: boolean): hitbox {
-  if (typeof radius === 'undefined') { radius = 1 }
-  if (typeof includeSelf === 'undefined') { includeSelf = false }
-  const output: hitbox = []
+export function moore (radius?: number, includeSelf?: boolean): Hitbox {
+  if (radius == null) {
+    radius = 1
+  }
+  if (includeSelf == null) {
+    includeSelf = false
+  }
+  const output: Hitbox = []
   // Note: no need to calculate the Chebyshev distance. All pixels in this
   // range are "magically" within.
   for (let x = -1 * radius; x <= radius; x++) {
     for (let y = -1 * radius; y <= radius; y++) {
-      if (includeSelf || !(x === 0 && y === 0)) { output.push({ x: x, y: y }) }
+      if (includeSelf || !(x === 0 && y === 0)) {
+        output.push({ x, y })
+      }
     }
   }
   return output
@@ -85,11 +107,25 @@ export function moore (radius?: number, includeSelf?: boolean): hitbox {
 * XOX
 *  X
 * ```
+*
+* if `radius` is `2` it looks like this:
+*
+* ```
+*   X
+*  XXX
+* XXOXX
+*  XXX
+*   X
+* ```
 */
-export function vonNeumann (radius?: number, includeSelf?: boolean): hitbox {
-  if (typeof radius === 'undefined') { radius = 1 }
-  if (typeof includeSelf === 'undefined') { includeSelf = false }
-  const output: hitbox = []
+export function vonNeumann (radius?: number, includeSelf?: boolean): Hitbox {
+  if (typeof radius === 'undefined') {
+    radius = 1
+  }
+  if (typeof includeSelf === 'undefined') {
+    includeSelf = false
+  }
+  const output: Hitbox = []
   // A Von Neumann neighborhood of a given distance always fits inside of a
   // Moore neighborhood of the same. (This is a bit brute-force)
   for (let x = -1 * radius; x <= radius; x++) {
@@ -97,7 +133,9 @@ export function vonNeumann (radius?: number, includeSelf?: boolean): hitbox {
       if (
         (includeSelf || !(x === 0 && y === 0)) &&
         (Math.abs(x) + Math.abs(y) <= radius) // Taxicab distance
-      ) { output.push({ x: x, y: y }) }
+      ) {
+        output.push({ x, y })
+      }
     }
   }
   return output
@@ -113,10 +151,14 @@ export function vonNeumann (radius?: number, includeSelf?: boolean): hitbox {
 * @returns A hitbox where all pixels fit within a circle of the given
 * radius, where the precise euclidean distance is `<=` the radias.
 */
-export function euclidean (radius?: number, includeSelf?: boolean): hitbox {
-  if (typeof radius === 'undefined') { radius = 1 }
-  if (typeof includeSelf === 'undefined') { includeSelf = false }
-  const output: hitbox = []
+export function euclidean (radius?: number, includeSelf?: boolean): Hitbox {
+  if (radius == null) {
+    radius = 1
+  }
+  if (includeSelf == null) {
+    includeSelf = false
+  }
+  const output: Hitbox = []
   // A circle of a given diameter always fits inside of a square of the same
   // side-length. (This is a bit brute-force)
   for (let x = -1 * radius; x <= radius; x++) {
@@ -124,7 +166,9 @@ export function euclidean (radius?: number, includeSelf?: boolean): hitbox {
       if (
         (includeSelf || !(x === 0 && y === 0)) &&
         (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= radius) // Euclidean distance
-      ) { output.push({ x: x, y: y }) }
+      ) {
+        output.push({ x, y })
+      }
     }
   }
   return output

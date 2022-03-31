@@ -1,4 +1,4 @@
-# ![pixelmanipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator [![View the Demo][vtdsvg]][the demo] [![js-standard-style][standard svg]](http://standardjs.com)
+# ![pixelmanipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator [![View the Demo][vtdsvg]][the demo] [![js-standard-style][standard svg]](http://standardjs.com) [![View the Docs][vtdosvg]][the docs]
 
 PixelManipulator is a JavaScript library that can run any cellular automata on
 an html5 canvas, such as "Conway's Game of Life," and "Rule 90." Inspired by the
@@ -8,6 +8,8 @@ web-browsers.
 [repo]: https://github.com/lazerbeak12345/pixelmanipulator
 [the demo]: https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html
 [vtdsvg]: https://img.shields.io/badge/view-the_demo-green.svg
+[the docs]: https://lazerbeak12345.github.io/pixelmanipulator/modules.html
+[vtdosvg]: https://img.shields.io/badge/view-the_docs-informational.svg
 [standard svg]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg
 
 ## About the demo [![View the Demo][vtdsvg]][the demo]
@@ -43,43 +45,87 @@ Pre-programmed cellular automata include:
 
 ## Getting Started with the library
 
-Download `pixelmanipulator.js` from [the repo][repo] and include this in your html:
+### Old-school
+
+Start with this html:
 
 ```html
 <!doctype html>
 <html>
 	<head>
-		...
-		<!-- Replace this with the proper location of the file. -->
-		<script src="pixelmanipulator.js"></script>
-		...
+		<!-- If you'd like you can replace this with a different URL for the library -->
+		<script src="https://unpkg.com/pixelmanipulator@^5"></script>
 	</head>
 	<body>
-		...
-		<!-- The canvas element to render to. -->
-		<canvas id="myCanvas"></canvas>>
-		...
-		<!-- Near the end of the code to ensure pixelmanipulator.js loaded -->
+		<!-- The canvas element to render to -->
+		<canvas id="myCanvas"></canvas>
+		<!-- Near the end of the code to ensure pixelmanipulator loaded -->
 		<script>
-			var p = new pixelmanipulator.PixelManipulator();
-			//Get the canvas element and tell PixelManipulator to use it
-			p.canvasPrep({
-				canvas:document.getElementById("myCanvas"),
-			});
+			// Get the canvas element
+			var canvas = canvas:document.getElementById("myCanvas")
+
+			// Create a renderer that renders on that canvas
+			var renderer = new pixelmanipulator.Ctx2dRenderer(canvas)
+
+			// Create a PixelManipulator, setting the size to 400 by 400
+			var p = new pixelmanipulator.PixelManipulator(renderer, 400, 400)
+
 			// An example element to get you started.
-			p.addElement("Conway's Game Of Life",{
-				color:[0,255,0],//what rgb color it is
-				pattern:"B3/S23",//born on 3, survives on 2 or 3
-			});
-			p.play({}); // Final initialization, and play
+			var gol = p.addElement("Conway's Game Of Life", {
+				// born on 3, survives on 2 or 3
+				...pixelmanipulator.rules.lifelike(p, 'B3/S23'),
+
+				// the rgb color
+				renderAs: [0, 255, 0]
+			})
+
+			// If your browser doesn't support spread syntax (that's the `...`), then this works too!
+			var rule = p.addElement("Rule 90", {
+				renderAs: [147, 112, 219, 255]
+			})
+			p.modifyElement(rule, pixelmanipulator.rules.wolfram(p, 'Rule 90'))
+
 			// Randomly fill 15% of the canvas with this element.
-			p.randomlyFill("Conway's Game Of Life",15);
+			p.randomlyFill(gol, 15)
+
+			// ... and play. Watch it go!
+			p.play()
 		</script>
 	</body>
 </html>
 ```
 
-Pixelmanipulator supports various browser-side module loaders.
+Pixelmanipulator supports various browser-side module loaders, such as
+
+- CommonJS (CJS)
+- Asynchronus Module Definition (AMD)
+- And also supports a fallback to the namespaced global variable
+  `pixelmanipulator`
+
+For documentation, [![View the Docs][vtdosvg]][the docs]
+
+See the next section for how to make use of PixelManipulator as an NPM package
+instead of using a CDN
+
+### NPM Package
+
+In your project run one of these:
+
+- For yarn, `yarn add pixelmanipulator`
+- For npm, `npm i pixelmanipulator`
+
+If you are using esmodules, you now can import it like this:
+
+```ts
+import { PixelManipulator, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
+```
+
+Furthermore, if you don't want to render to an HTML5 Canvas, you might find
+[the `String-Renderer`][string-renderer] to be usefull to you.
+
+[string-renderer]: https://lazerbeak12345.github.io/pixelmanipulator/classes/renderers.StringRenderer.html
+
+For documentation, [![View the Docs][vtdosvg]][the docs]
 
 ## What is Conway's game of Life
 
@@ -111,4 +157,4 @@ The example code above included `B2/S23` (AKA "Conway's game of Life") as an exa
 
 - Seeds `B2/S`
 - Highlife `B36/S23`
-- And more! (262144 combinations, `2^(9+9)`) 
+- And more! (262144 combinations, `2^(9+9)`)

@@ -1,8 +1,9 @@
-/*  This is a cellular automata JavaScript library called PixelManipulator. For
+/** @packageDocumentation pixelmanipulator
+ * This is a cellular automata JavaScript library called PixelManipulator. For
  *  information about how to use this script, see
  *  https://github.com/Lazerbeak12345/pixelmanipulator
- *
- *  Copyright (C) 2018-2021  Nathan Fritzler
+ */
+/*  Copyright (C) 2018-2022  Nathan Fritzler
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,8 +19,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import { version as _version } from '../../package.json'
-import { hitbox, moore, wolfram } from './neighborhoods'
+import { Hitbox, moore, wolfram } from './neighborhoods'
 import { Renderer, Location, location2Index } from './renderers'
+// export * as neighborhoods from './neighborhoods'
 function boolToNumber (bool: boolean): number {
   return bool ? 1 : 0
 }
@@ -31,33 +33,34 @@ export interface Rel{
   x: number
   /** The Y location of this pixel. */
   y: number
-  /* The ID number of the current pixel. Reccommended if performance profiling
+  /** The ID number of the current pixel. Reccommended if performance profiling
   * shows string comparision is a bottleneck.
   */
   oldId: number
+  /** The ID of the element for which this is being called. (in a
+  * [[ElementDataUnknown.liveCell]] that's the same as [[Rel.oldId]], but in a
+  * [[ElementDataUnknown.deadCell]] it's the id that the deadCell belongs to.
+  */
   thisId: number
 }
 /** Much like [[ElementDataUnknown]] but all fields except [[ElementData.loop]],
 * [[ElementData.liveCell]] and [[ElementData.liveCell]] are mandatory. */
-export interface ElementData<T> extends ElementDataUnknown<T> {
-  name: string
+export interface ElementData<T> extends ElementDataUnknownNameMandatory<T> {
   renderAs: T
-  hitbox: hitbox
-  liveCell?: (rel: Rel) => void
-  deadCell?: (rel: Rel) => void
+  hitbox: Hitbox
 }
 /** Information about an element. */
 export interface ElementDataUnknown<T>{
   /** The name of the element. */
   name?: string
-  /** Information on how to render this element (Such as a [[Color]]) */
+  /** Information on how to render this element */
   renderAs?: T
-  /** [[ElementDataUnknownNameMandatory.deadCell]] will only be called on empty
+  /** [[ElementDataUnknown.deadCell]] will only be called on empty
   * pixels within the hitbox of a live cell. Array of relative coordinate pairs.
   * Optional, defaults to the result of [[PixelManipulator.neighborhoods.moore]]
   * called with no arguments.
   */
-  hitbox?: hitbox
+  hitbox?: Hitbox
   /** Every frame of animation, pixelmanipulator iterates through each and every pixel on the screen. If this element is found, it calls this function.
   */
   liveCell?: (rel: Rel) => void
@@ -68,6 +71,7 @@ export interface ElementDataUnknown<T>{
   * calling the same dead pixel twice.
   */
   deadCell?: (rel: Rel) => void
+  /** If present, indicates that this element was auto-generated */
   madeWithRule?: true
 }
 /** Much like [[ElementDataUnknown]] but the name is mandatory. */
@@ -84,7 +88,15 @@ function _convertNumListToBf (nl: string): number {
   }
   return out
 }
+/** Template generators for your elements. */
 export const rules = {
+  /** Generates elements like conway's game of life.
+  * @param p - `lifelike` needs to be able to call [[PixelManipulator.mooreNearbyCounter]]
+  * @param pattern - The B/S syntax indicator of on how many cells of the same
+  * type in the moore radius around each pixel should survive, and on how many
+  * should be born.
+  * @param loop - Should this loop around screen edges? (Passed to [[Location.loop]])
+  */
   lifelike: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const numbers = pattern.split(/\/?[a-z]/gi)// "B",born,die
     const bfdie = _convertNumListToBf(numbers[2])
@@ -106,6 +118,14 @@ export const rules = {
       }
     }
   },
+  /** Generates fundamental cellular automata
+  * @param p - `wolfram` needs to be able to call [[PixelManipulator.wolframNearbyCounter]]
+  * @param pattern - The Rule num syntax, where the 8-bit number is translated
+  * into a binary list, each where the inverted 3-binary-digit index represents
+  * the state of cells in the row above. On a match, the cell becomes the state
+  * specified in the initial 8-bit number.
+  * @param loop - Should this loop around screen edges? (Passed to [[Location.loop]])
+  */
   wolfram: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const binStates = parseInt(pattern.split(/Rule /gi)[1])
     return {
@@ -154,6 +174,11 @@ export interface CanvasSizes{
 export * from './renderers'
 /** A cellular automata engine */
 export class PixelManipulator<T> {
+  /**
+  * @param renderer - The target to render things to.
+  * @param width - How wide should the initial target be?
+  * @param height - How tall should the initial target be?
+  */
   constructor (renderer: Renderer<T>, width: number, height: number) {
     this.renderer = renderer
     this.defaultId = this.addElement({
@@ -170,8 +195,8 @@ export class PixelManipulator<T> {
   * This is the number that indicates what animation frame the iterate function
   * is being called with.
   *
-  * \> You can use this to mannually stop the iterations like so:
-  * \> `cancelAnimationFrame(this.loopint)` (not reccommended)
+  * > You can use this to mannually stop the iterations like so:
+  * > `cancelAnimationFrame(this.loopint)` (not reccommended)
   */
   loopint=0
   /**
@@ -194,8 +219,8 @@ export class PixelManipulator<T> {
   * It is `"playing"` if it is currently animating, or `"paused"` if not
   * currently animating.
   *
-  * \> This has been around since early version 0, and once was the `innerText`
-  * \> value of a pause/play button!
+  * > This has been around since early version 0, and once was the `innerText`
+  * > value of a pause/play button!
   */
   mode: 'playing'|'paused'='paused'
   /**
@@ -213,6 +238,7 @@ export class PixelManipulator<T> {
 
   /** Gets called after a call to [[PixelManipulator.modifyElement]]. The ID is
   * passed as the only argument.
+  * @param id - The element that was modified.
   */
   onElementModified: (id: number) => void=function () {}
   /** @returns the width of the canvas */
@@ -235,7 +261,10 @@ export class PixelManipulator<T> {
     this.renderer.set_height(value)
   }
 
-  /// fills the screen with value, at an optional given percent
+  /** fills the screen with value, at an optional given percent
+  * @param value - The element to put on the screen
+  * @param pr - The percent as a number from 1 to 100, defaulting at 15
+  */
   randomlyFill (value: string|number, pr?: number): void {
     pr = pr ?? 15
     const w = this.get_width()
@@ -245,22 +274,9 @@ export class PixelManipulator<T> {
         if (Math.random() * 100 < pr) { this.setPixel({ x, y }, value) }
       }
     }
-  };
+  }
 
   /** Adds multiple elements.
-  *
-  * ```ts
-  * p.addMultipleElements({
-  *   "Conway's Game of Life":{
-  *     color:[0,255,0],
-  *     pattern:"B3/S23"
-  *   },
-  *   "Highlife":{
-  *     color:[0,255,128],
-  *     pattern:"B36/S23" //born on 3 or 6, survives on 2 or 3
-  *   }
-  * })
-  * ```
   *
   * @param elements - Index is the element name, value is the element data (and
   * does not require the name). Value is passed to
@@ -271,20 +287,10 @@ export class PixelManipulator<T> {
       elements[elm].name = elm
       this.addElement(elements[elm] as ElementDataUnknownNameMandatory<T>)
     }
-  };
+  }
 
   /** Add an element with the given element data
-  *
-  * Example for Conway's game of life:
-  *
-  * ```ts
-  * p.addElement({
-  *   name:"Conway's Game Of Life",
-  *   color:[0,255,0],
-  *   pattern:"B3/S23"
-  * })
-  * ```
-  *
+  * @param data - The details about the element.
   * @returns The generated [[ElementData.number]]
   */
   addElement (
@@ -301,35 +307,32 @@ export class PixelManipulator<T> {
     this.elements.push(tmpData as ElementData<T>)
     this.modifyElement(this.elements.length - 1, data as ElementDataUnknown<T>)
     return this.elements.length - 1
-  };
+  }
 
-  /** Any values present in the object will be applied to the pre-existing
-  * element.
+  /**
+  * @param id - How to identify what element to modify.
+  * @param data - Values to apply to the pre-existing element.
   *
   * Automatically calls [[PixelManipulator.aliasElements]] if
-  * [[ElementDataUnknown.name]] is present in the object.
-  *
-  * If [[ElementDataUnknown.pattern]] is present, it will intelegently replace
-  * the [[ElementDataUnknown.liveCell]] and [[ElementDataUnknown.deadCell]]
-  * callbacks.
+  * [[ElementDataUnknown.name]] is present in `data`
   */
   modifyElement (id: number, data: ElementDataUnknown<T>): void {
     const oldData = this.elements[id]
     if (typeof data.name !== 'undefined' && data.name !== oldData.name) {
       this.aliasElements(oldData.name, data.name)
     }
-    if (data.hitbox == null) {
-      data.hitbox = moore()
-    }
     oldData.name = data.name ?? oldData.name
     oldData.renderAs = this.renderer.modifyElement(id, data.renderAs ?? oldData.renderAs)
     oldData.hitbox = data.hitbox ?? oldData.hitbox
+    if (oldData.hitbox == null) {
+      oldData.hitbox = moore()
+    }
     oldData.liveCell = data.liveCell ?? oldData.liveCell
     oldData.deadCell = data.deadCell ?? oldData.deadCell
     oldData.madeWithRule = data.madeWithRule ?? oldData.madeWithRule
     this.elements[id] = oldData
     this.onElementModified(id)
-  };
+  }
 
   /**
   * @param oldName - The old [[ElementData.name]]
@@ -347,7 +350,10 @@ export class PixelManipulator<T> {
     this.nameAliases.set(oldName, newName)
   }
 
-  /** Respecting aliases, convert an element name into its number. */
+  /** Respecting aliases, convert an element name into its number.
+  * @param name - name of element
+  * @returns The number of the element
+  */
   nameToId (name: string): number {
     let unaliased: string|undefined = name
     while (typeof unaliased !== 'undefined') {
@@ -367,9 +373,7 @@ export class PixelManipulator<T> {
   }
 
   /**
-  *
-  * @param loop - Should this check wrap around canvas edges?
-  *
+  * @param loc - Location of the element.
   * @returns Name of element at passed-in location. See [[ElementData.name]]
   */
   whatIs (loc: Location): string {
@@ -390,12 +394,15 @@ export class PixelManipulator<T> {
     this.loopint = window.requestAnimationFrame(() => {
       this.iterate()
     })
-  };
+  }
 
   /** Reset, resize and initialize the canvas(es).
   * Calls [[PixelManipulator.pause]] [[PixelManipulator.updateData]]
   * [[PixelManipulator.update]] resets all internal state, excluding the
   * element definitions.
+  *
+  * @param canvasSizes - Allows one to change the size of the canvases during
+  * the reset.
   */
   reset (canvasSizes?: CanvasSizes): void {
     if (typeof canvasSizes === 'undefined') { canvasSizes = {} }
@@ -422,13 +429,14 @@ export class PixelManipulator<T> {
   pause (): void {
     this.mode = 'paused'
     window.cancelAnimationFrame(this.loopint)
-  };
+  }
 
   /**
-  * @returns the [[ElementData.number]] of the element at a given location
-  *
-  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * \> effect the result of this function.
+  * @param x - x position
+  * @param y - y position
+  * @param frame - What frame should we grab it from? (default 0)
+  * @param loop - should it loop around edges? (default true)
+  * @returns the element id at a given location
   */
   getPixelId ({ x, y, frame, loop }: Location): number {
     const w = this.get_width()
@@ -445,23 +453,23 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * Applies any changes made with [[PixelManipulator.setPixel]] to the canvas
+  * Applies any changes made with [[PixelManipulator.renderPixel]] to the canvas
   */
   update (): void {
     this.renderer.update()
   }
 
   /**
-  * @returns Does the cell at `x` and `y` position match `ident`?
-  *
-  * \> Keep in mind that [[PixelManipulator.setPixel]] in the current frame can
-  * \> effect the result of this function.
+  * @param loc - Where to confirm the element
+  * @param id - The elm you expect it to be
+  * @returns Does the cell at `loc` match `ident`?
   */
   confirmElm (loc: Location, id: number|string): boolean {
     let tmp: number|undefined
-    switch (typeof id) {
-      case 'string': tmp = this.nameToId(id); break
-      case 'number': tmp = id
+    if (typeof id === 'string') {
+      tmp = this.nameToId(id)
+    } else {
+      tmp = id
     }
     if (tmp == null) {
       throw new Error(`color ${id.toString()} invalid!`)
@@ -469,9 +477,12 @@ export class PixelManipulator<T> {
     return this.getPixelId(loc) === tmp
   }
 
-  /** @param loop - Should this check wrap around canvas edges?
-  * @param name - element to look for
-  * @returns Number of elements in moore radius */
+  /** @param name - element to look for
+  * @param x - x location of center of moore area
+  * @param y - y location of center of moore area
+  * @param frame - What frame to grab it from. (default 0, reccomended 1)
+  * @param loop - Should it loop around canvas edges while counting?
+  * @returns Number of matching elements in moore radius */
   mooreNearbyCounter ({ x, y, frame, loop }: Location, name: number|string): number {
     return moore()
       .map(rel => ({ x: x + rel.x, y: y + rel.y, frame, loop }))
@@ -480,9 +491,14 @@ export class PixelManipulator<T> {
       .reduce((a, b) => a + b)
   }
 
-  /** @param loop - Should this check wrap around canvas edges?
+  /**
+  * @param x - "Current" pixel x location
+  * @param y - "Current" pixel y location
+  * @param frame - What frame to measure on? (default 0, reccomended 1)
+  * @param loop - Should this loop around edges when checking?
   * @param name - element to look for
-  * @param bindex - Either a string like `"001"` to match to, or the same encoded as a number.
+  * @param bindex - Either a string like `"001"` to match to, or the same
+  * encoded as a number.
   * @returns Number of elements in moore radius */
   wolframNearbyCounter ({ x, y, frame, loop }: Location, name: number|string, binDex: number|string): boolean {
     if (typeof binDex === 'string') {
@@ -505,7 +521,6 @@ export class PixelManipulator<T> {
   *
   * - If a string, it assumes it's an element name.
   * - If a number, it assumes it's an element ID
-  * - If an array, it assumes it's an 4-long color array.
   *
   * @param loop - Defaults to [[true]]. Wraps `x` and `y` around canvas borders.
   */
@@ -529,8 +544,9 @@ export class PixelManipulator<T> {
     } else if (x < 0 || x >= w || y < 0 || y >= h) return // if it can't loop, and it's outside of the boundaries, exit
     this.renderer.renderPixel({ x, y }, id)
     this.frames[0][location2Index({ x, y }, w)] = id
-  };
+  }
 
+  /** Number of pixels per element in the last frame */
   pixelCounts: {
     [index: number]: number
   }={}
@@ -538,14 +554,12 @@ export class PixelManipulator<T> {
   /** A single frame of animation. Media functions pass this into
   * [[requestAnimationFrame]].
   *
-  * \> Be careful! Calling this while [[PixelManipulator.mode]] is `"playing"`
-  * \> might cause two concurrent calls to this function. If any of your automata
-  * \> have "hidden state" - that is they don't represent every detail about
-  * \> themselves as data within the pixels - it might cause conflicts. I haven't
-  * \> seen any issues caused by this thus far, but it still bears a warning.
+  * > Be careful! Calling this while [[PixelManipulator.mode]] is `"playing"`
+  * > might cause two concurrent calls to this function. If any of your automata
+  * > have "hidden state" - that is they don't represent every detail about
+  * > themselves as data within the pixels - it might cause conflicts.
   */
   iterate (): void {
-    // console.log("iterate");
     this.onIterate()
     for (let frame = this.frames.length - 1; frame >= 0; frame--) {
       if (frame > 0) {
@@ -568,7 +582,7 @@ export class PixelManipulator<T> {
             'access to the current memory buffer'
           )
         }
-        if (typeof elm.liveCell === 'function') {
+        if (elm.liveCell != null) {
           elm.liveCell({
             x,
             y,
@@ -576,11 +590,11 @@ export class PixelManipulator<T> {
             thisId: currentPixId
           })
         }
-        if (typeof this.pixelCounts[currentPixId] === 'undefined') {
+        if (this.pixelCounts[currentPixId] == null) {
           this.pixelCounts[currentPixId] = 1
         } else this.pixelCounts[currentPixId]++
-        if (typeof elm.deadCell === 'function') {
-          if (typeof typedUpdatedDead[currentPixId] === 'undefined') {
+        if (elm.deadCell != null) {
+          if (typedUpdatedDead[currentPixId] == null) {
             typedUpdatedDead[currentPixId] = new Uint8Array(Math.ceil((w * h) / 8))
           }
           for (let hi = 0; hi < elm.hitbox.length; hi++) {
@@ -589,7 +603,10 @@ export class PixelManipulator<T> {
             if (hbx < 0) hbx += w
             let hby = (y + pixel.y) % h
             if (hby < 0) hby += h
-            const index = Math.floor((w * hby + hbx) / 8)
+            const index = Math.floor(location2Index({
+              x: hbx,
+              y: hby
+            }, w) / 8)
             const oldValue = typedUpdatedDead[currentPixId][index]
             const bitMask = 1 << (hbx % 8)
             if ((oldValue & bitMask) > 0) { continue }
@@ -615,7 +632,7 @@ export class PixelManipulator<T> {
         this.iterate()
       })
     }
-  };
+  }
 
   /**
   * A List of [[Uint32Array]]s each the length of width times height of the
@@ -630,7 +647,7 @@ export class PixelManipulator<T> {
 export const version = _version as string
 /** Licence disclaimer for PixelManipulator */
 export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
-  '2018-2021 Nathan Fritzler\nThis program comes with ABSOLUTELY NO ' +
+  '2018-2022 Nathan Fritzler\nThis program comes with ABSOLUTELY NO ' +
   'WARRANTY\nThis is free software, and you are welcome to redistribute it\n' +
   'under certain conditions, as according to the GNU GENERAL PUBLIC LICENSE ' +
   'version 3 or later.'
