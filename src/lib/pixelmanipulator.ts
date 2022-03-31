@@ -1,9 +1,9 @@
-/** @packageDocumentation pixelmanipulator
+/**
  * This is a cellular automata JavaScript library called PixelManipulator. For
  *  information about how to use this script, see
  *  https://github.com/Lazerbeak12345/pixelmanipulator
- */
-/*  Copyright (C) 2018-2022  Nathan Fritzler
+ *
+ *  Copyright (C) 2018-2022  Nathan Fritzler
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
