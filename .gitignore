@@ -1,11 +1,20 @@
 # Dependency directories
 node_modules/
+# Default list for Yarn with PNP, no ZeroInstall
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
-# Notepad++ session (what is open, what line is selected, etc. I only use this when on windows though.)
-.notepadppsession
-
+# Log files
 *.log
+
+# Compile targets
 dist/
 docs/
 
+# Compiler caches
 .parcel-cache
