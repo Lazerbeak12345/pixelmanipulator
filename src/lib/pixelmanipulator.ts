@@ -22,6 +22,8 @@ import { version as _version } from '../../package.json'
 import { Hitbox, moore, wolfram } from './neighborhoods'
 import { Renderer, Location, location2Index } from './renderers'
 // export * as neighborhoods from './neighborhoods'
+import * as _neighborhoods from './neighborhoods'
+export { _neighborhoods as neighborhoods }
 function boolToNumber (bool: boolean): number {
   return bool ? 1 : 0
 }
