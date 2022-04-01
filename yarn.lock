@@ -603,7 +603,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@parcel/packager-ts@npm:2.4.1":
+"@parcel/packager-ts@npm:^2.4.1":
   version: 2.4.1
   resolution: "@parcel/packager-ts@npm:2.4.1"
   dependencies:
@@ -860,7 +860,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@parcel/transformer-typescript-types@npm:2.4.1":
+"@parcel/transformer-typescript-types@npm:^2.4.1":
   version: 2.4.1
   resolution: "@parcel/transformer-typescript-types@npm:2.4.1"
   dependencies:
@@ -4470,8 +4470,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "pixelmanipulator@workspace:."
   dependencies:
-    "@parcel/packager-ts": 2.4.1
-    "@parcel/transformer-typescript-types": 2.4.1
+    "@parcel/packager-ts": ^2.4.1
+    "@parcel/transformer-typescript-types": ^2.4.1
     "@swc/helpers": ^0.3.8
     "@typescript-eslint/eslint-plugin": ^4.0.1
     "@typescript-eslint/parser": ^4.0.0
