@@ -60,22 +60,22 @@
     "canvas"
   ],
   "devDependencies": {
-    "@parcel/packager-ts": "2.3.2",
-    "@parcel/transformer-typescript-types": "2.3.2",
+    "@parcel/packager-ts": "^2.4.1",
+    "@parcel/transformer-typescript-types": "^2.4.1",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.0",
     "browserify": "^17.0.0",
-    "eslint": "^7.12.1",
+    "eslint": "^5.0.0 || ^6.0.0 || ^7.0.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1 || ^5.0.0",
     "eslint-plugin-tsdoc": "^0.2.14",
     "gh-pages": "^3.2.3",
-    "parcel": "^2.3.2",
-    "typedoc": "^0.22.12",
+    "parcel": "^2.4.1",
+    "typedoc": "^0.22.13",
     "typedoc-plugin-mdn-links": "^1.0.5",
-    "typescript": "<4.5.0"
+    "typescript": "^4.6.3"
   },
   "scripts": {
     "pretest": "yarn build",
