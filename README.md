@@ -117,7 +117,7 @@ In your project run one of these:
 If you are using esmodules, you now can import it like this:
 
 ```ts
-import { PixelManipulator, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
+import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 ```
 
 Furthermore, if you don't want to render to an HTML5 Canvas, you might find
