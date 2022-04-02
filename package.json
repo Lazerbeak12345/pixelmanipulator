@@ -85,7 +85,7 @@
     "build:parcel": "parcel build",
     "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
     "build": "yarn lint && yarn build:docs && yarn build:parcel && yarn build:bundle",
-    "updatedemo": "yarn build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
+    "updatedemo": "yarn build && CACHE_DIR=.cache gh-pages -d docs -m \"Update $npm_package_version\" -tf",
     "coverage": "exit 1"
   },
   "dependencies": {

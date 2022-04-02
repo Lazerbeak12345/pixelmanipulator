@@ -1,5 +1,4 @@
 # Dependency directories
-node_modules/
 # Default list for Yarn with PNP, no ZeroInstall
 .pnp.*
 .yarn/*
@@ -18,3 +17,7 @@ docs/
 
 # Compiler caches
 .parcel-cache
+
+# gh-pages usually puts its cache in node_modules/.cache/gh-pages.
+# This can was changed with the use of the CACHE_DIR enviroment variable.
+.cache
