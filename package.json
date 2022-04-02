@@ -78,7 +78,7 @@
     "typescript": "<4.5.0"
   },
   "scripts": {
-    "test": "yarn build && exit 1",
+    "test": "echo 'No tests written!' && exit 1",
     "watch": "parcel --target demo",
     "lint": "eslint .",
     "build:docs": "typedoc --name PixelManipulator --out docs --media media --includeVersion src/lib/*.ts",
@@ -86,7 +86,7 @@
     "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
     "build": "yarn lint && yarn build:docs && yarn build:parcel && yarn build:bundle",
     "updatedemo": "yarn build && CACHE_DIR=.cache gh-pages -d docs -m \"Update $npm_package_version\" -tf",
-    "coverage": "exit 1"
+    "coverage": "yarn test"
   },
   "dependencies": {
     "@swc/helpers": "^0.3.8"
