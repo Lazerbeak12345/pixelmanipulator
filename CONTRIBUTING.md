@@ -2,8 +2,9 @@
 
 ## Local setup
 
-1. Make sure you have `yarn` installed.
+1. Make sure you have `yarn` installed globally.
 2. Clone the project locally
+3. `yarn set version berry` will enable use of the latest vesrion of yarn for this project.
 3. `yarn install`
 
 ## Running code locally
