@@ -12,7 +12,7 @@ I've been a big fan of yarn. I'm still a big fan of yarn. Why not use it then?
 
 1. Needlessly complicated local setup process.
    - Installing both yarn and npm is fine, but doing that, and running `yarn set
-   version berry`, then using gitignore hacks to prevent increasing repo size by 10 times.
+   version berry`, then using gitignore hacks to prevent increasing repo size by 10 times is not great.
 2. Very large amount of config - just to get a fundimentally simple
    library to work.
    - This adds a lot of configuration files. This repo is a very simple repo.
