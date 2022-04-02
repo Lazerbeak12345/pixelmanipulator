@@ -1,19 +1,5 @@
 # Dependency directories
-# Default list for Yarn with PNP, no ZeroInstall
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-# This file alone was bigger than all of the rest of the repo combined
-#!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# This file is automatically modified, and if that change is pushed, future downloads of the repo break. Use force-staging to stage exactly what is needed.
-.yarnrc.yml
-
-# Log files
-*.log
+node_modules
 
 # Compile targets
 dist/
@@ -21,7 +7,3 @@ docs/
 
 # Compiler caches
 .parcel-cache
-
-# gh-pages usually puts its cache in node_modules/.cache/gh-pages.
-# This can was changed with the use of the CACHE_DIR enviroment variable.
-.cache
