@@ -1,5 +1,13 @@
 import { PixelManipulator, version, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
 
+/**
+* The X coordinate of where the center of [[zoom]] is windowed at.
+*/
+let zoomX = 10
+/**
+* The Y coordinate of where the center of the [[zoom]] is windowed at.
+*/
+let zoomY = 10
 function updateBox (): void {
   selectorboxSty.width = `${zoom.width / zoomScaleFactor}px`
   selectorboxSty.height = `${zoom.height / zoomScaleFactor}px`
@@ -424,14 +432,6 @@ oldZoom({ // zoom at the center
     (Math.floor(zoom.height / 2) * zoomScaleFactor)
 })
 
-/**
-* The X coordinate of where the center of [[zoom]] is windowed at.
-*/
-let zoomX = 10
-/**
-* The Y coordinate of where the center of the [[zoom]] is windowed at.
-*/
-let zoomY = 10
 p.onElementModified = () => {
   let nsv = normalSelect.value
   let csv = ctrlSelect.value
