@@ -72,6 +72,7 @@ Start with this html:
 
 			// An example element to get you started.
 			var gol = p.addElement("Conway's Game Of Life", {
+
 				// born on 3, survives on 2 or 3
 				...pixelmanipulator.rules.lifelike(p, 'B3/S23'),
 
@@ -80,15 +81,15 @@ Start with this html:
 			})
 
 			// If your browser doesn't support spread syntax (that's the `...`), then this works too!
-			var rule = p.addElement("Rule 90", {
-				renderAs: [147, 112, 219, 255]
+			var rule_ninety = p.addElement("Rule 90", {
+				renderAs: [147, 112, 219]
 			})
-			p.modifyElement(rule, pixelmanipulator.rules.wolfram(p, 'Rule 90'))
+			p.modifyElement(rule_ninety, pixelmanipulator.rules.wolfram(p, 'Rule 90'))
 
-			// Randomly fill 15% of the canvas with this element.
+			// Randomly fill 15% of the canvas with "Conway's Game of Life" from earlier
 			p.randomlyFill(gol, 15)
 
-			// ... and play. Watch it go!
+			// Watch it go!
 			p.play()
 		</script>
 	</body>
