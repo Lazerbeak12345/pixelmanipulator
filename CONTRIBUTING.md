@@ -1,5 +1,27 @@
 # Guidelines for contributing to pixelmanipulator
 
+## Local setup
+
+1. Make sure you have `yarn` installed.
+2. Clone the project locally
+3. `yarn install`
+
+## Running code locally
+
+1. `yarn watch`
+2. Open the url it gives you on a fairly new browser (as watch mode, unlike
+   production, does not apply as many polyfills)
+
+## Updating the demo and the docs
+
+Run `yarn updatedemo` (only works if you have push privs)
+
+## Building
+
+Run `yarn build`
+
+All files are either in `/docs` or in `/dist`. You can see the specifics in `/package.json`
+
 ## Issues
 
 1. Make it clear what the issue is.
