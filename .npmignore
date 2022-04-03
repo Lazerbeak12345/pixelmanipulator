@@ -5,3 +5,8 @@ CODE_OF_CONDUCT.md
 todo.md
 *.png
 *.ico
+.parcel-cache
+*.json
+docs
+.eslintrc
+src
