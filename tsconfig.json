@@ -4,6 +4,7 @@
 			"dom",
 			"esnext"
 		],
+		"isolatedModules":true,
 		"resolveJsonModule":true,
 		"allowSyntheticDefaultImports": true,
 		"allowUnreachableCode":false,
