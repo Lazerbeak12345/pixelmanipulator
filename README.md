@@ -122,7 +122,7 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 ```
 
 Furthermore, if you don't want to render to an HTML5 Canvas, you might find
-[the `String-Renderer`][string-renderer] to be usefull to you.
+[the `String-Renderer`][string-renderer] to be useful to you.
 
 [string-renderer]: https://lazerbeak12345.github.io/pixelmanipulator/classes/renderers.StringRenderer.html
 
