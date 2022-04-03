@@ -1,37 +1,94 @@
 {
   "name": "pixelmanipulator",
-  "version": "4.5.2",
+  "version": "5.0.0",
   "description": "Run any cellular automata on an html5 canvas.",
-  "main": "pixelmanipulator.js",
+  "main": "dist/main.js",
+  "browser": "dist/browser.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "demo": "docs/pixelmanipulator.html",
+  "unpkg": "dist/bundle.js",
+  "targets": {
+    "main": {
+      "source": "src/lib/pixelmanipulator.ts"
+    },
+    "module": {
+      "source": "src/lib/pixelmanipulator.ts"
+    },
+    "browser": {
+      "source": "src/lib/pixelmanipulator.ts"
+    },
+    "types": {
+      "source": "src/lib/pixelmanipulator.ts"
+    },
+    "demo": {
+      "source": "src/demo/pixelmanipulator.html",
+      "publicUrl": ".",
+      "context": "browser"
+    }
+  },
   "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
   "homepage": "https://lazerbeak12345.github.io/pixelmanipulator",
   "author": "Nathan Fritzler <nfblaster@live.com>",
   "license": "GPL-3.0-or-later",
-  "keywords":[
-	  "cellular automata",
-	  "game of life",
-	  "highlife",
-	  "brians-brain",
-	  "wireworld",
-	  "wolfram",
-	  "rule-30",
-	  "rule-90",
-	  "rule-110",
-	  "rule-184",
-	  "conway",
-	  "pixel",
-	  "game",
-	  "life",
-	  "cellular",
-	  "automata",
-	  "automaton",
-	  "gameoflife",
-	  "gol",
-	  "brian's-brain",
-	  "particle",
-	  "simulation",
-	  "engine",
-	  "grid",
-	  "canvas"
-  ]
+  "browserslist": "defaults",
+  "keywords": [
+    "cellular automata",
+    "game of life",
+    "highlife",
+    "brians-brain",
+    "wireworld",
+    "wolfram",
+    "rule-30",
+    "rule-90",
+    "rule-110",
+    "rule-184",
+    "conway",
+    "pixel",
+    "game",
+    "life",
+    "cellular",
+    "automata",
+    "automaton",
+    "gameoflife",
+    "gol",
+    "brian's-brain",
+    "particle",
+    "simulation",
+    "engine",
+    "grid",
+    "canvas"
+  ],
+  "devDependencies": {
+    "@parcel/packager-ts": "^2.4.1",
+    "@parcel/transformer-typescript-types": "^2.4.1",
+    "@typescript-eslint/eslint-plugin": "^4.0.1",
+    "@typescript-eslint/parser": "^4.0.0",
+    "browserify": "^17.0.0",
+    "eslint": "^5.0.0 || ^6.0.0 || ^7.0.0",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1 || ^5.0.0",
+    "eslint-plugin-tsdoc": "^0.2.14",
+    "gh-pages": "^3.2.3",
+    "parcel": "^2.4.1",
+    "typedoc": "^0.22.13",
+    "typedoc-plugin-mdn-links": "^1.0.5",
+    "typescript": "<4.5.0"
+  },
+  "scripts": {
+    "test": "echo 'No tests written!' && exit 1",
+    "watch": "parcel --target demo",
+    "lint": "eslint .",
+    "build:docs": "typedoc --name PixelManipulator --out docs --media media --includeVersion src/lib/*.ts",
+    "build:parcel": "parcel build",
+    "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
+    "build": "npm run lint && npm run build:docs && npm run build:parcel && npm run build:bundle",
+    "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
+    "coverage": "npm run test"
+  },
+  "dependencies": {
+    "@swc/helpers": "^0.3.8"
+  }
 }

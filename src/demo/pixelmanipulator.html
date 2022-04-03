@@ -1,0 +1,150 @@
+<!doctype html>
+<!--
+	This is the advanced demo for PixelManipulator
+    Copyright (C) 2018  Nathan Fritzler
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html>
+	<head>
+		<!--Declarations and types (media objs and favicons)-->
+		<meta charset="utf-8">
+		<title>Pixel Manipulator</title>
+		<link rel="shortcut icon" href="/media/favicon.ico" type="image/x-icon">
+		<!--CSS files-->
+		<link rel="stylesheet" type="text/css" href="index.css"></link>
+	</head>
+	<body>
+		<!--Content-->
+		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
+		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
+		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
+		<div id="selectorBox"></div>
+		<div id="menu-box">
+			<div id="customizer" class="hidden">
+				<div>Customize element:</div>
+				<select class="elmDrop" id="customSelect"></select>
+				<div>
+					<div>
+						<label>
+							Element Color
+							<input type="color" id="customizeColor">
+						</label>
+					</div>
+					<div>
+						<label>
+							Alpha (Opacity)
+							<span id="customColorAlphaText"></span>
+							<input type="range" min="0" max="255" step="1" id="customColorAlpha">
+						</label>
+					</div>
+					<div>
+						<label>
+							Change Name:
+							<input type="text" id="customizeName">
+						</label>
+					</div>
+				</div>
+			</div>
+			<div id="zoom-box">
+				<div id="zoom-container">
+					<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
+					<div id="largexline"></div>
+					<div id="largeyline"></div>
+					<div id="largexline1"></div>
+					<div id="largeyline1"></div>
+				</div>
+				<div id="actions-box">
+					<button id="reset" alt="Reset" title="Reset">◄</button>
+					<button id="play" alt="Play" title="Play" disabled>►</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
+					<button id="pause" alt="Pause" title="Pause" disabled>▌▌</button><!--This pauses everything in #canvas-->
+					<button id="oneFrameAtATime" alt="Next frame" title="Next frame" disabled>►▌</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+				</div>
+				<div id="scroll-box">
+					<div id="sizes-box">
+						<div>Width: <input id="width" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+						<div>Height: <input id="height" type="text" value="100" placeholder="100" title="Default:100"/>px</div>
+						<div>Zoom Width: <input id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+						<div>Zoom Height: <input id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>px</div>
+					</div>
+					<div id="click-types">
+						<div class="click-type">
+							Normal click:
+							<select class="elmDrop" id="normalSelect"></select>
+							<div class="click-type-random">
+								<button id="normalFill">Randomly fill</button>
+								<input id="normalFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+						<div class="click-type">
+							Ctrl click:
+							<select class="elmDrop" id="ctrlSelect"></select>
+							<div class="click-type-random">
+								<button id="ctrlFill">Randomly fill</button>
+								<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+						<div class="click-type">
+							Alt click:
+							<select class="elmDrop" id="altSelect"></select>
+							<div class="click-type-random">
+								<button id="altFill">Randomly fill</button>
+								<input id="altFillP" type="text" value="15" placeholder="15"/>%
+							</div>
+						</div>
+					</div>
+					<table>
+						<tr>
+							<td>
+								<label>
+									<input id="shtargeter" type="checkbox">
+									Hide targeter lines
+								</label>
+							</td>
+							<td>
+								<label>
+									<input id="shfocusbox" type="checkbox">
+									Hide focus box
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label>
+									<input id="pixelCounterT" type="checkbox">
+									Hide pixelCounter
+								</label>
+							</td>
+							<td>
+								<label>
+									<input id="customizeT" type="checkbox">
+									Show element customizer
+								</label>
+							</td>
+						</tr>
+					</table>
+					<div id="callout">
+						<div>
+							<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">View Pixelmanipulator On GitHub!</a>
+						</div>
+						<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
+						Library v<span id="backendversion"></span>, Frontend v1.31.0
+					</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+				</div>
+			</div>
+		</div>
+		<div id="pixelCounter" style="position:absolute; bottom:0px; text-align:left; left:0px;"></div>
+		<script type=module src="index.ts"></script>
+	</body>
+</html>

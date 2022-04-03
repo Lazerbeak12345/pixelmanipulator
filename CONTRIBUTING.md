@@ -1,5 +1,52 @@
 # Guidelines for contributing to pixelmanipulator
 
+## Local setup
+
+1. Make sure you have `npm` installed
+2. Clone the project locally
+3. `npm install`
+
+### Why not yarn?
+
+I've been a big fan of yarn. I'm still a big fan of yarn. Why not use it then?
+
+1. Needlessly complicated local setup process.
+   - Installing both yarn and npm is fine, but doing that, and running `yarn set
+   version berry`, then using gitignore hacks to prevent increasing repo size by 10 times is not great.
+2. Very large amount of config - just to get a fundimentally simple
+   library to work.
+   - This adds a lot of configuration files. This repo is a very simple repo.
+     The only configuration in a project like this should be configuration to
+     distinguish from repos even simpler than this that comply even closer to
+     reccomended conventions.
+3. The various sdks, runtimes, and other things which are, in fact,
+   already versioned, are expected to reside, checked-in, on the git
+   repo. This is bad taste, only since these multiply the size of the
+   repo (but not final setup size) by a factor of 10. If they were much smaller,
+   or if this library were much larger, it might have been worth considering.
+4. Yarn v1 is deprecated, for all but security updates.
+5. While the benifits of yarn are real (faster, with less storage per cloned
+   repo, including the total size of .gitignored files), these are not worth the
+   costs above.
+6. Npm meets my needs, even if it isn't the best tool for the job.
+   Arguably, these recent changes to yarn have made it so.
+
+## Running code locally
+
+1. `npm run watch`
+2. Open the url it gives you on a fairly new browser (as watch mode, unlike
+   production, does not apply as many polyfills)
+
+## Updating the demo and the docs
+
+Run `npm run updatedemo` (only works if you have push privs)
+
+## Building
+
+Run `npm run build`
+
+All files are either in `/docs` or in `/dist`. You can see the specifics in `/package.json`
+
 ## Issues
 
 1. Make it clear what the issue is.
