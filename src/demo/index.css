@@ -40,6 +40,10 @@ body{
 #actions-box{
 	border-bottom:1px solid lightgrey;
 }
+#actions-box > button {
+	height: 2.25em;
+	width: 2.25em
+}
 #selectorBox,/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
 #smallxline,/*These are the lines that show where on the canvas the mouse cursor is hovering.*/
 #smallyline,

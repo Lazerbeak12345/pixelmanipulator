@@ -1,4 +1,5 @@
 import { PixelManipulator, version, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
+import '@fortawesome/fontawesome-free/attribution.js'
 
 /**
 * The X coordinate of where the center of [[zoom]] is windowed at.
@@ -315,12 +316,14 @@ playBtn.addEventListener('click', function (this: HTMLButtonElement) {
   p.play()
   this.disabled = true
   pauseBtn.disabled = false
+  oneFrameAtATime.disabled = true
 })
 playBtn.disabled = false
 const pauseBtn = document.getElementById('pause') as HTMLButtonElement
 pauseBtn.addEventListener('click', function (this: HTMLButtonElement) {
   this.disabled = true
   playBtn.disabled = false
+  oneFrameAtATime.disabled = false
   p.pause()
 })
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement

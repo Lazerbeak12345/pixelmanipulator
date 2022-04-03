@@ -60,6 +60,7 @@
     "canvas"
   ],
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^6.1.1",
     "@parcel/packager-ts": "^2.4.1",
     "@parcel/transformer-typescript-types": "^2.4.1",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
