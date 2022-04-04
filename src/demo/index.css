@@ -1,7 +1,3 @@
-body{
-	background-color:grey;
-	font-family: sans-serif;
-}
 #canvas{/*This is where the pixels are being renderd*/
 	position:fixed;
 	top:0;
@@ -34,15 +30,7 @@ body{
 	padding-bottom:1em;
 }
 #scroll-box input[type="text"]{
-	text-align:right;
 	width:3em;
-}
-#actions-box{
-	border-bottom:1px solid lightgrey;
-}
-#actions-box > button {
-	height: 2.25em;
-	width: 2.25em
 }
 #selectorBox,/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
 #smallxline,/*These are the lines that show where on the canvas the mouse cursor is hovering.*/
@@ -57,9 +45,6 @@ body{
 }
 #selectorBox:hover{
 	border:solid rgba(255,255,255,.5) 1px;
-}
-.click-type-random{
-	padding-left:1em
 }
 .hidden{
 	display:none;

@@ -134,7 +134,7 @@ function beforeIterate (): void {
   framecount++
 }
 function afterIterate<T> (p: PixelManipulator<T>): void {
-  if (!pixelCounterT.checked) {
+  if (pixelCounterT.checked ?? true) {
     let text = ''
     for (const id in p.pixelCounts) {
       const elm = p.elements[parseInt(id)].name
@@ -318,7 +318,6 @@ playBtn.addEventListener('click', function (this: HTMLButtonElement) {
   pauseBtn.disabled = false
   oneFrameAtATime.disabled = true
 })
-playBtn.disabled = false
 const pauseBtn = document.getElementById('pause') as HTMLButtonElement
 pauseBtn.addEventListener('click', function (this: HTMLButtonElement) {
   this.disabled = true
@@ -381,10 +380,10 @@ altFill.addEventListener('click', () => {
 /// The percent of alt elm to fill canvas with when altFill clicked
 const altFillP = document.getElementById('altFillP') as HTMLInputElement
 
-/// Hide targeter lines
+/// Show targeter lines
 const shtargeter = document.getElementById('shtargeter') as HTMLInputElement
 shtargeter.addEventListener('click', function () {
-  const state = this.checked ? 'hidden' : 'visible'
+  const state = this.checked ?? true ? 'visible' : 'hidden'
   smallxline.style.visibility = state
   smallyline.style.visibility = state
   largexline.style.visibility = state
@@ -395,7 +394,7 @@ shtargeter.addEventListener('click', function () {
 /// Hide focus box
 const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
 shfocusbox.addEventListener('click', function () {
-  const state = this.checked ? 'hidden' : 'visible'
+  const state = this.checked ?? true ? 'visible' : 'hidden'
   selectorBox.style.visibility = state
 })
 /// Hide pixelCounter

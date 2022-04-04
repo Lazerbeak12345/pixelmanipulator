@@ -21,8 +21,18 @@
 		<!--Declarations and types (media objs and favicons)-->
 		<meta charset="utf-8">
 		<title>Pixel Manipulator</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!--The page supports both dark and light color schemes,
+         and the page author prefers / default is light. -->
+		 <meta name="color-scheme" content="light dark">
+		 <!-- Replace the Bootstrap CSS with the
+         Bootstrap-Dark Variant CSS -->
+		 <link href="npm:bootstrap-dark-5/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+		<!-- Optional Meta Theme Color is also supported on Safari and Chrome -->
+		<meta name="theme-color" content="#111111" media="(prefers-color-scheme: light)">
+		<meta name="theme-color" content="#eeeeee" media="(prefers-color-scheme: dark)">
 		<link rel="shortcut icon" href="/media/favicon.ico" type="image/x-icon">
-		<!--CSS files-->
 		<link rel="stylesheet" type="text/css" href="npm:@fortawesome/fontawesome-free/css/all.css"></link>
 		<link rel="stylesheet" type="text/css" href="index.css"></link>
 	</head>
@@ -35,25 +45,25 @@
 		<div id="menu-box">
 			<div id="customizer" class="hidden">
 				<div>Customize element:</div>
-				<select class="elmDrop" id="customSelect"></select>
+				<select class="elmDrop form-select" id="customSelect"></select>
 				<div>
 					<div>
 						<label>
 							Element Color
-							<input type="color" id="customizeColor">
+							<input type="color" class="form-control form-control-color" id="customizeColor">
 						</label>
 					</div>
 					<div>
 						<label>
 							Alpha (Opacity)
 							<span id="customColorAlphaText"></span>
-							<input type="range" min="0" max="255" step="1" id="customColorAlpha">
+							<input type="range" class="form-range" min="0" max="255" step="1" id="customColorAlpha">
 						</label>
 					</div>
 					<div>
 						<label>
 							Change Name:
-							<input type="text" id="customizeName">
+							<input type="text" class="form-control" id="customizeName">
 						</label>
 					</div>
 				</div>
@@ -67,97 +77,118 @@
 					<div id="largeyline1"></div>
 				</div>
 				<div id="actions-box">
-					<button id="reset" alt="Reset" title="Reset">
-						<i class="fa-solid fa-trash-can fa-lg"></i>
-					</button>
-					<button id="play" alt="Play" title="Play" disabled>
-						<i class="fa-solid fa-play fa-lg"></i>
-					</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
-					<button id="pause" alt="Pause" title="Pause" disabled>
-						<i class="fa-solid fa-pause fa-lg"></i>
-					</button><!--This pauses everything in #canvas-->
-					<button id="oneFrameAtATime" alt="Next frame" title="Next frame" disabled>
-						<i class="fa-solid fa-forward-step fa-lg"></i>
-					</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+					<div class="btn-group">
+						<button id="reset" type="button" class="btn btn-danger" alt="Reset" title="Reset">
+							<i class="fa-solid fa-trash-can fa-lg"></i>
+						</button>
+						<button id="play" type="button" class="btn btn-primary" alt="Play" title="Play">
+							<i class="fa-solid fa-play fa-lg"></i>
+						</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
+						<button id="pause" alt="Pause" type="button" class="btn btn-primary" title="Pause">
+							<i class="fa-solid fa-pause fa-lg"></i>
+						</button><!--This pauses everything in #canvas-->
+						<button id="oneFrameAtATime" type="button" class="btn btn-secondary" alt="Next frame" title="Next frame">
+							<i class="fa-solid fa-forward-step fa-lg"></i>
+						</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+					</div>
 				</div>
 				<div id="scroll-box">
 					<div id="sizes-box">
-						<div>
-							Size: 
-							<input id="width" type="text" value="150" placeholder="150" title="Default:150"/>
-							by
-							<input id="height" type="text" value="150" placeholder="150" title="Default:150"/>px
+						Size:
+						<div class="input-group">
+							<input class="form-control" id="width" type="text" value="150" placeholder="150" title="Default:150"/>
+							<span class="input-group-text">by</span>
+							<input class="form-control" id="height" type="text" value="150" placeholder="150" title="Default:150"/>
+							<span class="input-group-text">px</span>
 						</div>
-						<div>
-							Zoom Size:
-							<input id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>
-							by
-							<input id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>px
+						Zoom Size:
+						<div class="input-group">
+							<input class="form-control" id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>
+							<span class="input-group-text">by</span>
+							<input class="form-control" id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>
+							<span class="input-group-text">px</span>
 						</div>
 					</div>
-					<div id="click-types">
-						<div class="click-type">
-							Normal click:
-							<select class="elmDrop" id="normalSelect"></select>
-							<div class="click-type-random">
-								<button id="normalFill">
-									<i class="fa-solid fa-fill-drip" alt="Randomly fill" title="Randomly fill"></i>
-								</button>
-								<input id="normalFillP" type="text" value="15" placeholder="15"/>%
+					<div id="click-types" class="container">
+						<div class="click-type row">
+							<div class="col">
+								Normal click:
+								<div class="click-type-random input-group">
+									<select class="elmDrop form-select" id="normalSelect"></select>
+									<button class="btn btn-outline-secondary" type="button" id="normalFill" title="Randomly fill">
+										<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
+									</button>
+									<input class="form-control" id="normalFillP" type="text" value="15" placeholder="15"/>
+									<span class="input-group-text">%</span>
+								</div>
 							</div>
 						</div>
-						<div class="click-type">
-							Ctrl click:
-							<select class="elmDrop" id="ctrlSelect"></select>
-							<div class="click-type-random">
-								<button id="ctrlFill">
-									<i class="fa-solid fa-fill-drip" alt="Randomly fill" title="Randomly fill"></i>
-								</button>
-								<input id="ctrlFillP" type="text" value="15" placeholder="15"/>%
+						<div class="click-type row">
+							<div class="col">
+								Ctrl click:
+								<div class="click-type-random input-group">
+									<select class="elmDrop form-select" id="ctrlSelect"></select>
+									<button class="btn btn-outline-secondary" type="button" id="ctrlFill" title="Randomly fill">
+										<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
+									</button>
+									<input class="form-control" id="ctrlFillP" type="text" value="15" placeholder="15"/>
+									<span class="input-group-text">%</span>
+								</div>
 							</div>
 						</div>
-						<div class="click-type">
-							Alt click:
-							<select class="elmDrop" id="altSelect"></select>
-							<div class="click-type-random">
-								<button id="altFill">
-									<i class="fa-solid fa-fill-drip" alt="Randomly fill" title="Randomly fill"></i>
-								</button>
-								<input id="altFillP" type="text" value="15" placeholder="15"/>%
+						<div class="click-type row">
+							<div class="col">
+								Alt click:
+								<div class="click-type-random input-group">
+									<select class="elmDrop form-select" id="altSelect"></select>
+									<button class="btn btn-outline-secondary" type="button" id="altFill" title="Randomly fill">
+										<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
+									</button>
+									<input class="form-control" id="altFillP" type="text" value="15" placeholder="15"/>
+									<span class="input-group-text">%</span>
+								</div>
 							</div>
 						</div>
 					</div>
 					<table>
 						<tr>
 							<td>
-								<label>
-									<input id="shtargeter" type="checkbox">
-									<i class="fa-solid fa-crosshairs"></i>
-									Hide targeter lines
-								</label>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" id="shtargeter" checked type="checkbox">
+									<label class="form-check-label" for="shtargeter">
+										<i class="fa-solid fa-crosshairs" alt="Show targeter lines" title="Show targeter lines"></i>
+										Targeter Lines
+									</label>
+								</div>
 							</td>
 							<td>
-								<label>
-									<input id="shfocusbox" type="checkbox">
-									<i class="fa-solid fa-square"></i>
-									Hide focus box
-								</label>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" id="shfocusbox" checked type="checkbox">
+									<label class="form-check-label" for="shfocusbox">
+										<i class="fa-solid fa-square" alt="Show focus box" title="Show focus box"></i>
+										Focus Box
+									</label>
+								</div>
 							</td>
 						</tr>
 						<tr>
 							<td>
-								<label>
-									<input id="pixelCounterT" type="checkbox">
-									<i class="fa-solid fa-list-ol"></i>
-									Hide pixelCounter
-								</label>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" value="" id="pixelCounterT" checked type="checkbox">
+									<label class="form-check-label" for="pixelCounterT">
+										<i class="fa-solid fa-list-ol"></i>
+										PixelCounter
+									</label>
+								</div>
 							</td>
 							<td>
-								<label>
-									<input id="customizeT" type="checkbox">
-									<i class="fa-solid fa-pen"></i>
-									Show element customizer
-								</label>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" id="customizeT" type="checkbox">
+									<label class="form-check-label" for="customizeT">
+										<i class="fa-solid fa-pen"></i>
+										Element Customizer
+									</label>
+								</div>
 							</td>
 						</tr>
 					</table>
@@ -166,7 +197,7 @@
 							<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator"><i class="fa-brands fa-github"></i> View Pixelmanipulator On GitHub!</a>
 						</div>
 						<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-						Library v<span id="backendversion"></span>, Frontend v1.32.0
+						Library v<span id="backendversion"></span>, Frontend v1.33.0
 					</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 				</div>
 			</div>
