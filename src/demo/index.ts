@@ -64,7 +64,12 @@ function oldZoom (e?: {
     zoomctx.stroke()
   }
 }
-function updateLargeLinesX (x: number, y: number): void {
+function updateLargeLinesX (x: number|undefined, y: number): void {
+  if (x == null || !(shtargeter.checked ?? true)) {
+    largexlinesty.visibility = 'hidden'
+    largexline1sty.visibility = 'hidden'
+    return
+  }
   const zh = zoom.height
   const zw = zoom.width
   let h = zh - ((1 + y) * zoomScaleFactor)
@@ -81,13 +86,20 @@ function updateLargeLinesX (x: number, y: number): void {
   largexlinesty.height = `${h}px`
   largexlinesty.right = `${rightVal}px`
   largexlinesty.top = `${t}px`
+  largexlinesty.visibility = 'visible'
 
   largexline1sty.width = `${zoomScaleFactor}px`
   largexline1sty.height = `${h2}px`
   largexline1sty.right = `${rightVal}px`
   largexline1sty.top = '0'
+  largexline1sty.visibility = 'visible'
 }
-function updateLargeLinesY (x: number, y: number): void {
+function updateLargeLinesY (x: number, y: number|undefined): void {
+  if (y == null || !(shtargeter.checked ?? true)) {
+    largeylinesty.visibility = 'hidden'
+    largeyline1sty.visibility = 'hidden'
+    return
+  }
   const zw = zoom.width
   let w = zw - ((1 + x) * zoomScaleFactor)
   let l = zw - zoomScaleFactor * x
@@ -102,11 +114,13 @@ function updateLargeLinesY (x: number, y: number): void {
   largeylinesty.width = `${w}px`
   largeylinesty.top = `${zoomScaleFactor * y}px`
   largeylinesty.right = '0'
+  largeylinesty.visibility = 'visible'
 
   largeyline1sty.height = `${zoomScaleFactor}px`
   largeyline1sty.width = `${w2}px`
   largeyline1sty.top = `${zoomScaleFactor * y}px`
   largeyline1sty.right = `${l}px`
+  largeyline1sty.visibility = 'visible'
 }
 function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void {
   smallxline.style.left = `${e.pageX}px`
@@ -114,18 +128,18 @@ function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void
   const x = e.pageX - zoomX + (zoomScaleFactor / 2)
   const y = e.pageY - zoomY + (zoomScaleFactor / 2)
   if (
-    e.pageX < ((zoom.width / (2 * zoomScaleFactor)) + zoomX) &&
-    e.pageX > ((zoom.width / (-2 * zoomScaleFactor)) + zoomX)
+    e.pageX <= ((zoom.width / (2 * zoomScaleFactor)) + zoomX) &&
+    e.pageX >= ((zoom.width / (-2 * zoomScaleFactor)) + zoomX)
   ) {
     // for when the line is inside the box, but the cursor isn't.
     updateLargeLinesX(x, y)
-  } else updateLargeLinesX(-1, y)
+  } else updateLargeLinesX(undefined, y)
   if (
-    e.pageY < ((zoom.height / (2 * zoomScaleFactor)) + zoomY) &&
-    e.pageY > ((zoom.height / (-2 * zoomScaleFactor)) + zoomY)
+    e.pageY <= ((zoom.height / (2 * zoomScaleFactor)) + zoomY) &&
+    e.pageY >= ((zoom.height / (-2 * zoomScaleFactor)) + zoomY)
   ) {
     updateLargeLinesY(x, y)
-  } else updateLargeLinesY(x, -1)
+  } else updateLargeLinesY(x, undefined)
 }
 let framecount = 0
 let lasttime: number

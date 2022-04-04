@@ -82,11 +82,13 @@
   "scripts": {
     "test": "echo 'No tests written!' && exit 1",
     "watch": "parcel --target demo",
-    "lint": "eslint .",
+    "check:lint": "eslint .",
+    "check:types": "tsc --noEmit",
+    "check": "npm run check:types && npm run check:lint",
     "build:docs": "typedoc --name PixelManipulator --out docs --media media --includeVersion src/lib/*.ts",
     "build:parcel": "parcel build",
     "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
-    "build": "npm run lint && npm run build:docs && npm run build:parcel && npm run build:bundle",
+    "build": "npm run check && npm run build:docs && npm run build:parcel && npm run build:bundle",
     "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
     "coverage": "npm run test"
   },
