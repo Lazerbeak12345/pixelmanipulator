@@ -36,12 +36,15 @@
 		<link rel="stylesheet" type="text/css" href="npm:@fortawesome/fontawesome-free/css/all.css"></link>
 		<link rel="stylesheet" type="text/css" href="index.css"></link>
 	</head>
-	<body>
-		<!--Content-->
-		<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
-		<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
-		<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
-		<div id="selectorBox"></div>
+	<body class="container-fluid">
+		<div class="row">
+			<div class="col">
+				<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
+				<div id="smallxline" style="width:1px; height:100%; top:0px;"></div>
+				<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
+				<div id="selectorBox"></div>
+			</div>
+		</div>
 		<div id="menu-box">
 			<div id="customizer" class="hidden">
 				<div>Customize element:</div>
