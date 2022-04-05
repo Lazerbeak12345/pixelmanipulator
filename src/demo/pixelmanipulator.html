@@ -44,9 +44,7 @@
 				<div id="smallyline" style="height:1px; width:100%; left:0px;"></div>
 				<div id="selectorBox"></div>
 			</div>
-		</div>
-		<div id="menu-box">
-			<div id="customizer" class="hidden">
+			<div id="customizer" class="hidden col-3 border-start">
 				<div>Customize element:</div>
 				<select class="elmDrop form-select" id="customSelect"></select>
 				<div>
@@ -71,137 +69,139 @@
 					</div>
 				</div>
 			</div>
-			<div id="zoom-box">
-				<div id="zoom-container">
-					<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
-					<div id="largexline"></div>
-					<div id="largeyline"></div>
-					<div id="largexline1"></div>
-					<div id="largeyline1"></div>
-				</div>
-				<div id="actions-box">
-					<div class="btn-group">
-						<button id="reset" type="button" class="btn btn-danger" alt="Reset" title="Reset">
-							<i class="fa-solid fa-trash-can fa-lg"></i>
-						</button>
-						<button id="play" type="button" class="btn btn-primary" alt="Play" title="Play">
-							<i class="fa-solid fa-play fa-lg"></i>
-						</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
-						<button id="pause" alt="Pause" type="button" class="btn btn-primary" title="Pause">
-							<i class="fa-solid fa-pause fa-lg"></i>
-						</button><!--This pauses everything in #canvas-->
-						<button id="oneFrameAtATime" type="button" class="btn btn-secondary" alt="Next frame" title="Next frame">
-							<i class="fa-solid fa-forward-step fa-lg"></i>
-						</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+			<div id="menu-box" class="col-4 border-start">
+				<div id="zoom-box">
+					<div id="zoom-container">
+						<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
+						<div id="largexline"></div>
+						<div id="largeyline"></div>
+						<div id="largexline1"></div>
+						<div id="largeyline1"></div>
 					</div>
-				</div>
-				<div id="scroll-box">
-					<div id="click-types" class="container">
-						<div class="click-type row">
-							<div class="col">
-								Normal click:
-								<div class="click-type-random input-group">
-									<select class="elmDrop form-select" id="normalSelect"></select>
-									<button class="btn btn-outline-secondary" type="button" id="normalFill" title="Randomly fill">
-										<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
-									</button>
-									<input class="form-control" id="normalFillP" type="text" value="15" placeholder="15"/>
-									<span class="input-group-text">%</span>
+					<div id="actions-box">
+						<div class="btn-group">
+							<button id="reset" type="button" class="btn btn-danger" alt="Reset" title="Reset">
+								<i class="fa-solid fa-trash-can fa-lg"></i>
+							</button>
+							<button id="play" type="button" class="btn btn-primary" alt="Play" title="Play">
+								<i class="fa-solid fa-play fa-lg"></i>
+							</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
+							<button id="pause" alt="Pause" type="button" class="btn btn-primary" title="Pause">
+								<i class="fa-solid fa-pause fa-lg"></i>
+							</button><!--This pauses everything in #canvas-->
+							<button id="oneFrameAtATime" type="button" class="btn btn-secondary" alt="Next frame" title="Next frame">
+								<i class="fa-solid fa-forward-step fa-lg"></i>
+							</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+						</div>
+					</div>
+					<div id="scroll-box">
+						<div id="click-types" class="container">
+							<div class="click-type row">
+								<div class="col">
+									Normal click:
+									<div class="click-type-random input-group">
+										<select class="elmDrop form-select" id="normalSelect"></select>
+										<button class="btn btn-outline-secondary" type="button" id="normalFill" title="Randomly fill">
+											<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
+										</button>
+										<input class="form-control" id="normalFillP" type="text" value="15" placeholder="15"/>
+										<span class="input-group-text">%</span>
+									</div>
+								</div>
+							</div>
+							<div class="click-type row">
+								<div class="col">
+									Ctrl click:
+									<div class="click-type-random input-group">
+										<select class="elmDrop form-select" id="ctrlSelect"></select>
+										<button class="btn btn-outline-secondary" type="button" id="ctrlFill" title="Randomly fill">
+											<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
+										</button>
+										<input class="form-control" id="ctrlFillP" type="text" value="15" placeholder="15"/>
+										<span class="input-group-text">%</span>
+									</div>
+								</div>
+							</div>
+							<div class="click-type row">
+								<div class="col">
+									Alt click:
+									<div class="click-type-random input-group">
+										<select class="elmDrop form-select" id="altSelect"></select>
+										<button class="btn btn-outline-secondary" type="button" id="altFill" title="Randomly fill">
+											<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
+										</button>
+										<input class="form-control" id="altFillP" type="text" value="15" placeholder="15"/>
+										<span class="input-group-text">%</span>
+									</div>
 								</div>
 							</div>
 						</div>
-						<div class="click-type row">
-							<div class="col">
-								Ctrl click:
-								<div class="click-type-random input-group">
-									<select class="elmDrop form-select" id="ctrlSelect"></select>
-									<button class="btn btn-outline-secondary" type="button" id="ctrlFill" title="Randomly fill">
-										<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
-									</button>
-									<input class="form-control" id="ctrlFillP" type="text" value="15" placeholder="15"/>
-									<span class="input-group-text">%</span>
-								</div>
+						<div id="sizes-box">
+							Size:
+							<div class="input-group">
+								<input class="form-control" id="width" type="text" value="150" placeholder="150" title="Default:150"/>
+								<span class="input-group-text">by</span>
+								<input class="form-control" id="height" type="text" value="150" placeholder="150" title="Default:150"/>
+								<span class="input-group-text">px</span>
+							</div>
+							Zoom Size:
+							<div class="input-group">
+								<input class="form-control" id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>
+								<span class="input-group-text">by</span>
+								<input class="form-control" id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>
+								<span class="input-group-text">px</span>
 							</div>
 						</div>
-						<div class="click-type row">
-							<div class="col">
-								Alt click:
-								<div class="click-type-random input-group">
-									<select class="elmDrop form-select" id="altSelect"></select>
-									<button class="btn btn-outline-secondary" type="button" id="altFill" title="Randomly fill">
-										<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
-									</button>
-									<input class="form-control" id="altFillP" type="text" value="15" placeholder="15"/>
-									<span class="input-group-text">%</span>
-								</div>
+						<table>
+							<tr>
+								<td>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input" id="shtargeter" checked type="checkbox">
+										<label class="form-check-label" for="shtargeter">
+											<i class="fa-solid fa-crosshairs" alt="Show targeter lines" title="Show targeter lines"></i>
+											Targeter Lines
+										</label>
+									</div>
+								</td>
+								<td>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input" id="shfocusbox" checked type="checkbox">
+										<label class="form-check-label" for="shfocusbox">
+											<i class="fa-solid fa-square" alt="Show focus box" title="Show focus box"></i>
+											Focus Box
+										</label>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input" value="" id="pixelCounterT" checked type="checkbox">
+										<label class="form-check-label" for="pixelCounterT">
+											<i class="fa-solid fa-list-ol"></i>
+											PixelCounter
+										</label>
+									</div>
+								</td>
+								<td>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input" id="customizeT" type="checkbox">
+										<label class="form-check-label" for="customizeT">
+											<i class="fa-solid fa-pen"></i>
+											Element Customizer
+										</label>
+									</div>
+								</td>
+							</tr>
+						</table>
+						<div id="callout">
+							<div>
+								<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator"><i class="fa-brands fa-github"></i> View Pixelmanipulator On GitHub!</a>
 							</div>
-						</div>
+							<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
+							Library v<span id="backendversion"></span>, Frontend v1.33.1
+						</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 					</div>
-					<div id="sizes-box">
-						Size:
-						<div class="input-group">
-							<input class="form-control" id="width" type="text" value="150" placeholder="150" title="Default:150"/>
-							<span class="input-group-text">by</span>
-							<input class="form-control" id="height" type="text" value="150" placeholder="150" title="Default:150"/>
-							<span class="input-group-text">px</span>
-						</div>
-						Zoom Size:
-						<div class="input-group">
-							<input class="form-control" id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>
-							<span class="input-group-text">by</span>
-							<input class="form-control" id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>
-							<span class="input-group-text">px</span>
-						</div>
-					</div>
-					<table>
-						<tr>
-							<td>
-								<div class="form-check form-check-inline">
-									<input class="form-check-input" id="shtargeter" checked type="checkbox">
-									<label class="form-check-label" for="shtargeter">
-										<i class="fa-solid fa-crosshairs" alt="Show targeter lines" title="Show targeter lines"></i>
-										Targeter Lines
-									</label>
-								</div>
-							</td>
-							<td>
-								<div class="form-check form-check-inline">
-									<input class="form-check-input" id="shfocusbox" checked type="checkbox">
-									<label class="form-check-label" for="shfocusbox">
-										<i class="fa-solid fa-square" alt="Show focus box" title="Show focus box"></i>
-										Focus Box
-									</label>
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div class="form-check form-check-inline">
-									<input class="form-check-input" value="" id="pixelCounterT" checked type="checkbox">
-									<label class="form-check-label" for="pixelCounterT">
-										<i class="fa-solid fa-list-ol"></i>
-										PixelCounter
-									</label>
-								</div>
-							</td>
-							<td>
-								<div class="form-check form-check-inline">
-									<input class="form-check-input" id="customizeT" type="checkbox">
-									<label class="form-check-label" for="customizeT">
-										<i class="fa-solid fa-pen"></i>
-										Element Customizer
-									</label>
-								</div>
-							</td>
-						</tr>
-					</table>
-					<div id="callout">
-						<div>
-							<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator"><i class="fa-brands fa-github"></i> View Pixelmanipulator On GitHub!</a>
-						</div>
-						<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-						Library v<span id="backendversion"></span>, Frontend v1.33.1
-					</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 				</div>
 			</div>
 		</div>

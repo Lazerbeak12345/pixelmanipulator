@@ -1,14 +1,6 @@
 #menu-box{
-	position:fixed;
-	top:0;
-	right:0;
-	z-index:999;
-	height:100%;
-	flex-direction:row;
-	display:flex;
-}
-#menu-box>div{
-	border-left:1px solid lightgrey;
+	max-height: 100vh;
+	padding-right: 0;
 }
 #zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
 	height:100%;
