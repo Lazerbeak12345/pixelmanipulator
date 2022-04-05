@@ -24,6 +24,27 @@ import { Renderer, Location, location2Index } from './renderers'
 // export * as neighborhoods from './neighborhoods'
 import * as _neighborhoods from './neighborhoods'
 export { _neighborhoods as neighborhoods }
+function startAnimation (callback: () => void): number {
+  if (typeof requestAnimationFrame === 'undefined') {
+    return window.setInterval(callback, 1)
+  } else {
+    return requestAnimationFrame(callback)
+  }
+}
+function resumeAnimation (num: number, callback: () => void): number {
+  if (typeof requestAnimationFrame === 'undefined') {
+    return num
+  } else {
+    return requestAnimationFrame(callback)
+  }
+}
+function cancelAnimation (num: number): void {
+  if (typeof cancelAnimationFrame === 'undefined') {
+    clearInterval(num)
+  } else {
+    cancelAnimationFrame(num)
+  }
+}
 function boolToNumber (bool: boolean): number {
   return bool ? 1 : 0
 }
@@ -393,7 +414,7 @@ export class PixelManipulator<T> {
   play (canvasSizes?: CanvasSizes): void {
     if (this.mode === 'playing') this.reset(canvasSizes)
     this.mode = 'playing'
-    this.loopint = window.requestAnimationFrame(() => {
+    this.loopint = startAnimation(() => {
       this.iterate()
     })
   }
@@ -430,7 +451,7 @@ export class PixelManipulator<T> {
   */
   pause (): void {
     this.mode = 'paused'
-    window.cancelAnimationFrame(this.loopint)
+    cancelAnimation(this.loopint)
   }
 
   /**
@@ -630,7 +651,7 @@ export class PixelManipulator<T> {
     this.update()
     this.onAfterIterate()
     if (this.mode === 'playing') {
-      this.loopint = window.requestAnimationFrame(() => {
+      this.loopint = resumeAnimation(this.loopint, () => {
         this.iterate()
       })
     }
@@ -653,11 +674,6 @@ export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
   'WARRANTY\nThis is free software, and you are welcome to redistribute it\n' +
   'under certain conditions, as according to the GNU GENERAL PUBLIC LICENSE ' +
   'version 3 or later.'
-if (typeof window === 'undefined') {
-  console.warn(
-    'This enviroment has not been tested, and is officially not supported.\n' +
-    'Good luck.'
-  )
-} else console.log(licence)
+if (typeof window !== 'undefined') console.log(licence)
 // This is called a "modeline". It's a (n)vi(m)|ex thing.
 // vi: tabstop=2 shiftwidth=2 expandtab

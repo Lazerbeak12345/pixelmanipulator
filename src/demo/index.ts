@@ -504,13 +504,13 @@ p.addMultipleElements({
     // not quite white
     renderAs: [254, 254, 254, 255],
     // Cells that were in the dying state go into the off state
-    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, p.defaultId)
+    liveCell: loc => p.setPixel(loc, p.defaultId)
   },
   "Brian's Brain (on)": {
     ...rules.lifelike(p, 'B2/S'), // same pattern as seeds
     renderAs: [0, 0, 254, 255], // not quite blue
     // All cells that were "on" go into the "dying" state, which is not counted as an "on" cell in the neighbor count, and prevents any cell from being born there.
-    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, "Brian's Brain (dying)")
+    liveCell: loc => p.setPixel(loc, "Brian's Brain (dying)")
   },
   Seeds: {
     ...rules.lifelike(p, 'B2/S'),

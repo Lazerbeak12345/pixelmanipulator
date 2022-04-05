@@ -1,6 +1,6 @@
 {
   "name": "pixelmanipulator",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "description": "Run any cellular automata on an html5 canvas.",
   "main": "dist/main.js",
   "browser": "dist/browser.js",
@@ -63,6 +63,7 @@
     "@fortawesome/fontawesome-free": "^6.1.1",
     "@parcel/packager-ts": "^2.4.1",
     "@parcel/transformer-typescript-types": "^2.4.1",
+    "@types/node": "^17.0.23",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.0",
     "bootstrap-dark-5": "^1.1.3",
@@ -75,6 +76,7 @@
     "eslint-plugin-tsdoc": "^0.2.14",
     "gh-pages": "^3.2.3",
     "parcel": "^2.4.1",
+    "ts-node": "^10.7.0",
     "typedoc": "^0.22.13",
     "typedoc-plugin-mdn-links": "^1.0.5",
     "typescript": "<4.5.0"
@@ -90,6 +92,7 @@
     "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
     "build": "npm run check && npm run build:docs && npm run build:parcel && npm run build:bundle",
     "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
+	"node-demo": "ts-node src/node-demo",
     "coverage": "npm run test"
   },
   "dependencies": {
