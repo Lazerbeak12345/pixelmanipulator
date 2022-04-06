@@ -417,9 +417,9 @@ const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputEleme
 const customizeT = document.getElementById('customizeT') as HTMLInputElement
 customizeT.addEventListener('click', function (this: HTMLInputElement) {
   if (this.checked) {
-    customizer.classList.remove('hidden')
+    customizer.classList.remove('visually-hidden')
     updateCustomizer()
-  } else customizer.classList.add('hidden')
+  } else customizer.classList.add('visually-hidden')
 })
 
 /// Version of backend

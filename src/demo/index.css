@@ -11,12 +11,6 @@
 #scroll-box{
 	overflow-y:scroll;
 }
-#scroll-box>div{
-	padding-bottom:1em;
-}
-#scroll-box input[type="text"]{
-	width:3em;
-}
 #selectorBox,/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
 #smallxline,/*These are the lines that show where on the canvas the mouse cursor is hovering.*/
 #smallyline,
@@ -30,7 +24,4 @@
 }
 #selectorBox:hover{
 	border:solid rgba(255,255,255,.5) 1px;
-}
-.hidden{
-	display:none;
 }
