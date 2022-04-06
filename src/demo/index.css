@@ -2,10 +2,8 @@
 	max-height: 100vh;
 	padding-right: 0;
 }
-#zoom-box{/*This is the container for the zoomed-in box that the user can interact with*/
-	height:100%;
-	flex-direction:column;
-	display:flex;
+#zoom-box{
+	padding-right: 0;
 }
 #zoom{
 	float:right;
