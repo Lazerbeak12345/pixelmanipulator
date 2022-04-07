@@ -1,9 +1,5 @@
 #menu-box{
 	max-height: 100vh;
-	padding-right: 0;
-}
-#zoom-box{
-	padding-right: 0;
 }
 #zoom{
 	float:right;
