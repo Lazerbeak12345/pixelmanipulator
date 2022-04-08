@@ -1,19 +1,10 @@
 #menu-box{
 	max-height: 100vh;
-}
-#zoom{
-	float:right;
-}
-#scroll-box{
 	overflow-y:scroll;
 }
 #selectorBox,/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
 #smallxline,/*These are the lines that show where on the canvas the mouse cursor is hovering.*/
-#smallyline,
-#largexline,
-#largeyline,
-#largexline1,
-#largeyline1{
+#smallyline{
 	position:absolute;
 	background:rgba(128,128,128,.5);
 	border:none;

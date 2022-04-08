@@ -44,102 +44,40 @@ function oldZoom (e?: {
     zoomX = e.x
     zoomY = e.y
   }
-  if (zoomctx !== null) {
-    zoomctx.clearRect(0, 0, zoom.width, zoom.height)// clear the screen
-    zoomctx.drawImage(canvas, // draw the selected section of the canvas onto the zoom canvas
-      (zoomX - Math.floor(zoomScaleFactor / 2)),
-      (zoomY - Math.floor(zoomScaleFactor / 2)),
-      Math.floor(zoom.width / zoomScaleFactor), Math.floor(zoom.height / zoomScaleFactor),
-      0, 0,
-      zoom.width, zoom.height)
-    zoomctx.beginPath()// draw the grid
-    for (let i = 1; i < (zoom.width / zoomScaleFactor); i++) {
-      zoomctx.moveTo(i * zoomScaleFactor, 0)
-      zoomctx.lineTo(i * zoomScaleFactor, zoom.height)
-    }
-    for (let i = 1; i < (zoom.height / zoomScaleFactor); i++) {
-      zoomctx.moveTo(0, i * zoomScaleFactor)
-      zoomctx.lineTo(zoom.width, i * zoomScaleFactor)
-    }
-    zoomctx.stroke()
+  if (zoomctx == null) return
+  zoomctx.clearRect(0, 0, zoom.width, zoom.height)// clear the screen
+  zoomctx.drawImage(canvas, // draw the selected section of the canvas onto the zoom canvas
+    (zoomX - Math.floor(zoomScaleFactor / 2)),
+    (zoomY - Math.floor(zoomScaleFactor / 2)),
+    Math.floor(zoom.width / zoomScaleFactor), Math.floor(zoom.height / zoomScaleFactor),
+    0, 0,
+    zoom.width, zoom.height)
+  zoomctx.beginPath()// draw the grid
+  for (let i = 1; i < (zoom.width / zoomScaleFactor); i++) {
+    zoomctx.moveTo(i * zoomScaleFactor, 0)
+    zoomctx.lineTo(i * zoomScaleFactor, zoom.height)
   }
-}
-function updateLargeLinesX (x: number|undefined, y: number): void {
-  if (x == null || !(shtargeter.checked ?? true)) {
-    largexlinesty.visibility = 'hidden'
-    largexline1sty.visibility = 'hidden'
-    return
+  for (let i = 1; i < (zoom.height / zoomScaleFactor); i++) {
+    zoomctx.moveTo(0, i * zoomScaleFactor)
+    zoomctx.lineTo(zoom.width, i * zoomScaleFactor)
   }
-  const zh = zoom.height
-  const zw = zoom.width
-  let h = zh - ((1 + y) * zoomScaleFactor)
-  let t = zoomScaleFactor * (y + 1)
-  let h2 = y * zoomScaleFactor
-  const rightVal = zw - zoomScaleFactor * (x + 1)
-  if (y < 0 || y > zh / zoomScaleFactor) {
-    h = zh
-    t = 0
-    h2 = 0
-  }
-
-  largexlinesty.width = `${zoomScaleFactor}px`
-  largexlinesty.height = `${h}px`
-  largexlinesty.right = `${rightVal}px`
-  largexlinesty.top = `${t}px`
-  largexlinesty.visibility = 'visible'
-
-  largexline1sty.width = `${zoomScaleFactor}px`
-  largexline1sty.height = `${h2}px`
-  largexline1sty.right = `${rightVal}px`
-  largexline1sty.top = '0'
-  largexline1sty.visibility = 'visible'
-}
-function updateLargeLinesY (x: number, y: number|undefined): void {
-  if (y == null || !(shtargeter.checked ?? true)) {
-    largeylinesty.visibility = 'hidden'
-    largeyline1sty.visibility = 'hidden'
-    return
-  }
-  const zw = zoom.width
-  let w = zw - ((1 + x) * zoomScaleFactor)
-  let l = zw - zoomScaleFactor * x
-  let w2 = x * zoomScaleFactor
-  if (x < 0 || x > zw / zoomScaleFactor) {
-    w = zw
-    l = 0
-    w2 = 0
-  }
-
-  largeylinesty.height = `${zoomScaleFactor}px`
-  largeylinesty.width = `${w}px`
-  largeylinesty.top = `${zoomScaleFactor * y}px`
-  largeylinesty.right = '0'
-  largeylinesty.visibility = 'visible'
-
-  largeyline1sty.height = `${zoomScaleFactor}px`
-  largeyline1sty.width = `${w2}px`
-  largeyline1sty.top = `${zoomScaleFactor * y}px`
-  largeyline1sty.right = `${l}px`
-  largeyline1sty.visibility = 'visible'
+  zoomctx.stroke()
 }
 function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void {
   smallxline.style.left = `${e.pageX}px`
   smallyline.style.top = `${e.pageY}px`
+  oldZoom()
+  if (zoomctx == null || !(shtargeter.checked ?? true)) return
+  zoomctx.imageSmoothingEnabled = false
+  zoomctx.fillStyle = '#88888888'
   const x = e.pageX - zoomX + (zoomScaleFactor / 2)
   const y = e.pageY - zoomY + (zoomScaleFactor / 2)
-  if (
-    e.pageX <= ((zoom.width / (2 * zoomScaleFactor)) + zoomX) &&
-    e.pageX >= ((zoom.width / (-2 * zoomScaleFactor)) + zoomX)
-  ) {
-    // for when the line is inside the box, but the cursor isn't.
-    updateLargeLinesX(x, y)
-  } else updateLargeLinesX(undefined, y)
-  if (
-    e.pageY <= ((zoom.height / (2 * zoomScaleFactor)) + zoomY) &&
-    e.pageY >= ((zoom.height / (-2 * zoomScaleFactor)) + zoomY)
-  ) {
-    updateLargeLinesY(x, y)
-  } else updateLargeLinesY(x, undefined)
+  zoomctx.fillRect(x * zoomScaleFactor, 0, zoomScaleFactor, y * zoomScaleFactor)
+  const zh = zoom.height
+  zoomctx.fillRect(x * zoomScaleFactor, zoomScaleFactor + y * zoomScaleFactor, zoomScaleFactor, zh - (y * zoomScaleFactor))
+  zoomctx.fillRect(0, y * zoomScaleFactor, x * zoomScaleFactor, zoomScaleFactor)
+  const zw = zoom.width
+  zoomctx.fillRect(zoomScaleFactor + x * zoomScaleFactor, y * zoomScaleFactor, zw - (x * zoomScaleFactor), zoomScaleFactor)
 }
 let framecount = 0
 let lasttime: number
@@ -181,8 +119,6 @@ function selectorClicked (e: MouseEvent): void {
 }
 function boxHoverOrClick (e: MouseEvent): void {
   updateSmallLines(e)
-  updateLargeLinesX(e.offsetX, e.offsetY)
-  updateLargeLinesY(e.offsetX, e.offsetY)
 }
 /// Grey overlay lines over the canvas
 const smallxline = document.getElementById('smallxline') as HTMLDivElement
@@ -285,24 +221,6 @@ zoom.addEventListener('mousemove', e => {
   })
 })
 
-function bigLineGotHovered (e: MouseEvent): void {
-  // get the element out of the way so the canvas below will A: still be clickable and B: move this elm to the correct place
-  if (e.target != null) (e.target as HTMLDivElement).style.height = '0'
-}
-/// Grey overlay over zoom canvas
-const largexline = document.getElementById('largexline') as HTMLDivElement
-largexline.addEventListener('mousemove', bigLineGotHovered)
-const largexlinesty = largexline.style
-const largeyline = document.getElementById('largeyline') as HTMLDivElement
-largeyline.addEventListener('mousemove', bigLineGotHovered)
-const largeylinesty = largeyline.style
-const largexline1 = document.getElementById('largexline1') as HTMLDivElement
-largexline1.addEventListener('mousemove', bigLineGotHovered)
-const largexline1sty = largexline1.style
-const largeyline1 = document.getElementById('largeyline1') as HTMLDivElement
-largeyline1.addEventListener('mousemove', bigLineGotHovered)
-const largeyline1sty = largeyline1.style
-
 /// Actions box button.
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function () {
@@ -400,10 +318,6 @@ shtargeter.addEventListener('click', function () {
   const state = this.checked ?? true ? 'visible' : 'hidden'
   smallxline.style.visibility = state
   smallyline.style.visibility = state
-  largexline.style.visibility = state
-  largexline1.style.visibility = state
-  largeyline.style.visibility = state
-  largeyline1.style.visibility = state
 })
 /// Hide focus box
 const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
