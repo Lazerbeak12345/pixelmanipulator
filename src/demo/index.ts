@@ -49,7 +49,7 @@ function oldZoom (e?: {
     zoomY = e.y
   }
   if (shtargeter.checked ?? true) {
-    cctx.fillRect(targeterLoc.x +1, targeterLoc.y, canvas.width, 1)
+    cctx.fillRect(targeterLoc.x + 1, targeterLoc.y, canvas.width, 1)
     cctx.fillRect(targeterLoc.x, targeterLoc.y + 1, 1, canvas.height)
     cctx.fillRect(0, targeterLoc.y, targeterLoc.x, 1)
     cctx.fillRect(targeterLoc.x, 0, 1, targeterLoc.y)
