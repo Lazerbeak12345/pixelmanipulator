@@ -1,4 +1,4 @@
-import { PixelManipulator, version, rules, Ctx2dRenderer } from '../lib/pixelmanipulator'
+import { PixelManipulator, version, rules, Ctx2dRenderer, Location } from '../lib/pixelmanipulator'
 import '@fortawesome/fontawesome-free/attribution.js'
 
 /**
@@ -15,6 +15,7 @@ function updateBox (): void {
   selectorboxSty.left = `${zoomX - (zoom.width / (2 * zoomScaleFactor))}px`
   selectorboxSty.top = `${zoomY - (zoom.height / (2 * zoomScaleFactor))}px`
 }
+const targeterLoc: Location = { x: 0, y: 0 }
 /**
 * Initially a click envent handler from mid to late version 0 all the way to
 * early version 1, zoom takes in an object that contains `x` and `y`. If these
@@ -37,6 +38,7 @@ function oldZoom (e?: {
   if (zoomctx == null) return
   zoomctx.imageSmoothingEnabled = false
   zoomctx.strokeStyle = 'gray'
+  zoomctx.fillStyle = '#88888888'
   if (typeof e === 'undefined') e = {}
   e.x = e.x ?? zoomX
   e.y = e.y ?? zoomY
@@ -52,6 +54,16 @@ function oldZoom (e?: {
     Math.floor(zoom.width / zoomScaleFactor), Math.floor(zoom.height / zoomScaleFactor),
     0, 0,
     zoom.width, zoom.height)
+  if (shtargeter.checked ?? true) {
+    const x = targeterLoc.x - zoomX + (zoomScaleFactor / 2)
+    const y = targeterLoc.y - zoomY + (zoomScaleFactor / 2)
+    zoomctx.fillRect(x * zoomScaleFactor, 0, zoomScaleFactor, y * zoomScaleFactor)
+    const zh = zoom.height
+    zoomctx.fillRect(x * zoomScaleFactor, zoomScaleFactor + y * zoomScaleFactor, zoomScaleFactor, zh - (y * zoomScaleFactor))
+    zoomctx.fillRect(0, y * zoomScaleFactor, x * zoomScaleFactor, zoomScaleFactor)
+    const zw = zoom.width
+    zoomctx.fillRect(zoomScaleFactor + x * zoomScaleFactor, y * zoomScaleFactor, zw - (x * zoomScaleFactor), zoomScaleFactor)
+  }
   zoomctx.beginPath()// draw the grid
   for (let i = 1; i < (zoom.width / zoomScaleFactor); i++) {
     zoomctx.moveTo(i * zoomScaleFactor, 0)
@@ -66,18 +78,9 @@ function oldZoom (e?: {
 function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void {
   smallxline.style.left = `${e.pageX}px`
   smallyline.style.top = `${e.pageY}px`
+  targeterLoc.x = e.pageX
+  targeterLoc.y = e.pageY
   oldZoom()
-  if (zoomctx == null || !(shtargeter.checked ?? true)) return
-  zoomctx.imageSmoothingEnabled = false
-  zoomctx.fillStyle = '#88888888'
-  const x = e.pageX - zoomX + (zoomScaleFactor / 2)
-  const y = e.pageY - zoomY + (zoomScaleFactor / 2)
-  zoomctx.fillRect(x * zoomScaleFactor, 0, zoomScaleFactor, y * zoomScaleFactor)
-  const zh = zoom.height
-  zoomctx.fillRect(x * zoomScaleFactor, zoomScaleFactor + y * zoomScaleFactor, zoomScaleFactor, zh - (y * zoomScaleFactor))
-  zoomctx.fillRect(0, y * zoomScaleFactor, x * zoomScaleFactor, zoomScaleFactor)
-  const zw = zoom.width
-  zoomctx.fillRect(zoomScaleFactor + x * zoomScaleFactor, y * zoomScaleFactor, zw - (x * zoomScaleFactor), zoomScaleFactor)
 }
 let framecount = 0
 let lasttime: number
