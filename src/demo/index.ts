@@ -36,9 +36,11 @@ function oldZoom (e?: {
   y?: number
 }): void {
   if (zoomctx == null) return
+  const cctx = renderer.ctx
   zoomctx.imageSmoothingEnabled = false
   zoomctx.strokeStyle = 'gray'
   zoomctx.fillStyle = '#88888888'
+  cctx.fillStyle = '#88888888'
   if (typeof e === 'undefined') e = {}
   e.x = e.x ?? zoomX
   e.y = e.y ?? zoomY
@@ -46,7 +48,12 @@ function oldZoom (e?: {
     zoomX = e.x
     zoomY = e.y
   }
-  if (zoomctx == null) return
+  if (shtargeter.checked ?? true) {
+    cctx.fillRect(targeterLoc.x +1, targeterLoc.y, canvas.width, 1)
+    cctx.fillRect(targeterLoc.x, targeterLoc.y + 1, 1, canvas.height)
+    cctx.fillRect(0, targeterLoc.y, targeterLoc.x, 1)
+    cctx.fillRect(targeterLoc.x, 0, 1, targeterLoc.y)
+  }
   zoomctx.clearRect(0, 0, zoom.width, zoom.height)// clear the screen
   zoomctx.drawImage(canvas, // draw the selected section of the canvas onto the zoom canvas
     (zoomX - Math.floor(zoomScaleFactor / 2)),
@@ -54,16 +61,6 @@ function oldZoom (e?: {
     Math.floor(zoom.width / zoomScaleFactor), Math.floor(zoom.height / zoomScaleFactor),
     0, 0,
     zoom.width, zoom.height)
-  if (shtargeter.checked ?? true) {
-    const x = targeterLoc.x - zoomX + (zoomScaleFactor / 2)
-    const y = targeterLoc.y - zoomY + (zoomScaleFactor / 2)
-    zoomctx.fillRect(x * zoomScaleFactor, 0, zoomScaleFactor, y * zoomScaleFactor)
-    const zh = zoom.height
-    zoomctx.fillRect(x * zoomScaleFactor, zoomScaleFactor + y * zoomScaleFactor, zoomScaleFactor, zh - (y * zoomScaleFactor))
-    zoomctx.fillRect(0, y * zoomScaleFactor, x * zoomScaleFactor, zoomScaleFactor)
-    const zw = zoom.width
-    zoomctx.fillRect(zoomScaleFactor + x * zoomScaleFactor, y * zoomScaleFactor, zw - (x * zoomScaleFactor), zoomScaleFactor)
-  }
   zoomctx.beginPath()// draw the grid
   for (let i = 1; i < (zoom.width / zoomScaleFactor); i++) {
     zoomctx.moveTo(i * zoomScaleFactor, 0)
@@ -76,10 +73,9 @@ function oldZoom (e?: {
   zoomctx.stroke()
 }
 function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void {
-  smallxline.style.left = `${e.pageX}px`
-  smallyline.style.top = `${e.pageY}px`
   targeterLoc.x = e.pageX
   targeterLoc.y = e.pageY
+  p.update() // Erases old lines
   oldZoom()
 }
 let framecount = 0
@@ -108,10 +104,9 @@ canvas.addEventListener('click', (event) =>
     y: event.offsetY
   }))
 canvas.addEventListener('mousemove', updateSmallLines)
-const p = new PixelManipulator(
-  new Ctx2dRenderer(canvas),
-  1, 1 // The width and height are changed later
-)
+const renderer = new Ctx2dRenderer(canvas)
+const p = new PixelManipulator(renderer, 1, 1)
+// The width and height are changed later
 
 function selectorClicked (e: MouseEvent): void {
   oldZoom({
@@ -123,13 +118,6 @@ function selectorClicked (e: MouseEvent): void {
 function boxHoverOrClick (e: MouseEvent): void {
   updateSmallLines(e)
 }
-/// Grey overlay lines over the canvas
-const smallxline = document.getElementById('smallxline') as HTMLDivElement
-smallxline.addEventListener('mousemove', updateSmallLines)
-smallxline.addEventListener('click', selectorClicked)
-const smallyline = document.getElementById('smallyline') as HTMLDivElement
-smallyline.addEventListener('mousemove', updateSmallLines)
-smallyline.addEventListener('click', selectorClicked)
 /// Grey box showing where zoom elm is looking at
 const selectorBox = document.getElementById('selectorBox') as HTMLDivElement
 selectorBox.addEventListener('click', selectorClicked)
@@ -318,9 +306,8 @@ const altFillP = document.getElementById('altFillP') as HTMLInputElement
 /// Show targeter lines
 const shtargeter = document.getElementById('shtargeter') as HTMLInputElement
 shtargeter.addEventListener('click', function () {
-  const state = this.checked ?? true ? 'visible' : 'hidden'
-  smallxline.style.visibility = state
-  smallyline.style.visibility = state
+  p.update()
+  oldZoom()
 })
 /// Hide focus box
 const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
