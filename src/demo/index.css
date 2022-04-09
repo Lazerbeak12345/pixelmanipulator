@@ -2,12 +2,3 @@
 	max-height: 100vh;
 	overflow-y:scroll;
 }
-/*This is the grey square on the left of the screen that shows where the zoom box is focused*/
-#selectorBox{
-	position:absolute;
-	background:rgba(128,128,128,.5);
-	border:none;
-}
-#selectorBox:hover{
-	border:solid rgba(255,255,255,.5) 1px;
-}

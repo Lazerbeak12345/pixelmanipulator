@@ -9,12 +9,6 @@ let zoomX = 10
 * The Y coordinate of where the center of the [[zoom]] is windowed at.
 */
 let zoomY = 10
-function updateBox (): void {
-  selectorboxSty.width = `${zoom.width / zoomScaleFactor}px`
-  selectorboxSty.height = `${zoom.height / zoomScaleFactor}px`
-  selectorboxSty.left = `${zoomX - (zoom.width / (2 * zoomScaleFactor))}px`
-  selectorboxSty.top = `${zoomY - (zoom.height / (2 * zoomScaleFactor))}px`
-}
 const targeterLoc: Location = { x: 0, y: 0 }
 /**
 * Initially a click envent handler from mid to late version 0 all the way to
@@ -40,6 +34,7 @@ function oldZoom (e?: {
   zoomctx.imageSmoothingEnabled = false
   zoomctx.strokeStyle = 'gray'
   zoomctx.fillStyle = '#88888888'
+  cctx.strokeStyle = '#FFFFFF88'
   cctx.fillStyle = '#88888888'
   if (typeof e === 'undefined') e = {}
   e.x = e.x ?? zoomX
@@ -61,6 +56,22 @@ function oldZoom (e?: {
     Math.floor(zoom.width / zoomScaleFactor), Math.floor(zoom.height / zoomScaleFactor),
     0, 0,
     zoom.width, zoom.height)
+  // Render the box _after_ copying over to zoom canvas
+  if (shfocusbox.checked ?? true) {
+    const fbw = zoom.width / zoomScaleFactor
+    const fbh = zoom.height / zoomScaleFactor
+    const fbx = zoomX - (zoom.width / (2 * zoomScaleFactor))
+    const fby = zoomY - (zoom.height / (2 * zoomScaleFactor))
+    cctx.fillRect(fbx, fby, fbw, fbh)
+    if (
+      targeterLoc.x >= fbx &&
+      targeterLoc.x <= fbx + fbw &&
+      targeterLoc.y >= fby &&
+      targeterLoc.y <= fby + fbh
+    ) {
+      cctx.strokeRect(fbx, fby, fbw, fbh)
+    }
+  }
   zoomctx.beginPath()// draw the grid
   for (let i = 1; i < (zoom.width / zoomScaleFactor); i++) {
     zoomctx.moveTo(i * zoomScaleFactor, 0)
@@ -72,9 +83,9 @@ function oldZoom (e?: {
   }
   zoomctx.stroke()
 }
-function updateSmallLines (e: MouseEvent|{ pageX: number, pageY: number }): void {
-  targeterLoc.x = e.pageX
-  targeterLoc.y = e.pageY
+function updateSmallLines (e: MouseEvent|{ offsetX: number, offsetY: number }): void {
+  targeterLoc.x = e.offsetX
+  targeterLoc.y = e.offsetY
   p.update() // Erases old lines
   oldZoom()
 }
@@ -97,33 +108,17 @@ function afterIterate<T> (p: PixelManipulator<T>): void {
   } else pixelCounter.innerText = ''
 }
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
-canvas.addEventListener('click', updateBox)
-canvas.addEventListener('click', (event) =>
+canvas.addEventListener('click', event => {
+  p.update()
   oldZoom({
     x: event.offsetX,
     y: event.offsetY
-  }))
+  })
+})
 canvas.addEventListener('mousemove', updateSmallLines)
 const renderer = new Ctx2dRenderer(canvas)
 const p = new PixelManipulator(renderer, 1, 1)
 // The width and height are changed later
-
-function selectorClicked (e: MouseEvent): void {
-  oldZoom({
-    x: e.pageX,
-    y: e.pageY
-  })
-  updateBox()
-}
-function boxHoverOrClick (e: MouseEvent): void {
-  updateSmallLines(e)
-}
-/// Grey box showing where zoom elm is looking at
-const selectorBox = document.getElementById('selectorBox') as HTMLDivElement
-selectorBox.addEventListener('click', selectorClicked)
-selectorBox.addEventListener('mousemove', boxHoverOrClick)
-selectorBox.addEventListener('click', boxHoverOrClick)
-const selectorboxSty = selectorBox.style
 
 function updateCustomizer (): void {
   const elm = p.getElementByName(customSelect.value)
@@ -207,8 +202,8 @@ zoom.addEventListener('mousemove', e => {
   const x = Math.floor(e.offsetX / zoomScaleFactor)
   const y = Math.floor(e.offsetY / zoomScaleFactor)
   updateSmallLines({
-    pageX: x + zoomX - (zoom.width / (2 * zoomScaleFactor)),
-    pageY: y + zoomY - (zoom.width / (2 * zoomScaleFactor))
+    offsetX: x + zoomX - (zoom.width / (2 * zoomScaleFactor)),
+    offsetY: y + zoomY - (zoom.width / (2 * zoomScaleFactor))
   })
 })
 
@@ -226,7 +221,6 @@ resetBtn.addEventListener('click', function () {
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
   zoom.width = (zoomW ?? zoom.width / zoomScaleFactor) * zoomScaleFactor
   zoom.height = (zoomH ?? zoom.height / zoomScaleFactor) * zoomScaleFactor
-  updateBox()
   playBtn.disabled = false
   oneFrameAtATime.disabled = false
   this.disabled = false
@@ -311,10 +305,6 @@ shtargeter.addEventListener('click', function () {
 })
 /// Hide focus box
 const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
-shfocusbox.addEventListener('click', function () {
-  const state = this.checked ?? true ? 'visible' : 'hidden'
-  selectorBox.style.visibility = state
-})
 /// Hide pixelCounter
 const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputElement
 /// Show element customizer
