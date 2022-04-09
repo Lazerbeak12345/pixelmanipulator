@@ -83,7 +83,7 @@
   },
   "scripts": {
     "test": "echo 'No tests written!' && exit 1",
-    "watch": "parcel --target demo",
+    "watch": "parcel --target demo --dist-dir dist",
     "check:lint": "eslint .",
     "check:types": "tsc --noEmit",
     "check": "npm run check:types && npm run check:lint",
