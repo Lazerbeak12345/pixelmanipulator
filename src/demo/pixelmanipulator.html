@@ -35,159 +35,230 @@
 		<link rel="shortcut icon" href="/media/favicon.ico" type="image/x-icon">
 		<link rel="stylesheet" type="text/css" href="npm:@fortawesome/fontawesome-free/css/all.css"></link>
 	</head>
-	<body class="container-fluid">
-		<div class="row">
-			<div class="col">
-				<canvas id="canvas"></canvas><!--This is the place where the pixels are rendered-->
-				<div id="pixelCounter"></div>
+	<body class="container-fluid placeholder-glow">
+		<div class="row gap-2 justify-content-between">
+			<div class="col-sm-4">
+				<div class="overflow-auto">
+					<canvas id="canvas" aria-describedby="pixelCounterBox" role="img"></canvas><!--This is the place where the pixels are rendered-->
+					<noscript class="card">
+						<div class="card-header">
+							<h2>
+								As you might've guessed...
+							</h2>
+							<small>This site requires JavaScript to run.</small>
+						</div>
+						<div class="card-body">
+							<p>
+								Unlike a lot of websites that have content that's more-or-less static only, this webpage's content is entirely to demo how a <strong>JavaScript library</strong> works. <i>In-action</i>, that is.
+							</p>
+							<p>
+								Here are some <a href="https://www.enable-javascript.com/" target="_blank">instructions how to enable JavaScript in your web browser</a>.
+							</p>
+						</div>
+					</noscript>
+				</div>
+				<section id="pixelCounterBox" class="card float-sm-start" aria-label="Pixel statistics">
+					<ul id="pixelCounter" class="list-group list-group-flush" aria-label="Pixel Counter"></ul>
+					<div class="card-footer">
+						<div class="progress" id="pixelRatio">
+							<div class="progress-bar placeholder w-25 bg-primary"></div>
+							<div class="progress-bar placeholder w-50 bg-secondary"></div>
+						</div>
+					</div>
+					<div class="card-footer">
+						Frames: <span class="badge bg-secondary" id="frames"><span class="placeholder" style="width:3em"></span></span>
+					</div>
+					<div class="card-footer">
+						Fps: <span class="badge bg-secondary" id="fps"><span class="placeholder" style="width:3em"></span></span>
+					</div>
+				</section>
 			</div>
-			<div id="customizer" class="visually-hidden col-3 border-start">
-				<div>Customize element:</div>
-				<select class="elmDrop form-select" id="customSelect"></select>
-				<label>
-					Element Color
-					<input type="color" class="form-control form-control-color" id="customizeColor">
-				</label>
-				<label>
-					Alpha (Opacity)
-					<span id="customColorAlphaText"></span>
-					<input type="range" class="form-range" min="0" max="255" step="1" id="customColorAlpha">
-				</label>
-				<label>
-					Change Name:
-					<input type="text" class="form-control" id="customizeName">
-				</label>
-			</div>
-			<div id="menu-box" class="col-4 border-start d-grid gap-2 vh-100 overflow-auto">
-				<canvas id="zoom" width="400" height="400"></canvas><!--This is the zoomed-in box that the user can interact with-->
-				<div>
-					<div class="btn-group">
-						<button id="reset" type="button" class="btn btn-danger" alt="Reset" title="Reset">
-							<i class="fa-solid fa-trash-can fa-lg"></i>
-						</button>
-						<button id="play" type="button" class="btn btn-primary" alt="Play" title="Play">
-							<i class="fa-solid fa-play fa-lg"></i>
-						</button><!--The play button that changes into a restart button when pressed,unless it's paused,then it's a play button again.-->
-						<button id="pause" alt="Pause" type="button" class="btn btn-primary" title="Pause">
-							<i class="fa-solid fa-pause fa-lg"></i>
-						</button><!--This pauses everything in #canvas-->
-						<button id="oneFrameAtATime" type="button" class="btn btn-secondary" alt="Next frame" title="Next frame">
-							<i class="fa-solid fa-forward-step fa-lg"></i>
-						</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
-					</div>
+			<div id="menu-box" class="d-grid gap-2 col-sm col-md-7 col-lg-5 col-xxl-4">
+				<div class="overflow-auto">
+					<canvas id="zoom" width="400" height="400" role="img" aria-label="Zoomed-in slice of the above image."></canvas><!--This is the zoomed-in box that the user can interact with-->
 				</div>
-				<div class="card">
-					<div class="card-header">
-						Elements
-					</div>
-					<div class="card-body">
-						<div>
-							Click:
-							<div class="click-type-random input-group">
-								<select class="elmDrop form-select" id="normalSelect"></select>
-								<button class="btn btn-outline-secondary" type="button" id="normalFill" title="Randomly fill">
-									<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
-								</button>
-								<input class="form-control" id="normalFillP" type="text" value="15" placeholder="15"/>
-								<span class="input-group-text">%</span>
+				<section class="btn-group sticky-top bottom-0 bg-body col-sm-6">
+					<button id="reset" type="button" class="btn btn-danger" title="Reset">
+						<i class="fa-solid fa-trash-can fa-lg" aria-hidden="true"></i>
+						<span class="visually-hidden">Reset</span>
+					</button>
+					<!-- #play turns into a pause button on click -->
+					<button id="play" type="button" class="btn btn-primary" title="Play">
+						<i class="fa-solid fa-play fa-lg" aria-hidden="true"></i>
+						<span class="visually-hidden">Play</span>
+					</button>
+					<button id="oneFrameAtATime" type="button" class="btn btn-secondary" title="Next frame">
+						<i class="fa-solid fa-forward-step fa-lg" aria-hidden="true"></i>
+						<span class="visually-hidden">
+							Next frame
+						</span>
+					</button><!--This executes the function called by setInterval in the play button once per click,iterating one frame at a time-->
+				</section>
+				<div class="accordion" id="sideAccordion">
+					<section class="accordion-item" aria-labelledby="elements-header">
+						<h2 id="elements-header" class="accordion-header">
+							<button
+								class="accordion-button"
+								type="button"
+								data-bs-toggle="collapse"
+								data-bs-target="#elements"
+								aria-expanded="true"
+								aria-controls="elements"
+							>
+								Elements
+							</button>
+						</h2>
+						<div id="elements" class="accordion-collapse collapse show" aria-labelledby="elements-header" data-bs-parent="#sideAccordion">
+							<div class="accordion-body">
+								<div>
+									Click:
+									<div class="click-type-random input-group">
+										<select class="elmDrop form-select" id="normalSelect"></select>
+										<button class="btn btn-outline-secondary" type="button" id="normalFill" title="Randomly fill">
+											<i class="fa-solid fa-fill-drip" aria-hidden="true"></i>
+											<span class="visually-hidden">
+												Randomly fill
+											</span>
+										</button>
+										<input class="form-control" id="normalFillP" type="text" value="15" placeholder="15"/>
+										<span class="input-group-text">%</span>
+									</div>
+								</div>
+								<div>
+									<kbd>Ctrl</kbd> + click:
+									<div class="click-type-random input-group">
+										<select class="elmDrop form-select" id="ctrlSelect"></select>
+										<button class="btn btn-outline-secondary" type="button" id="ctrlFill" title="Randomly fill">
+											<i class="fa-solid fa-fill-drip" aria-hidden="true"></i>
+											<span class="visually-hidden">
+												Randomly fill
+											</span>
+										</button>
+										<input class="form-control" id="ctrlFillP" type="text" value="15" placeholder="15"/>
+										<span class="input-group-text">%</span>
+									</div>
+								</div>
+								<div>
+									<kbd>Alt</kbd> + click:
+									<div class="click-type-random input-group">
+										<select class="elmDrop form-select" id="altSelect"></select>
+										<button class="btn btn-outline-secondary" type="button" id="altFill" title="Randomly fill">
+											<i class="fa-solid fa-fill-drip" aria-hidden="true"></i>
+											<span class="visually-hidden">
+												Randomly fill
+											</span>
+										</button>
+										<input class="form-control" id="altFillP" type="text" value="15" placeholder="15"/>
+										<span class="input-group-text">%</span>
+									</div>
+								</div>
 							</div>
 						</div>
-						<div>
-							<kbd>Ctrl</kbd> + click:
-							<div class="click-type-random input-group">
-								<select class="elmDrop form-select" id="ctrlSelect"></select>
-								<button class="btn btn-outline-secondary" type="button" id="ctrlFill" title="Randomly fill">
-									<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
-								</button>
-								<input class="form-control" id="ctrlFillP" type="text" value="15" placeholder="15"/>
-								<span class="input-group-text">%</span>
+					</section>
+					<section class="accordion-item" aria-labelledby="customize-header">
+						<h2 class="accordion-header" id="customize-header">
+							<button
+								class="accordion-button collapsed"
+								type="button"
+								data-bs-toggle="collapse"
+								data-bs-target="#customize"
+								aria-expanded="false"
+								aria-controls="customize"
+							>
+								Customize
+							</button>
+						</h2>
+						<div id="customize" class="accordion-collapse collapse" aria-labelledby="customize-header" data-bs-parent="#sideAccordion">
+							<div class="accordion-body">
+								<select class="elmDrop form-select" id="customSelect"></select>
+								<label>
+									Element Color
+									<input type="color" class="form-control form-control-color" id="customizeColor">
+								</label>
+								<label>
+									Alpha (Opacity)
+									<span id="customColorAlphaText"></span>
+									<input type="range" class="form-range" min="0" max="255" step="1" id="customColorAlpha">
+								</label>
+								<label>
+									Change Name:
+									<input type="text" class="form-control" id="customizeName">
+								</label>
 							</div>
 						</div>
-						<div>
-							<kbd>Alt</kbd> + click:
-							<div class="click-type-random input-group">
-								<select class="elmDrop form-select" id="altSelect"></select>
-								<button class="btn btn-outline-secondary" type="button" id="altFill" title="Randomly fill">
-									<i class="fa-solid fa-fill-drip" alt="Randomly fill"></i>
-								</button>
-								<input class="form-control" id="altFillP" type="text" value="15" placeholder="15"/>
-								<span class="input-group-text">%</span>
+					</section>
+					<section class="accordion-item" aria-labelledby="settings-header">
+						<h2 class="accordion-header" id="settings-header">
+							<button
+								class="accordion-button collapsed"
+								type="button"
+								data-bs-toggle="collapse"
+								data-bs-target="#settings"
+								aria-expanded="false"
+								aria-controls="customize"
+							>
+								Settings
+							</button>
+						</h2>
+						<div id="settings" class="accordion-collapse collapse" aria-labeledby="accordion-header" data-bs-parent="#sideAccordion">
+							<div class="accordion-body">
+								<div>
+									Size:
+									<div class="input-group">
+										<input class="form-control" id="width" type="text" value="150" placeholder="150" title="Default:150"/>
+										<span class="input-group-text">by</span>
+										<input class="form-control" id="height" type="text" value="150" placeholder="150" title="Default:150"/>
+										<span class="input-group-text">px</span>
+									</div>
+								</div>
+								<div>
+									Zoom Size:
+									<div class="input-group">
+										<input class="form-control" id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>
+										<span class="input-group-text">by</span>
+										<input class="form-control" id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>
+										<span class="input-group-text">px</span>
+									</div>
+								</div>
+								<div>
+									<div class="form-check">
+										<input class="form-check-input" id="shtargeter" checked type="checkbox">
+										<label class="form-check-label" for="shtargeter" title="Show targeter lines">
+											<i class="fa-solid fa-crosshairs" aria-hidden="true"></i>
+											Targeter Lines
+										</label>
+									</div>
+								</div>
+								<div>
+									<div class="form-check">
+										<input class="form-check-input" id="shfocusbox" checked type="checkbox">
+										<label class="form-check-label" for="shfocusbox" title="Show focus box">
+											<i class="fa-solid fa-square" aria-hidden="true"></i>
+											Focus Box
+										</label>
+									</div>
+								</div>
+								<div>
+									<div class="form-check">
+										<input class="form-check-input" value="" id="pixelCounterT" checked type="checkbox">
+										<label class="form-check-label" for="pixelCounterT" title="Show PixelCounter">
+											<i class="fa-solid fa-list-ol" aria-hidden="true"></i>
+											PixelCounter
+										</label>
+									</div>
+								</div>
 							</div>
 						</div>
-					</div>
+					</section>
 				</div>
-				<div class="card">
-					<div class="card-header">
-						Sizes
-					</div>
-					<div class="card-body">
-						<div>
-							Size:
-							<div class="input-group">
-								<input class="form-control" id="width" type="text" value="150" placeholder="150" title="Default:150"/>
-								<span class="input-group-text">by</span>
-								<input class="form-control" id="height" type="text" value="150" placeholder="150" title="Default:150"/>
-								<span class="input-group-text">px</span>
-							</div>
-						</div>
-						<div>
-							Zoom Size:
-							<div class="input-group">
-								<input class="form-control" id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>
-								<span class="input-group-text">by</span>
-								<input class="form-control" id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>
-								<span class="input-group-text">px</span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row row-cols-2">
-					<div class="col">
-						<div class="form-check">
-							<input class="form-check-input" id="shtargeter" checked type="checkbox">
-							<label class="form-check-label" for="shtargeter">
-								<i class="fa-solid fa-crosshairs" alt="Show targeter lines" title="Show targeter lines"></i>
-								Targeter Lines
-							</label>
-						</div>
-					</div>
-					<div class="col">
-						<div class="form-check">
-							<input class="form-check-input" id="shfocusbox" checked type="checkbox">
-							<label class="form-check-label" for="shfocusbox">
-								<i class="fa-solid fa-square" alt="Show focus box" title="Show focus box"></i>
-								Focus Box
-							</label>
-						</div>
-					</div>
-					<div class="col">
-						<div class="form-check">
-							<input class="form-check-input" value="" id="pixelCounterT" checked type="checkbox">
-							<label class="form-check-label" for="pixelCounterT">
-								<i class="fa-solid fa-list-ol"></i>
-								PixelCounter
-							</label>
-						</div>
-					</div>
-					<dif class="col">
-						<div class="form-check">
-							<input class="form-check-input" id="customizeT" type="checkbox">
-							<label class="form-check-label" for="customizeT">
-								<i class="fa-solid fa-pen"></i>
-								Element Customizer
-							</label>
-						</div>
-					</dif>
-				</div>
-				<div id="callout">
+				<footer id="callout">
 					<div>
 						<a target="_blank" href="https://github.com/Lazerbeak12345/pixelmanipulator">
-							<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/lazerbeak12345/pixelmanipulator?logo=github&style=plastic">
+							<img alt="GitHub Repo" src="https://img.shields.io/github/stars/lazerbeak12345/pixelmanipulator?logo=github&style=plastic">
 						</a>
 					</div>
-					<!-- Frontend will be 2.0.0 when I refresh the GUI's look. -->
-					Library v<span id="backendversion"></span>, Frontend v1.36.1
-				</div><!--The frontend version is different because there are changes that don't impact the rest of the library -->
+					Library v<span id="backendversion"><span class="placeholder" style="width:4em"></span></span>, Frontend v1.37.0
+				</footer><!--The frontend version is different because there are changes that don't impact the rest of the library -->
 			</div>
 		</div>
 		<script type=module src="index.ts"></script>

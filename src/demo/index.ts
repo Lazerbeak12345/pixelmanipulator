@@ -1,5 +1,6 @@
 import { PixelManipulator, version, rules, Ctx2dRenderer, Location } from '../lib/pixelmanipulator'
 import '@fortawesome/fontawesome-free/attribution.js'
+import 'bootstrap/js/dist/collapse' // For #sideAccordion
 
 /**
 * The X coordinate of where the center of [[zoom]] is windowed at.
@@ -95,17 +96,66 @@ function beforeIterate (): void {
   if (timedebug) lasttime = performance.now()
   framecount++
 }
+const frames = document.getElementById('frames') as HTMLParagraphElement
+const fps = document.getElementById('fps') as HTMLParagraphElement
+const pixelRatio = document.getElementById('pixelRatio') as HTMLDivElement
 function afterIterate<T> (p: PixelManipulator<T>): void {
-  if (pixelCounterT.checked ?? true) {
-    let text = ''
-    for (const id in p.pixelCounts) {
-      const elm = p.elements[parseInt(id)].name
-      text += `${elm} : ${p.pixelCounts[id]}\n`
+  pixelRatio.innerHTML = ''
+  if (!(pixelCounterT.checked ?? true)) return
+  pixelCounter.innerHTML = ''
+  pixelRatio.style.background = 'rgb(' + renderer.renderInfo[p.defaultId].slice(0, -1).join(',') + ')'
+  const area = p.get_width() * p.get_height()
+  for (const id in p.pixelCounts) {
+    const { name } = p.elements[id]
+    const color = 'rgb(' + renderer.renderInfo[id].slice(0, -1).join(',') + ')'
+    const count = p.pixelCounts[id]
+    const percent = count / area * 100
+
+    const li = document.createElement('li')
+    li.classList.add('list-group-item')
+    {
+      const icon = document.createElement('i')
+      icon.classList.add('fa-solid', 'fa-square-poll-horizontal')
+      icon.style.color = color
+      icon.setAttribute('aria-hidden', 'true')
+      li.appendChild(icon)
     }
-    text += `\n\nFrames:${framecount}`
-    if (timedebug) text += `\nFps:${1 / ((performance.now() - lasttime) / 1000)}`
-    pixelCounter.innerText = text
-  } else pixelCounter.innerText = ''
+    li.appendChild(document.createTextNode(` ${name}: `))
+    {
+      const span = document.createElement('span')
+      span.classList.add('badge', 'bg-primary')
+      span.innerText = `${count}`
+      {
+        const unit = document.createElement('span')
+        unit.classList.add('visually-hidden')
+        unit.innerText = ' pixels'
+        span.appendChild(unit)
+      }
+      li.appendChild(span)
+    }
+    li.appendChild(document.createTextNode(' '))
+    {
+      const span = document.createElement('span')
+      span.classList.add('badge', 'bg-secondary')
+      span.innerText = `${Math.round(percent)}%`
+      li.appendChild(span)
+    }
+    pixelCounter.appendChild(li)
+
+    const ratioE = document.createElement('div')
+    ratioE.classList.add('progress-bar')
+    ratioE.setAttribute('role', 'progressbar')
+    ratioE.style.backgroundColor = color
+    ratioE.style.width = `${percent}%`
+    ratioE.setAttribute('aria-valuenow', `${Math.round(percent)}`)
+    ratioE.setAttribute('aria-valuetext', `${Math.round(percent)}% full of ${name}`)
+    ratioE.setAttribute('aria-valuemin', '0')
+    ratioE.setAttribute('aria-valuemax', '100')
+    ratioE.title = `${name} : ${Math.round(percent)}%`
+    pixelRatio.appendChild(ratioE)
+  }
+  frames.innerText = `${framecount}`
+  if (timedebug) fps.innerText = `${1 / ((performance.now() - lasttime) / 1000)}`
 }
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 canvas.addEventListener('click', event => {
@@ -148,7 +198,6 @@ function changeColor (): void {
     ]
   })
 }
-const customizer = document.getElementById('customizer') as HTMLDivElement
 /// Select the element to customize
 const customSelect = document.getElementById('customSelect') as HTMLSelectElement
 customSelect.addEventListener('change', () => updateCustomizer())
@@ -207,6 +256,20 @@ zoom.addEventListener('mousemove', e => {
   })
 })
 
+/** Converts the pause button into a play button */
+function convertPauseToPlay (): void {
+  playBtn.title = 'Play'
+  const playIcon = playBtn.querySelector('i')
+  playIcon?.classList.replace('fa-pause', 'fa-play')
+  playIcon?.setAttribute('alt', 'Play')
+}
+/** Converts the play button into a pause button */
+function convertPlayToPause (): void {
+  playBtn.title = 'Pause'
+  const playIcon = playBtn.querySelector('i')
+  playIcon?.classList.replace('fa-play', 'fa-pause')
+  playIcon?.setAttribute('alt', 'Pause')
+}
 /// Actions box button.
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function () {
@@ -221,26 +284,23 @@ resetBtn.addEventListener('click', function () {
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
   zoom.width = (zoomW ?? zoom.width / zoomScaleFactor) * zoomScaleFactor
   zoom.height = (zoomH ?? zoom.height / zoomScaleFactor) * zoomScaleFactor
-  playBtn.disabled = false
+  convertPauseToPlay()
   oneFrameAtATime.disabled = false
   this.disabled = false
-  pauseBtn.disabled = true
   framecount = 0
   p.iterate() // this will prevent new user confusion by showing the zoom box when the page loads
 })
 const playBtn = document.getElementById('play') as HTMLButtonElement
 playBtn.addEventListener('click', function (this: HTMLButtonElement) {
-  p.play()
-  this.disabled = true
-  pauseBtn.disabled = false
-  oneFrameAtATime.disabled = true
-})
-const pauseBtn = document.getElementById('pause') as HTMLButtonElement
-pauseBtn.addEventListener('click', function (this: HTMLButtonElement) {
-  this.disabled = true
-  playBtn.disabled = false
-  oneFrameAtATime.disabled = false
-  p.pause()
+  if (p.mode === 'paused') {
+    p.play()
+    convertPlayToPause()
+    oneFrameAtATime.disabled = true
+  } else {
+    p.pause()
+    convertPauseToPlay()
+    oneFrameAtATime.disabled = false
+  }
 })
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => p.iterate())
@@ -307,21 +367,20 @@ shtargeter.addEventListener('click', function () {
 const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
 /// Hide pixelCounter
 const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputElement
-/// Show element customizer
-const customizeT = document.getElementById('customizeT') as HTMLInputElement
-customizeT.addEventListener('click', function (this: HTMLInputElement) {
-  if (this.checked) {
-    customizer.classList.remove('visually-hidden')
-    updateCustomizer()
-  } else customizer.classList.add('visually-hidden')
+pixelCounterT.addEventListener('change', function () {
+  if (this.checked ?? true) {
+    pixelCounterBox.classList.remove('visually-hidden')
+  } else {
+    pixelCounterBox.classList.add('visually-hidden')
+  }
 })
-
 /// Version of backend
 const backendversion = document.getElementById('backendversion') as HTMLSpanElement
 backendversion.innerText = version
 
 /// Text element for pixel totals
-const pixelCounter = document.getElementById('pixelCounter') as HTMLDivElement
+const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement
+const pixelCounterBox = document.getElementById('pixelCounterBox') as HTMLUListElement
 
 const elmdrops = document.getElementsByClassName('elmDrop')
 
@@ -432,7 +491,7 @@ p.addMultipleElements({
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld FadingElectricity')
   },
   'Wireworld FadingElectricity': {
-    renderAs: [148, 133, 0, 254],
+    renderAs: [74, 61, 0, 255],
     liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld Conductor')
   },
   Highlife: {
