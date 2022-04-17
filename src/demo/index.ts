@@ -13,6 +13,7 @@ let zoomY = 10
 const targeterLoc: Location = { x: 0, y: 0 }
 const targeterX = document.getElementById('targeterX') as HTMLSpanElement
 const targeterY = document.getElementById('targeterY') as HTMLSpanElement
+const targeterStats = document.getElementById('targeterStats') as HTMLDivElement
 /**
 * Initially a click envent handler from mid to late version 0 all the way to
 * early version 1, zoom takes in an object that contains `x` and `y`. If these
@@ -51,11 +52,11 @@ function oldZoom (e?: {
     cctx.fillRect(targeterLoc.x, targeterLoc.y + 1, 1, canvas.height)
     cctx.fillRect(0, targeterLoc.y, targeterLoc.x, 1)
     cctx.fillRect(targeterLoc.x, 0, 1, targeterLoc.y)
-    targeterX.parentElement?.classList.remove('visually-hidden')
+    targeterStats.classList.remove('visually-hidden')
     targeterX.innerText = targeterLoc.x.toString()
     targeterY.innerText = targeterLoc.y.toString()
   } else {
-    targeterX.parentElement?.classList.add('visually-hidden')
+    targeterStats.classList.add('visually-hidden')
   }
   zoomctx.clearRect(0, 0, zoom.width, zoom.height)// clear the screen
   zoomctx.drawImage(canvas, // draw the selected section of the canvas onto the zoom canvas
@@ -298,7 +299,7 @@ resetBtn.addEventListener('click', function () {
   p.iterate() // this will prevent new user confusion by showing the zoom box when the page loads
 })
 const playBtn = document.getElementById('play') as HTMLButtonElement
-playBtn.addEventListener('click', function (this: HTMLButtonElement) {
+playBtn.addEventListener('click', () => {
   if (p.mode === 'paused') {
     p.play()
     convertPlayToPause()
