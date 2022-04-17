@@ -11,6 +11,8 @@ let zoomX = 10
 */
 let zoomY = 10
 const targeterLoc: Location = { x: 0, y: 0 }
+const targeterX = document.getElementById('targeterX') as HTMLSpanElement
+const targeterY = document.getElementById('targeterY') as HTMLSpanElement
 /**
 * Initially a click envent handler from mid to late version 0 all the way to
 * early version 1, zoom takes in an object that contains `x` and `y`. If these
@@ -49,6 +51,11 @@ function oldZoom (e?: {
     cctx.fillRect(targeterLoc.x, targeterLoc.y + 1, 1, canvas.height)
     cctx.fillRect(0, targeterLoc.y, targeterLoc.x, 1)
     cctx.fillRect(targeterLoc.x, 0, 1, targeterLoc.y)
+    targeterX.parentElement?.classList.remove('visually-hidden')
+    targeterX.innerText = targeterLoc.x.toString()
+    targeterY.innerText = targeterLoc.y.toString()
+  } else {
+    targeterX.parentElement?.classList.add('visually-hidden')
   }
   zoomctx.clearRect(0, 0, zoom.width, zoom.height)// clear the screen
   zoomctx.drawImage(canvas, // draw the selected section of the canvas onto the zoom canvas
