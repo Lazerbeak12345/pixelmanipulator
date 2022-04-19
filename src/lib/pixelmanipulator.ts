@@ -16,7 +16,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with this program.  If not, see <http://www.gnu.org/licenses>.
  */
 import { version as _version } from '../../package.json'
 import { Hitbox, moore, wolfram } from './neighborhoods'
@@ -455,24 +455,33 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * @param x - x position
-  * @param y - y position
-  * @param frame - What frame should we grab it from? (default 0)
-  * @param loop - should it loop around edges? (default true)
-  * @returns the element id at a given location
+  * @param loc - Location of the pixel (could be out of bounds).
+  * @returns null if out-of-bounds when loop setting is false, or the location (loop set to false).
   */
-  getPixelId ({ x, y, frame, loop }: Location): number {
+  locationBoundsCheck (loc: Location): null | Location {
     const w = this.get_width()
     const h = this.get_height()
-    if (loop ?? true) {
-      x %= w
-      if (x < 0)x += w
-      y %= h
-      if (y < 0)y += h
-    } else if (x < 0 || x >= w || y < 0 || x >= h) {
-      return this.defaultId
+    if (loc.loop ?? true) {
+      loc.x %= w
+      if (loc.x < 0) loc.x += w
+      loc.y %= h
+      if (loc.y < 0) loc.y += h
+      loc.loop = false
+    } else if (loc.x < 0 || loc.x >= w || loc.y < 0 || loc.x >= h) {
+      return null
     }
-    return this.frames[frame ?? 0][location2Index({ x, y }, w)]
+    return loc
+  }
+
+  /**
+  * @param loc - Location of the pixel
+  * @returns the element id at a given location
+  */
+  getPixelId (loc: Location): number {
+    const fixedLoc = this.locationBoundsCheck(loc)
+    if (fixedLoc == null) return this.defaultId
+    const w = this.get_width()
+    return this.frames[fixedLoc.frame ?? 0][location2Index(fixedLoc, w)]
   }
 
   /**
@@ -547,7 +556,7 @@ export class PixelManipulator<T> {
   *
   * @param loop - Defaults to [[true]]. Wraps `x` and `y` around canvas borders.
   */
-  setPixel ({ x, y, loop }: Location, ident: string|number): void {
+  setPixel (loc: Location, ident: string|number): void {
     let id = 0
     if (typeof ident === 'string') {
       id = this.nameToId(ident)
@@ -557,16 +566,11 @@ export class PixelManipulator<T> {
     } else {
       id = ident
     }
+    const fixedLoc = this.locationBoundsCheck(loc)
+    if (fixedLoc == null) return
+    this.renderer.renderPixel(fixedLoc, id)
     const w = this.get_width()
-    const h = this.get_height()
-    if (loop ?? true) {
-      x %= w
-      if (x < 0)x += w
-      y %= h
-      if (y < 0)y += h
-    } else if (x < 0 || x >= w || y < 0 || y >= h) return // if it can't loop, and it's outside of the boundaries, exit
-    this.renderer.renderPixel({ x, y }, id)
-    this.frames[0][location2Index({ x, y }, w)] = id
+    this.frames[0][location2Index(fixedLoc, w)] = id
   }
 
   /** Number of pixels per element in the last frame */
@@ -622,24 +626,21 @@ export class PixelManipulator<T> {
           }
           for (let hi = 0; hi < elm.hitbox.length; hi++) {
             const pixel = elm.hitbox[hi]
-            let hbx = (x + pixel.x) % w
-            if (hbx < 0) hbx += w
-            let hby = (y + pixel.y) % h
-            if (hby < 0) hby += h
-            const index = Math.floor(location2Index({
-              x: hbx,
-              y: hby
-            }, w) / 8)
+            const hbLoc = this.locationBoundsCheck({
+              x: x + pixel.x,
+              y: y + pixel.y
+            }) as Location // We are looping, so it can't be null
+            const index = Math.floor(location2Index(hbLoc, w) / 8)
             const oldValue = typedUpdatedDead[currentPixId][index]
-            const bitMask = 1 << (hbx % 8)
+            const bitMask = 1 << (hbLoc.x % 8)
             if ((oldValue & bitMask) > 0) { continue }
             // I timed it, and confirmOldElm is slower than all the math above.
-            if (!this.confirmElm({ x: hbx, y: hby, frame: 1 }, this.defaultId)) {
+            if (!this.confirmElm({ x: hbLoc.x, y: hbLoc.y, frame: 1 }, this.defaultId)) {
               continue
             }
             elm.deadCell({
-              x: hbx,
-              y: hby,
+              x: hbLoc.x,
+              y: hbLoc.y,
               oldId: this.defaultId,
               thisId: currentPixId
             })

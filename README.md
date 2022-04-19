@@ -54,7 +54,7 @@ Start with this html:
 <html>
 	<head>
 		<!-- If you'd like you can replace this with a different URL for the library -->
-		<script src="https://unpkg.com/pixelmanipulator@^5.0.0"></script>
+		<script src="https://unpkg.com/pixelmanipulator@^5.2.0"></script>
 	</head>
 	<body>
 		<!-- The canvas element to render to -->
