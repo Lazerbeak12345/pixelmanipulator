@@ -1,6 +1,6 @@
 {
   "name": "pixelmanipulator",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "description": "Run any cellular automata on an html5 canvas.",
   "main": "dist/main.js",
   "browser": "dist/browser.js",
@@ -92,7 +92,7 @@
     "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
     "build": "npm run check && npm run build:docs && npm run build:parcel && npm run build:bundle",
     "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
-	"node-demo": "ts-node src/node-demo",
+    "node-demo": "ts-node src/node-demo",
     "coverage": "npm run test"
   },
   "dependencies": {

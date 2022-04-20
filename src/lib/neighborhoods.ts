@@ -19,6 +19,20 @@
 import { Location } from './renderers'
 /** A list of locations, usually relative around a pixel. */
 export type Hitbox=Location[]
+/** A rect between two points
+* @param topLeft - The top left corner
+* @param bottomRight - The bottom right corner
+* @returns A hitbox shaped like a rectangle between the corners.
+*/
+export function rect (topLeft: Location, bottomRight: Location): Location[] {
+  const output: Hitbox = []
+  for (let x = topLeft.x; x <= bottomRight.y; x++) {
+    for (let y = topLeft.y; y <= bottomRight.y; y++) {
+      output.push({ x, y })
+    }
+  }
+  return output
+}
 /**
 * Makes a wolfram neighborhood.
 *
@@ -75,20 +89,15 @@ export function moore (radius?: number, includeSelf?: boolean): Hitbox {
   if (radius == null) {
     radius = 1
   }
-  if (includeSelf == null) {
-    includeSelf = false
-  }
-  const output: Hitbox = []
   // Note: no need to calculate the Chebyshev distance. All pixels in this
   // range are "magically" within.
-  for (let x = -1 * radius; x <= radius; x++) {
-    for (let y = -1 * radius; y <= radius; y++) {
-      if (includeSelf || !(x === 0 && y === 0)) {
-        output.push({ x, y })
-      }
-    }
-  }
-  return output
+  return rect({
+    x: -1 * radius,
+    y: -1 * radius
+  }, {
+    x: radius,
+    y: radius
+  }).filter(({ x, y }) => (includeSelf ?? false) || !(x === 0 && y === 0))
   // And to think that this used to be hard... Perhaps they had a different
   // goal? Or just weren't using higher-order algorithims?
 }
@@ -119,26 +128,21 @@ export function moore (radius?: number, includeSelf?: boolean): Hitbox {
 * ```
 */
 export function vonNeumann (radius?: number, includeSelf?: boolean): Hitbox {
-  if (typeof radius === 'undefined') {
+  if (radius == null) {
     radius = 1
   }
-  if (typeof includeSelf === 'undefined') {
-    includeSelf = false
-  }
-  const output: Hitbox = []
   // A Von Neumann neighborhood of a given distance always fits inside of a
   // Moore neighborhood of the same. (This is a bit brute-force)
-  for (let x = -1 * radius; x <= radius; x++) {
-    for (let y = -1 * radius; y <= radius; y++) {
-      if (
-        (includeSelf || !(x === 0 && y === 0)) &&
-        (Math.abs(x) + Math.abs(y) <= radius) // Taxicab distance
-      ) {
-        output.push({ x, y })
-      }
-    }
-  }
-  return output
+  return rect({
+    x: -1 * radius,
+    y: -1 * radius
+  }, {
+    x: radius,
+    y: radius
+  }).filter(({ x, y }) =>
+    ((includeSelf ?? false) || !(x === 0 && y === 0)) &&
+    (Math.abs(x) + Math.abs(y) <= (radius ?? 1)) // Taxicab distance
+  )
 }
 /**
 * Makes a euclidean neighborhood.
@@ -155,23 +159,18 @@ export function euclidean (radius?: number, includeSelf?: boolean): Hitbox {
   if (radius == null) {
     radius = 1
   }
-  if (includeSelf == null) {
-    includeSelf = false
-  }
-  const output: Hitbox = []
   // A circle of a given diameter always fits inside of a square of the same
   // side-length. (This is a bit brute-force)
-  for (let x = -1 * radius; x <= radius; x++) {
-    for (let y = -1 * radius; y <= radius; y++) {
-      if (
-        (includeSelf || !(x === 0 && y === 0)) &&
-        (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= radius) // Euclidean distance
-      ) {
-        output.push({ x, y })
-      }
-    }
-  }
-  return output
+  return rect({
+    x: -1 * radius,
+    y: -1 * radius
+  }, {
+    x: radius,
+    y: radius
+  }).filter(({ x, y }) =>
+    ((includeSelf ?? false) || !(x === 0 && y === 0)) &&
+    (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= (radius ?? 1)) // Euclidean distance
+  )
 }
 // TODO https://www.npmjs.com/package/compute-minkowski-distance ?
 // TODO Non-Euclidean distance algorithim?

@@ -38,6 +38,19 @@ export interface Location{
 export function location2Index ({ x, y }: Location, width: number): number {
   return ((width * y) + x)
 }
+/** Transpose a list of locations, using a location.
+* @param locs - Locations to be transposed. If the frame or loop values are absent, they are set to the value in [offset].
+* @param offset - Amount to transpose the locations by, represented by a location.
+*/
+export function transposeLocations (locs: Location[], offset: Location): Location[] {
+  const { x, y, frame, loop } = offset
+  return locs.map(loc => ({
+    x: loc.x + x,
+    y: loc.y + y,
+    frame: loc.frame ?? frame,
+    loop: loc.loop ?? loop
+  }))
+}
 /** Abstract rendering type. Used by [[PixelManipulator]] to enable rendering to
 * various targets. */
 export abstract class Renderer<T> {

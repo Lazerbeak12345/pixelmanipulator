@@ -20,7 +20,7 @@
  */
 import { version as _version } from '../../package.json'
 import { Hitbox, moore, wolfram } from './neighborhoods'
-import { Renderer, Location, location2Index } from './renderers'
+import { Renderer, Location, location2Index, transposeLocations } from './renderers'
 // export * as neighborhoods from './neighborhoods'
 import * as _neighborhoods from './neighborhoods'
 export { _neighborhoods as neighborhoods }
@@ -154,33 +154,20 @@ export const rules = {
     return {
       madeWithRule: true,
       hitbox: wolfram(1, 1),
+      // The current state is used as the index in the binstates, as binstates is a bit array of every state
       liveCell: function wlive ({ x, y, thisId }) {
         if (y === 0) return
-        // for every possible state
-        for (let binDex = 0; binDex < 8; binDex++) {
-          if (
-            // if the state is "off". Use a bit mask and shift it
-            (binStates & 1 << binDex) === 0 &&
-            // if there is a wolfram match (wolfram code goes from 111 to 000)
-            p.wolframNearbyCounter({ x, y, frame: 1, loop }, thisId, binDex)
-          ) {
-            p.setPixel({ x, y, loop }, p.defaultId)
-            return// No more logic needed, it is done.
-          }
+        const currentState = p.wolframNearby({ x, y, frame: 1, loop }, thisId)
+        // if the state is "off". Use a bit mask and shift it
+        if ((binStates & 1 << currentState) === 0) {
+          p.setPixel({ x, y, loop }, p.defaultId)
         }
       },
       deadCell: function wdead ({ x, y, thisId }) {
-        // for every possible state
-        for (let binDex = 0; binDex < 8; binDex++) {
-          if (
-            // if the state is "on". Use a bit mask and shift it
-            (binStates & 1 << binDex) > 0 &&
-            // if there is a wolfram match (wolfram code goes from 111 to 000)
-            p.wolframNearbyCounter({ x, y, frame: 1, loop }, thisId, binDex)
-          ) {
-            p.setPixel({ x, y, loop }, thisId)
-            return// No more logic needed, it is done.
-          }
+        const currentState = p.wolframNearby({ x, y, frame: 1, loop }, thisId)
+        // if the state is "on". Use a bit mask and shift it
+        if ((binStates & 1 << currentState) > 0) {
+          p.setPixel({ x, y, loop }, thisId)
         }
       }
     }
@@ -509,40 +496,53 @@ export class PixelManipulator<T> {
     return this.getPixelId(loc) === tmp
   }
 
-  /** @param name - element to look for
-  * @param x - x location of center of moore area
-  * @param y - y location of center of moore area
-  * @param frame - What frame to grab it from. (default 0, reccomended 1)
-  * @param loop - Should it loop around canvas edges while counting?
-  * @returns Number of matching elements in moore radius */
-  mooreNearbyCounter ({ x, y, frame, loop }: Location, name: number|string): number {
-    return moore()
-      .map(rel => ({ x: x + rel.x, y: y + rel.y, frame, loop }))
-      .map(loc => this.confirmElm(loc, name))
-      .map(boolToNumber)
-      .reduce((a, b) => a + b)
+  /** Calculate the total number of elements within an area
+  * @param area - The locations to total up.
+  * @param search - The element to look for
+  * @returns The total
+  */
+  totalWithin (area: Location[], search: number | string): number {
+    return area
+      .filter(loc => this.confirmElm(loc, search))
+      .length
   }
 
+  private static _moore = moore()
+  /** @param name - element to look for
+  * @param center - location of the center of the moore area
+  * @returns Number of matching elements in moore radius */
+  mooreNearbyCounter (center: Location, search: number|string): number {
+    return this.totalWithin(transposeLocations(PixelManipulator._moore, center), search)
+  }
+
+  private static _wolfram = wolfram()
   /**
-  * @param x - "Current" pixel x location
-  * @param y - "Current" pixel y location
-  * @param frame - What frame to measure on? (default 0, reccomended 1)
-  * @param loop - Should this loop around edges when checking?
+  * @param current - "Current" pixel location
+  * @param search - element to look for
+  * encoded as a number.
+  * @returns Number used as bit area to indicate occupied cells */
+  wolframNearby (current: Location, search: number|string): number {
+    // one-dimentional detectors by default don't loop around edges
+    current.loop = current.loop ?? false
+    return transposeLocations(PixelManipulator._wolfram, current)
+      .map((loc, i) => boolToNumber(this.confirmElm(loc, search)) << (2 - i))
+      .reduce((a, b) => a | b)
+  }
+
+  /** Counter tool used in slower wolfram algorithim.
+  * @deprecated Replaced with [PixelManipulator.wolframNearby] for use in faster
+  * algorithms
+  * @param current - "Current" pixel location
   * @param name - element to look for
   * @param bindex - Either a string like `"001"` to match to, or the same
   * encoded as a number.
   * @returns Number of elements in moore radius */
-  wolframNearbyCounter ({ x, y, frame, loop }: Location, name: number|string, binDex: number|string): boolean {
+  wolframNearbyCounter (current: Location, name: number|string, binDex: number|string): boolean {
     if (typeof binDex === 'string') {
       // Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
       binDex = boolToNumber(binDex[0] === '1') << 2 | boolToNumber(binDex[1] === '1') << 1 | boolToNumber(binDex[2] === '1') << 0
     }
-    loop = loop ?? false // one-dimentional detectors by default don't loop around edges
-    return wolfram()
-      .map(rel => ({ x: x + rel.x, y: y + rel.y, frame, loop }))
-      .map(loc => this.confirmElm(loc, name))
-      .map((elm, i) => elm === (((binDex as number) & 1 << (2 - i)) > 0))
-      .reduce((a, b) => a && b)
+    return this.wolframNearby(current, name) === binDex
   }
 
   /** Set a pixel in a given location.
