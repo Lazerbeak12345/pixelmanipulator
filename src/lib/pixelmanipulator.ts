@@ -507,7 +507,7 @@ export class PixelManipulator<T> {
       .length
   }
 
-  private static _moore = moore()
+  private static readonly _moore = moore()
   /** @param name - element to look for
   * @param center - location of the center of the moore area
   * @returns Number of matching elements in moore radius */
@@ -515,7 +515,7 @@ export class PixelManipulator<T> {
     return this.totalWithin(transposeLocations(PixelManipulator._moore, center), search)
   }
 
-  private static _wolfram = wolfram()
+  private static readonly _wolfram = wolfram()
   /**
   * @param current - "Current" pixel location
   * @param search - element to look for
