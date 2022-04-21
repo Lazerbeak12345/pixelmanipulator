@@ -147,7 +147,7 @@ export const rules = {
   * into a binary list, each where the inverted 3-binary-digit index represents
   * the state of cells in the row above. On a match, the cell becomes the state
   * specified in the initial 8-bit number.
-  * @param loop - Should this loop around screen edges? (Passed to [[Location.loop]])
+  * @param loop - Should this loop around screen edges? (Passed to [[PixelManipulator.wolframNearby]])
   */
   wolfram: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const binStates = parseInt(pattern.split(/Rule /gi)[1])
@@ -157,16 +157,12 @@ export const rules = {
       // The current state is used as the index in the binstates, as binstates is a bit array of every state
       liveCell: function wlive ({ x, y, thisId }) {
         if (y === 0) return
-        const currentState = p.wolframNearby({ x, y, frame: 1, loop }, thisId)
-        // if the state is "off". Use a bit mask and shift it
-        if ((binStates & 1 << currentState) === 0) {
+        if (!p.wolframNewState({ x, y, frame: 1, loop }, binStates, thisId)) {
           p.setPixel({ x, y, loop }, p.defaultId)
         }
       },
       deadCell: function wdead ({ x, y, thisId }) {
-        const currentState = p.wolframNearby({ x, y, frame: 1, loop }, thisId)
-        // if the state is "on". Use a bit mask and shift it
-        if ((binStates & 1 << currentState) > 0) {
+        if (p.wolframNewState({ x, y, frame: 1, loop }, binStates, thisId)) {
           p.setPixel({ x, y, loop }, thisId)
         }
       }
@@ -515,28 +511,74 @@ export class PixelManipulator<T> {
     return this.totalWithin(transposeLocations(PixelManipulator._moore, center), search)
   }
 
-  private static readonly _wolfram = wolfram()
-  /**
-  * @param current - "Current" pixel location
-  * @param search - element to look for
-  * encoded as a number.
-  * @returns Number used as bit area to indicate occupied cells */
-  wolframNearby (current: Location, search: number|string): number {
-    // one-dimentional detectors by default don't loop around edges
-    current.loop = current.loop ?? false
-    return transposeLocations(PixelManipulator._wolfram, current)
+  /** @param area - The Area to search within
+  * @param ruleNum - A bitfield of what states a pixel should live or die on.
+  * @param search - The element to search for
+  * @see [[PixelManipulator.wolframNewState]] for higher-level tool
+  * @see [[PixelManipulator.fundamentalStatesWithin]] for lower-level tool
+  * @returns The state that the bitfied says this pixel should be in the next frame.
+  */
+  fundamentalNewState (area: Location[], ruleNum: number, search: number | string): boolean {
+    return (ruleNum & 1 << this.fundamentalStatesWithin(area, search)) > 0
+  }
+
+  /** @param area - Locations to look at.
+  * @param search - Locations to mark as a true bit.
+  * @see [[PixelManipulator.fundamentalNewState]] for higher-level tool
+  * @returns number as a bitfied array, in order of the items in area, from left to right.
+  *
+  * That means that `(fundamentalStatesWithin([loc], search) & 1) === boolToNumber(confirmElm(loc, search))`
+  *
+  * You may want to see [this page](https://www.wolframscience.com/nks/notes-5-2--general-rules-for-multidimensional-cellular-automata/)
+  * for more details on how this might be used.
+  */
+  fundamentalStatesWithin (area: Location[], search: number | string): number {
+    return area
       .map((loc, i) => boolToNumber(this.confirmElm(loc, search)) << (2 - i))
       .reduce((a, b) => a | b)
   }
 
+  private static readonly _wolfram = wolfram()
+
+  /** @param loc - The pixel to change. (Defaults [[Location.loop]] to false)
+  * @param ruleNum - A bitfield of what states a pixel should live or die on.
+  * @param search - The element to search for
+  * @see [[PixelManipulator.fundamentalNewState]] for more general tool.
+  * @returns The state that the bitfied says this pixel should be in the next frame.
+  */
+  wolframNewState (loc: Location, ruleNum: number, search: number | string): boolean {
+    // one-dimentional detectors by default don't loop around edges
+    loc.loop = loc.loop ?? false
+    return this.fundamentalNewState(
+      transposeLocations(PixelManipulator._wolfram, loc),
+      ruleNum,
+      search
+    )
+  }
+
+  /**
+  * @param current - "Current" pixel location. (Defaults [[Location.loop]] to false)
+  * @param search - element to look for
+  * @see [[PixelManipulator.fundamentalStatesWithin]] for lower-level tool
+  * @returns Number used as bit area to indicate occupied cells
+  */
+  wolframNearby (current: Location, search: number|string): number {
+    // one-dimentional detectors by default don't loop around edges
+    current.loop = current.loop ?? false
+    return this.fundamentalStatesWithin(
+      transposeLocations(PixelManipulator._wolfram, current),
+      search
+    )
+  }
+
   /** Counter tool used in slower wolfram algorithim.
-  * @deprecated Replaced with [PixelManipulator.wolframNearby] for use in faster
+  * @deprecated Replaced with [[PixelManipulator.wolframNearby]] for use in faster
   * algorithms
   * @param current - "Current" pixel location
   * @param name - element to look for
   * @param bindex - Either a string like `"001"` to match to, or the same
   * encoded as a number.
-  * @returns Number of elements in moore radius */
+  * @returns Number of elements in wolfram radius */
   wolframNearbyCounter (current: Location, name: number|string, binDex: number|string): boolean {
     if (typeof binDex === 'string') {
       // Old format was a string of ones and zeros, three long. Use bitshifts to make it better.
