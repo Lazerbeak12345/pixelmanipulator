@@ -26,7 +26,7 @@ import * as _neighborhoods from './neighborhoods'
 export { _neighborhoods as neighborhoods }
 function startAnimation (callback: () => void): number {
   if (typeof requestAnimationFrame === 'undefined') {
-    return window.setInterval(callback, 1)
+    return setInterval(callback, 1) as unknown as number
   } else {
     return requestAnimationFrame(callback)
   }

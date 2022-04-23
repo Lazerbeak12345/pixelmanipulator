@@ -90,7 +90,7 @@ Start with this html:
 <html>
 	<head>
 		<!-- If you'd like you can replace this with a different URL for the library -->
-		<script src="https://unpkg.com/pixelmanipulator@^5.4.0"></script>
+		<script src="https://unpkg.com/pixelmanipulator@^5.4.1"></script>
 	</head>
 	<body>
 		<!-- The canvas element to render to -->

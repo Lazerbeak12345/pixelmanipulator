@@ -6,7 +6,10 @@
 */
 import { PixelManipulator, rules, StringRenderer } from '../lib/pixelmanipulator'
 
-const renderer = new StringRenderer(console.log)
+const renderer = new StringRenderer(str => {
+  console.clear()
+  console.log(str)
+})
 renderer.defaultRenderAs = '`'
 const p = new PixelManipulator(renderer, process.stdout.columns, process.stdout.rows - 1)
 const bbd = p.addElement({
@@ -16,7 +19,7 @@ const bbd = p.addElement({
 })
 const bbo = p.addElement({
   ...rules.lifelike(p, 'B2/S'),
-  name: "Brian's Brain (dying)",
+  name: "Brian's Brain (on)",
   renderAs: '0',
   liveCell: loc => p.setPixel(loc, bbd)
 })
