@@ -1,13 +1,15 @@
-# ![PixelManipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator
+# ![PixelManipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator [![View the Demo][vtdsvg]][the demo]
 
-[![View the Demo][vtdsvg]][the demo]
 [![js-standard-style][standard svg]](http://standardjs.com)
 [![View the Docs][vtdosvg]][the docs]
 ![npms score](https://badges.npms.io/pixelmanipulator.svg)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/pixelmanipulator)](https://bundlephobia.com/package/pixelmanipulator)
-![npm type definitions](https://img.shields.io/npm/types/pixelmanipulator)
-[![Coverage Status](https://coveralls.io/repos/github/Lazerbeak12345/pixelmanipulator/badge.svg?branch=master)](https://coveralls.io/github/Lazerbeak12345/pixelmanipulator?branch=master)
-![CircleCI](https://img.shields.io/circleci/build/github/Lazerbeak12345/pixelmanipulator?logo=circleci)
+[![npm type definitions](https://img.shields.io/npm/types/pixelmanipulator?logo=typescript&logoColor=white&color=3178c6)](https://www.typescriptlang.org)
+[![Coveralls](https://img.shields.io/coveralls/github/Lazerbeak12345/pixelmanipulator?logo=coveralls)](https://coveralls.io/github/Lazerbeak12345/pixelmanipulator?branch=master)
+[![CircleCI](https://img.shields.io/circleci/build/github/Lazerbeak12345/pixelmanipulator/master?logo=circleci)](https://app.circleci.com/pipelines/github/Lazerbeak12345/pixelmanipulator?branch=master)
+[![npm](https://img.shields.io/npm/v/pixelmanipulator?logo=npm&color=ea2039)](https://www.npmjs.com/package/pixelmanipulator)
+[![GitHub Repo stars](https://img.shields.io/github/stars/lazerbeak12345/pixelmanipulator?color=0969da&logo=github)](https://github.com/Lazerbeak12345/pixelmanipulator)
+[![License: GPL v3 or later](https://img.shields.io/badge/Licence-GPLv3%20or%20later-bd0000.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 PixelManipulator is a JavaScript library that can run any cellular automata on
 an html5 canvas, such as "Conway's Game of Life," and "Rule 90." Inspired by the
@@ -53,6 +55,31 @@ Pre-programmed cellular automata include:
   - Acid (Destroys everything it touches, including itself)
 
 ## Getting Started with the library
+
+### NPM Package
+
+In your project run one of these:
+
+- For yarn, `yarn add pixelmanipulator`
+- For npm, `npm i pixelmanipulator`
+
+If you are using esmodules, you now can import it like this:
+
+```ts
+import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
+```
+
+A great starting point is [this console-only demo][console demo].
+
+To run the node demo
+
+1. Clone this repo.
+2. `npm i`
+3. `npm run node-demo`
+
+For documentation, [![View the Docs][vtdosvg]][the docs]
+
+[console demo]: https://github.com/Lazerbeak12345/pixelmanipulator/blob/master/src/node-demo/index.ts
 
 ### Old-school
 
@@ -111,29 +138,6 @@ Pixelmanipulator supports various browser-side module loaders, such as
 - Asynchronus Module Definition (AMD)
 - And also supports a fallback to the namespaced global variable
   `pixelmanipulator`
-
-For documentation, [![View the Docs][vtdosvg]][the docs]
-
-See the next section for how to make use of PixelManipulator as an NPM package
-instead of using a CDN
-
-### NPM Package
-
-In your project run one of these:
-
-- For yarn, `yarn add pixelmanipulator`
-- For npm, `npm i pixelmanipulator`
-
-If you are using esmodules, you now can import it like this:
-
-```ts
-import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
-```
-
-Furthermore, if you don't want to render to an HTML5 Canvas, you might find
-[the `String-Renderer`][string-renderer] to be useful to you.
-
-[string-renderer]: https://lazerbeak12345.github.io/pixelmanipulator/classes/renderers.StringRenderer.html
 
 For documentation, [![View the Docs][vtdosvg]][the docs]
 

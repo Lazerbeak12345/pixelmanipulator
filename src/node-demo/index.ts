@@ -1,3 +1,9 @@
+/** To run me
+*
+* 1. Clone this repo.
+* 2. `npm i`
+* 3. `npm run node-demo`
+*/
 import { PixelManipulator, rules, StringRenderer } from '../lib/pixelmanipulator'
 
 const renderer = new StringRenderer(console.log)
