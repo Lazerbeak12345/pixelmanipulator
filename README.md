@@ -1,4 +1,13 @@
-# ![pixelmanipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator [![View the Demo][vtdsvg]][the demo] [![js-standard-style][standard svg]](http://standardjs.com) [![View the Docs][vtdosvg]][the docs]
+# ![PixelManipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator
+
+[![View the Demo][vtdsvg]][the demo]
+[![js-standard-style][standard svg]](http://standardjs.com)
+[![View the Docs][vtdosvg]][the docs]
+![npms score](https://badges.npms.io/pixelmanipulator.svg)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/pixelmanipulator)](https://bundlephobia.com/package/pixelmanipulator)
+![npm type definitions](https://img.shields.io/npm/types/pixelmanipulator)
+[![Coverage Status](https://coveralls.io/repos/github/Lazerbeak12345/pixelmanipulator/badge.svg?branch=master)](https://coveralls.io/github/Lazerbeak12345/pixelmanipulator?branch=master)
+![CircleCI](https://img.shields.io/circleci/build/github/lazerbeak12345/pixelmanipulator)
 
 PixelManipulator is a JavaScript library that can run any cellular automata on
 an html5 canvas, such as "Conway's Game of Life," and "Rule 90." Inspired by the
