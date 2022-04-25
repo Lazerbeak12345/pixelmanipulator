@@ -13,10 +13,10 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - node/test:
-          # We don't have any executible code on the gh-pages branch.
-          # This filter likely will not work on it's own. If it doesn't, I'll
-          # copy this file into gh-pages every build.
-          # TODO research this and update this comment accordingly!
+          # We don't have any testable code on the gh-pages branch.
+          # This filter does not work on its own.
+          # This file is copied into gh-pages every build, and when that branch
+          # is checked, it now excludes itself.
           filters:
             branches:
               ignore:
