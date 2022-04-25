@@ -13,6 +13,14 @@ workflows:
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - node/test:
+          # We don't have any executible code on the gh-pages branch.
+          # This filter likely will not work on it's own. If it doesn't, I'll
+          # copy this file into gh-pages every build.
+          # TODO research this and update this comment accordingly!
+          filters:
+            branches:
+              ignore:
+                - gh-pages
           # This is the node version to use for the `cimg/node` tag
           # Relevant tags can be found on the CircleCI Developer Hub
           # https://circleci.com/developer/images/image/cimg/node
