@@ -11,10 +11,9 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/lazerbeak12345/pixelmanipulator?color=0969da&logo=github)](https://github.com/Lazerbeak12345/pixelmanipulator)
 [![License: GPL v3 or later](https://img.shields.io/badge/Licence-GPLv3%20or%20later-bd0000.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-PixelManipulator is a JavaScript library that can run any cellular automata on
-an html5 canvas, such as "Conway's Game of Life," and "Rule 90." Inspired by the
-[The Powder Toy](https://powdertoy.co.uk/), but made as a JavaScript library for
-web-browsers.
+PixelManipulator is a TypeScript library that can run any two-dimensional
+cellular automata, such as "Conway's Game of Life," and "Rule 90." Inspired by the
+[The Powder Toy](https://powdertoy.co.uk/).
 
 [repo]: https://github.com/lazerbeak12345/pixelmanipulator
 [the demo]: https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html
