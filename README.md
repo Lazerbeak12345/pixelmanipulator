@@ -97,7 +97,7 @@ Start with this html:
 		<!-- Near the end of the code to ensure pixelmanipulator loaded -->
 		<script>
 			// Get the canvas element
-			var canvas = canvas:document.getElementById("myCanvas")
+			var canvas = canvas.document.getElementById("myCanvas")
 
 			// Create a renderer that renders on that canvas
 			var renderer = new pixelmanipulator.Ctx2dRenderer(canvas)
