@@ -1,7 +1,7 @@
 import { PixelManipulator, version, rules, Ctx2dRenderer, Location } from '../lib/pixelmanipulator'
 import '@fortawesome/fontawesome-free/attribution.js'
 import 'bootstrap/js/dist/collapse' // For #sideAccordion
-
+import FPSControl from 'fps-control'
 /**
 * The X coordinate of where the center of [[zoom]] is windowed at.
 */
@@ -98,14 +98,33 @@ function updateSmallLines (e: MouseEvent|{ offsetX: number, offsetY: number }): 
   p.update() // Erases old lines
   oldZoom()
 }
+const fpsc = new FPSControl(60)
+const fps = document.getElementById('fps') as HTMLParagraphElement
+const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
+const fpsUnlimited = document.getElementById('fpsUnlimited') as HTMLInputElement
+const fpsAmount = document.getElementById('fpsAmount') as HTMLInputElement
 let framecount = 0
 let lasttime: number
-function beforeIterate (): void {
-  if (timedebug) lasttime = performance.now()
-  framecount++
+function beforeIterate (): false | void { // eslint-disable-line @typescript-eslint/no-invalid-void-type
+  if (!(fpsUnlimited.checked ?? false) && !fpsc.check()) return false
+  frames.innerText = `${++framecount}`
+  if (timedebug) {
+    fps.innerText = (1 / ((performance.now() - lasttime) / 1000)).toFixed(3)
+    lasttime = performance.now()
+  }
 }
+fpsAmount.addEventListener('change', () => {
+  fpsc.setFPS(parseInt(fpsAmount.value))
+  fpsMax.innerText = fpsAmount.value
+})
+fpsUnlimited.addEventListener('change', () => {
+  if (fpsUnlimited.checked ?? false) {
+    fpsMax.innerText = 'unlimited'
+  } else {
+    fpsMax.innerText = fpsAmount.value
+  }
+})
 const frames = document.getElementById('frames') as HTMLParagraphElement
-const fps = document.getElementById('fps') as HTMLParagraphElement
 const pixelRatio = document.getElementById('pixelRatio') as HTMLDivElement
 function afterIterate<T> (p: PixelManipulator<T>): void {
   pixelRatio.innerHTML = ''
@@ -162,8 +181,6 @@ function afterIterate<T> (p: PixelManipulator<T>): void {
     ratioE.title = `${name} : ${Math.round(percent)}%`
     pixelRatio.appendChild(ratioE)
   }
-  frames.innerText = `${framecount}`
-  if (timedebug) fps.innerText = `${1 / ((performance.now() - lasttime) / 1000)}`
 }
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 canvas.addEventListener('click', event => {

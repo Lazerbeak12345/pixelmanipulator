@@ -186,6 +186,7 @@ export class PixelManipulator<T> {
   * @param height - How tall should the initial target be?
   */
   constructor (renderer: Renderer<T>, width: number, height: number) {
+    if (typeof window !== 'undefined') console.log(licence)
     this.renderer = renderer
     this.defaultId = this.addElement({
       renderAs: this.renderer.defaultRenderAs,
@@ -237,10 +238,12 @@ export class PixelManipulator<T> {
   * If you update this, be sure to update [[PixelManipulator.renderer.defaultRenderAs]]
   */
   defaultId: number
-  /** Called before [[PixelManipulator.iterate]] does its work. */
-  onIterate: () => void=() => {}
+  /** Called before [[PixelManipulator.iterate]] does its work.
+  * @returns false to postposne iteration.
+  */
+  onIterate: () => (boolean | void) =() => {} // eslint-disable-line @typescript-eslint/no-invalid-void-type
   /** Called after [[PixelManipulator.iterate]] does its work. */
-  onAfterIterate: () => void=function () {}
+  onAfterIterate: () => void=() => {}
 
   /** Gets called after a call to [[PixelManipulator.modifyElement]]. The ID is
   * passed as the only argument.
@@ -629,70 +632,71 @@ export class PixelManipulator<T> {
   * > themselves as data within the pixels - it might cause conflicts.
   */
   iterate (): void {
-    this.onIterate()
-    for (let frame = this.frames.length - 1; frame >= 0; frame--) {
-      if (frame > 0) {
-        this.frames[frame].set(this.frames[frame - 1])
+    if (this.onIterate() ?? true) {
+      for (let frame = this.frames.length - 1; frame >= 0; frame--) {
+        if (frame > 0) {
+          this.frames[frame].set(this.frames[frame - 1])
+        }
       }
-    }
-    const w = this.get_width()
-    const h = this.get_height()
-    const typedUpdatedDead = new Array<Uint8Array>(this.elements.length)
-    this.pixelCounts = {}
-    for (let x = 0; x < w; x++) {
-      for (let y = 0; y < h; y++) { // iterate through x and y
-        const currentPixId = this.getPixelId({ x, y, frame: 1 })
-        if (currentPixId === this.defaultId) continue
-        const elm = this.elements[currentPixId]
-        if (elm == null) {
-          throw new Error(
-            'This isn\'t supposed to happen, but the internal pixel buffer was ' +
-            'currupted. This is likely a bug, or a symptom of improper direct ' +
-            'access to the current memory buffer'
-          )
-        }
-        if (elm.liveCell != null) {
-          elm.liveCell({
-            x,
-            y,
-            oldId: currentPixId,
-            thisId: currentPixId
-          })
-        }
-        if (this.pixelCounts[currentPixId] == null) {
-          this.pixelCounts[currentPixId] = 1
-        } else this.pixelCounts[currentPixId]++
-        if (elm.deadCell != null) {
-          if (typedUpdatedDead[currentPixId] == null) {
-            typedUpdatedDead[currentPixId] = new Uint8Array(Math.ceil((w * h) / 8))
+      const w = this.get_width()
+      const h = this.get_height()
+      const typedUpdatedDead = new Array<Uint8Array>(this.elements.length)
+      this.pixelCounts = {}
+      for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) { // iterate through x and y
+          const currentPixId = this.getPixelId({ x, y, frame: 1 })
+          if (currentPixId === this.defaultId) continue
+          const elm = this.elements[currentPixId]
+          if (elm == null) {
+            throw new Error(
+              'This isn\'t supposed to happen, but the internal pixel buffer was ' +
+              'currupted. This is likely a bug, or a symptom of improper direct ' +
+              'access to the current memory buffer'
+            )
           }
-          for (let hi = 0; hi < elm.hitbox.length; hi++) {
-            const pixel = elm.hitbox[hi]
-            const hbLoc = this.locationBoundsCheck({
-              x: x + pixel.x,
-              y: y + pixel.y
-            }) as Location // We are looping, so it can't be null
-            const index = Math.floor(location2Index(hbLoc, w) / 8)
-            const oldValue = typedUpdatedDead[currentPixId][index]
-            const bitMask = 1 << (hbLoc.x % 8)
-            if ((oldValue & bitMask) > 0) { continue }
-            // I timed it, and confirmOldElm is slower than all the math above.
-            if (!this.confirmElm({ x: hbLoc.x, y: hbLoc.y, frame: 1 }, this.defaultId)) {
-              continue
-            }
-            elm.deadCell({
-              x: hbLoc.x,
-              y: hbLoc.y,
-              oldId: this.defaultId,
+          if (elm.liveCell != null) {
+            elm.liveCell({
+              x,
+              y,
+              oldId: currentPixId,
               thisId: currentPixId
             })
-            typedUpdatedDead[currentPixId][index] = oldValue | bitMask
+          }
+          if (this.pixelCounts[currentPixId] == null) {
+            this.pixelCounts[currentPixId] = 1
+          } else this.pixelCounts[currentPixId]++
+          if (elm.deadCell != null) {
+            if (typedUpdatedDead[currentPixId] == null) {
+              typedUpdatedDead[currentPixId] = new Uint8Array(Math.ceil((w * h) / 8))
+            }
+            for (let hi = 0; hi < elm.hitbox.length; hi++) {
+              const pixel = elm.hitbox[hi]
+              const hbLoc = this.locationBoundsCheck({
+                x: x + pixel.x,
+                y: y + pixel.y
+              }) as Location // We are looping, so it can't be null
+              const index = Math.floor(location2Index(hbLoc, w) / 8)
+              const oldValue = typedUpdatedDead[currentPixId][index]
+              const bitMask = 1 << (hbLoc.x % 8)
+              if ((oldValue & bitMask) > 0) { continue }
+              // I timed it, and confirmOldElm is slower than all the math above.
+              if (!this.confirmElm({ x: hbLoc.x, y: hbLoc.y, frame: 1 }, this.defaultId)) {
+                continue
+              }
+              elm.deadCell({
+                x: hbLoc.x,
+                y: hbLoc.y,
+                oldId: this.defaultId,
+                thisId: currentPixId
+              })
+              typedUpdatedDead[currentPixId][index] = oldValue | bitMask
+            }
           }
         }
       }
+      this.update()
+      this.onAfterIterate()
     }
-    this.update()
-    this.onAfterIterate()
     if (this.mode === 'playing') {
       this.loopint = resumeAnimation(this.loopint, () => {
         this.iterate()
@@ -717,6 +721,5 @@ export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
   'WARRANTY\nThis is free software, and you are welcome to redistribute it\n' +
   'under certain conditions, as according to the GNU GENERAL PUBLIC LICENSE ' +
   'version 3 or later.'
-if (typeof window !== 'undefined') console.log(licence)
 // This is called a "modeline". It's a (n)vi(m)|ex thing.
 // vi: tabstop=2 shiftwidth=2 expandtab

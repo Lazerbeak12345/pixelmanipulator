@@ -69,7 +69,9 @@
 						Frames: <span class="badge bg-secondary" id="frames"><span class="placeholder" style="width:3em"></span></span>
 					</div>
 					<div class="card-footer">
-						Fps: <span class="badge bg-secondary" id="fps"><span class="placeholder" style="width:3em"></span></span>
+						Fps:
+						<span class="badge bg-primary" id="fps"><span class="placeholder" style="width:3em"></span></span>
+						<span class="badge bg-secondary" id="fpsMax">60</span>
 					</div>
 					<div class="card-footer" id="targeterStats">
 						Targeter:
@@ -116,6 +118,8 @@
 								aria-expanded="true"
 								aria-controls="elements"
 							>
+								<i class="fa-solid fa-mouse" aria-hidden="true"></i>
+								&nbsp;
 								Elements
 							</button>
 						</h2>
@@ -176,6 +180,8 @@
 								aria-expanded="false"
 								aria-controls="customize"
 							>
+								<i class="fa-solid fa-edit" aria-hidden="true"></i>
+								&nbsp;
 								Customize
 							</button>
 						</h2>
@@ -183,6 +189,7 @@
 							<div class="accordion-body">
 								<select class="elmDrop form-select" id="customSelect"></select>
 								<label>
+									<i class="fa-solid fa-eyedropper" aria-hidden="true"></i>
 									Element Color
 									<input type="color" class="form-control form-control-color" id="customizeColor">
 								</label>
@@ -192,6 +199,7 @@
 									<input type="range" class="form-range" min="0" max="255" step="1" id="customColorAlpha">
 								</label>
 								<label>
+									<i class="fa-solid fa-tag" aria-hidden="true"></i>
 									Change Name:
 									<input type="text" class="form-control" id="customizeName">
 								</label>
@@ -208,12 +216,15 @@
 								aria-expanded="false"
 								aria-controls="customize"
 							>
+								<i class="fa-solid fa-gears" aria-hidden="true"></i>
+								&nbsp;
 								Settings
 							</button>
 						</h2>
 						<div id="settings" class="accordion-collapse collapse" aria-labeledby="accordion-header" data-bs-parent="#sideAccordion">
 							<div class="accordion-body">
 								<div>
+									<i class="fa-solid fa-arrows" aria-hidden="true"></i>
 									Size:
 									<div class="input-group">
 										<input class="form-control" id="width" type="text" value="150" placeholder="150" title="Default:150"/>
@@ -223,12 +234,61 @@
 									</div>
 								</div>
 								<div>
+									<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
 									Zoom Size:
 									<div class="input-group">
 										<input class="form-control" id="zoomWidthElm" type="text" value="20" placeholder="70" title="Default:20"/>
 										<span class="input-group-text">by</span>
 										<input class="form-control" id="zoomHeightElm" type="text" value="20" placeholder="70" title="Default:20"/>
 										<span class="input-group-text">px</span>
+									</div>
+								</div>
+								<div>
+									<i class="fa-solid fa-hourglass" aria-hidden="true"></i>
+									FPS:
+									<div class="form-check">
+										<input
+											type="radio"
+											class="form-check-input"
+											name="fpsRadio"
+											id="fpsUnlimited">
+										<label for="fpsUnlimited" class="form-check-label">
+											<i
+												class="fa-solid fa-truck-fast"
+												aria-hidden="true">
+											</i>
+											Unlimited
+										</label>
+									</div>
+									<div class="form-check">
+										<input type="radio" class="form-check-input" name="fpsRadio" id="fpsLimited" checked>
+										<label for="fpsLimited" class="form-check-label">
+											<i class="fa-solid fa-truck" aria-hidden="true"></i>
+											Value:
+											<div class="input-group">
+												<input
+													type="number"
+													min="1"
+													class="form-control"
+													id="fpsAmount"
+													list="fpsAmountSuggestions"
+													value="60"
+													pattern="\d*"
+													placeholder="60"
+													aria-labelledby="fpsAmountLabel">
+												<datalist id="fpsAmountSuggestions">
+													<option value="30"></option>
+													<option value="60"></option>
+													<option value="80"></option>
+													<option value="120"></option>
+												</datalist>
+												<span
+													class="input-group-text"
+													id="fpsAmountLabel">
+													fps
+												</span>
+											</div>
+										</label>
 									</div>
 								</div>
 								<div>

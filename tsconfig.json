@@ -1,10 +1,14 @@
 {
+	/*"include": [
+		// It's possible that this breaks module isolation.
+		"src"
+	],*/
 	"compilerOptions":{
 		"lib":[
 			"dom",
 			"esnext"
 		],
-		"isolatedModules":true,
+		//"isolatedModules":true,
 		"resolveJsonModule":true,
 		"allowSyntheticDefaultImports": true,
 		"allowUnreachableCode":false,
