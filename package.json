@@ -67,8 +67,11 @@
     "@types/node": "^17.0.25",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.0",
+    "ava": "^4.2.0",
     "bootstrap-dark-5": "^1.1.3",
     "browserify": "^17.0.0",
+    "c8": "^7.11.2",
+    "coveralls": "^3.1.1",
     "eslint": "^5.0.0 || ^6.0.0 || ^7.0.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "eslint-plugin-import": "^2.26.0",
@@ -84,7 +87,7 @@
     "typescript": "<4.5.0"
   },
   "scripts": {
-    "test": "echo 'No tests written!' && exit 1",
+    "test": "c8 -r lcov -r text ava",
     "watch": "parcel --target demo --dist-dir docs",
     "check:lint": "eslint .",
     "check:types": "tsc --noEmit",
@@ -96,9 +99,17 @@
     "build": "npm run check && npm run build:docs && npm run build:parcel && npm run build:bundle && npm run build:prepare-ci",
     "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
     "node-demo": "ts-node src/node-demo",
-    "coverage": "npm run test"
+    "coverage": "npm run test && c8 report -r text-lcov | coveralls"
   },
   "dependencies": {
     "@swc/helpers": "^0.3.8"
+  },
+  "ava": {
+    "extensions": {
+      "ts": "module"
+    },
+    "nodeArguments": [
+      "--loader=ts-node/esm"
+    ]
   }
 }
