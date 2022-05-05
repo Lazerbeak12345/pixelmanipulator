@@ -14,9 +14,10 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - node/install-packages:
+            - node/install:
                 node-version: '16.13'
             - run: node --version
+            - node/install-packages
             - run: npm run coverage
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
