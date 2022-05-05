@@ -14,7 +14,7 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - node/install-packages:
+            - node/install-packages
               # cache-path: ~/project/node_modules
             - run: sudo npm install -g npm@latest
             - run: npm run coverage
