@@ -87,47 +87,47 @@ Start with this html:
 ```html
 <!doctype html>
 <html>
-	<head>
-		<!-- If you'd like you can replace this with a different URL for the library -->
-		<script src="https://unpkg.com/pixelmanipulator@^5.4.1"></script>
-	</head>
-	<body>
-		<!-- The canvas element to render to -->
-		<canvas id="myCanvas"></canvas>
-		<!-- Near the end of the code to ensure pixelmanipulator loaded -->
-		<script>
-			// Get the canvas element
-			var canvas = canvas.document.getElementById("myCanvas")
+  <head>
+    <!-- If you'd like you can replace this with a different URL for the library -->
+    <script src="https://unpkg.com/pixelmanipulator@^5.5.1"></script>
+  </head>
+  <body>
+    <!-- The canvas element to render to -->
+    <canvas id="myCanvas"></canvas>
+    <!-- Near the end of the code to ensure pixelmanipulator loaded -->
+    <script>
+      // Get the canvas element
+      var canvas = canvas.document.getElementById("myCanvas")
 
-			// Create a renderer that renders on that canvas
-			var renderer = new pixelmanipulator.Ctx2dRenderer(canvas)
+      // Create a renderer that renders on that canvas
+      var renderer = new pixelmanipulator.Ctx2dRenderer(canvas)
 
-			// Create a PixelManipulator, setting the size to 400 by 400
-			var p = new pixelmanipulator.PixelManipulator(renderer, 400, 400)
+      // Create a PixelManipulator, setting the size to 400 by 400
+      var p = new pixelmanipulator.PixelManipulator(renderer, 400, 400)
 
-			// An example element to get you started.
-			var gol = p.addElement("Conway's Game Of Life", {
+      // An example element to get you started.
+      var gol = p.addElement("Conway's Game Of Life", {
 
-				// born on 3, survives on 2 or 3
-				...pixelmanipulator.rules.lifelike(p, 'B3/S23'),
+        // born on 3, survives on 2 or 3
+        ...pixelmanipulator.rules.lifelike(p, 'B3/S23'),
 
-				// the rgb color
-				renderAs: [0, 255, 0]
-			})
+        // the rgb color
+        renderAs: [0, 255, 0]
+      })
 
-			// If your browser doesn't support spread syntax (that's the `...`), then this works too!
-			var rule_ninety = p.addElement("Rule 90", {
-				renderAs: [147, 112, 219]
-			})
-			p.modifyElement(rule_ninety, pixelmanipulator.rules.wolfram(p, 'Rule 90'))
+      // If your browser doesn't support spread syntax (that's the `...`), then this works too!
+      var rule_ninety = p.addElement("Rule 90", {
+        renderAs: [147, 112, 219]
+      })
+      p.modifyElement(rule_ninety, pixelmanipulator.rules.wolfram(p, 'Rule 90'))
 
-			// Randomly fill 15% of the canvas with "Conway's Game of Life" from earlier
-			p.randomlyFill(gol, 15)
+      // Randomly fill 15% of the canvas with "Conway's Game of Life" from earlier
+      p.randomlyFill(gol, 15)
 
-			// Watch it go!
-			p.play()
-		</script>
-	</body>
+      // Watch it go!
+      p.play()
+    </script>
+  </body>
 </html>
 ```
 
