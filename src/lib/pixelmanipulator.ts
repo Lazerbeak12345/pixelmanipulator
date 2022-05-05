@@ -18,12 +18,14 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses>.
  */
-import { version as _version } from '../../package.json'
-import { Hitbox, moore, wolfram } from './neighborhoods'
-import { Renderer, Location, location2Index, transposeLocations } from './renderers'
+import * as package_json from '../../package.json'
+import { Hitbox } from './neighborhoods'
+import { Renderer, Location } from './renderers'
+import * as _renderers from './renderers'
 // export * as neighborhoods from './neighborhoods'
 import * as _neighborhoods from './neighborhoods'
 export { _neighborhoods as neighborhoods }
+export * from './renderers'
 function startAnimation (callback: () => void): number {
   if (typeof requestAnimationFrame === 'undefined') {
     return setInterval(callback, 1) as unknown as number
@@ -126,7 +128,7 @@ export const rules = {
     const bflive = _convertNumListToBf(numbers[1])
     return {
       madeWithRule: true,
-      hitbox: moore(),
+      hitbox: _neighborhoods.moore(),
       liveCell: function llive ({ x, y, thisId }) {
         // if any match (of how many moore are nearby) is found, it dies
         if ((bfdie & 1 << p.mooreNearbyCounter({ x, y, frame: 1, loop }, thisId)) === 0) {
@@ -153,7 +155,7 @@ export const rules = {
     const binStates = parseInt(pattern.split(/Rule /gi)[1])
     return {
       madeWithRule: true,
-      hitbox: wolfram(1, 1),
+      hitbox: _neighborhoods.wolfram(1, 1),
       // The current state is used as the index in the binstates, as binstates is a bit array of every state
       liveCell: function wlive ({ x, y, thisId }) {
         if (y === 0) return
@@ -177,7 +179,6 @@ export interface CanvasSizes{
   /** height of the canvas */
   canvasH?: number
 }
-export * from './renderers'
 /** A cellular automata engine */
 export class PixelManipulator<T> {
   /**
@@ -334,7 +335,7 @@ export class PixelManipulator<T> {
     oldData.renderAs = this.renderer.modifyElement(id, data.renderAs ?? oldData.renderAs)
     oldData.hitbox = data.hitbox ?? oldData.hitbox
     if (oldData.hitbox == null) {
-      oldData.hitbox = moore()
+      oldData.hitbox = _neighborhoods.moore()
     }
     oldData.liveCell = data.liveCell ?? oldData.liveCell
     oldData.deadCell = data.deadCell ?? oldData.deadCell
@@ -467,7 +468,7 @@ export class PixelManipulator<T> {
     const fixedLoc = this.locationBoundsCheck(loc)
     if (fixedLoc == null) return this.defaultId
     const w = this.get_width()
-    return this.frames[fixedLoc.frame ?? 0][location2Index(fixedLoc, w)]
+    return this.frames[fixedLoc.frame ?? 0][_renderers.location2Index(fixedLoc, w)]
   }
 
   /**
@@ -506,12 +507,12 @@ export class PixelManipulator<T> {
       .length
   }
 
-  private static readonly _moore = moore()
+  private static readonly _moore = _neighborhoods.moore()
   /** @param name - element to look for
   * @param center - location of the center of the moore area
   * @returns Number of matching elements in moore radius */
   mooreNearbyCounter (center: Location, search: number|string): number {
-    return this.totalWithin(transposeLocations(PixelManipulator._moore, center), search)
+    return this.totalWithin(_renderers.transposeLocations(PixelManipulator._moore, center), search)
   }
 
   /** @param area - The Area to search within
@@ -541,7 +542,7 @@ export class PixelManipulator<T> {
       .reduce((a, b) => a | b)
   }
 
-  private static readonly _wolfram = wolfram()
+  private static readonly _wolfram = _neighborhoods.wolfram()
 
   /** @param loc - The pixel to change. (Defaults [[Location.loop]] to false)
   * @param ruleNum - A bitfield of what states a pixel should live or die on.
@@ -553,7 +554,7 @@ export class PixelManipulator<T> {
     // one-dimentional detectors by default don't loop around edges
     loc.loop = loc.loop ?? false
     return this.fundamentalNewState(
-      transposeLocations(PixelManipulator._wolfram, loc),
+      _renderers.transposeLocations(PixelManipulator._wolfram, loc),
       ruleNum,
       search
     )
@@ -569,7 +570,7 @@ export class PixelManipulator<T> {
     // one-dimentional detectors by default don't loop around edges
     current.loop = current.loop ?? false
     return this.fundamentalStatesWithin(
-      transposeLocations(PixelManipulator._wolfram, current),
+      _renderers.transposeLocations(PixelManipulator._wolfram, current),
       search
     )
   }
@@ -615,7 +616,7 @@ export class PixelManipulator<T> {
     if (fixedLoc == null) return
     this.renderer.renderPixel(fixedLoc, id)
     const w = this.get_width()
-    this.frames[0][location2Index(fixedLoc, w)] = id
+    this.frames[0][_renderers.location2Index(fixedLoc, w)] = id
   }
 
   /** Number of pixels per element in the last frame */
@@ -675,7 +676,7 @@ export class PixelManipulator<T> {
                 x: x + pixel.x,
                 y: y + pixel.y
               }) as Location // We are looping, so it can't be null
-              const index = Math.floor(location2Index(hbLoc, w) / 8)
+              const index = Math.floor(_renderers.location2Index(hbLoc, w) / 8)
               const oldValue = typedUpdatedDead[currentPixId][index]
               const bitMask = 1 << (hbLoc.x % 8)
               if ((oldValue & bitMask) > 0) { continue }
@@ -713,8 +714,7 @@ export class PixelManipulator<T> {
   frames: Uint32Array[]=[new Uint32Array(0), new Uint32Array(0)]
 }// end class PixelManipulator
 /** Version of library **for logging purposes only**. Uses semver. */
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-export const version = _version as string
+export const version = package_json.version as string // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 /** Licence disclaimer for PixelManipulator */
 export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
   '2018-2022 Nathan Fritzler\nThis program comes with ABSOLUTELY NO ' +
