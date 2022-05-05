@@ -7,16 +7,15 @@ orbs:
   node: circleci/node@4.7
 jobs:
   coverage:
-    executor: node/default
+    executor:
+        name: node/default
+        tag: "16.10"
     steps:
       - checkout
       - when:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - node/install:
-                node-version: '16.13'
-            - run: node --version
             - node/install-packages
             - run: npm run coverage
 # Invoke jobs via workflows
