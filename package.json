@@ -87,7 +87,7 @@
     "typescript": "<4.5.0"
   },
   "scripts": {
-    "test": "c8 -r lcov -r text ava",
+    "test": "c8 -r lcov -r text -r text-summary --all --include src ava",
     "watch": "parcel --target demo --dist-dir docs",
     "check:lint": "eslint .",
     "check:types": "tsc --noEmit",
