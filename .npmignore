@@ -25,3 +25,6 @@ src
 
 # Code coverage
 coverage
+
+# Test code
+tests
