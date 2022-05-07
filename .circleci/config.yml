@@ -14,7 +14,8 @@ jobs:
       - checkout
       - when:
           condition:
-            equal: [ master, << pipeline.git.branch >> ]
+            not:
+              equal: [ gh-pages, << pipeline.git.branch >> ]
           steps:
             - node/install-packages
             - run: npm run coverage
