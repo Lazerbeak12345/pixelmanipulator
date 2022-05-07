@@ -26,7 +26,7 @@ export type Hitbox=Location[]
 */
 export function rect (topLeft: Location, bottomRight: Location): Location[] {
   const output: Hitbox = []
-  for (let x = topLeft.x; x <= bottomRight.y; x++) {
+  for (let x = topLeft.x; x <= bottomRight.x; x++) {
     for (let y = topLeft.y; y <= bottomRight.y; y++) {
       output.push({ x, y })
     }
