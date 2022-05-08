@@ -9,14 +9,15 @@ jobs:
         tag: "16.10"
     steps:
       - checkout
-      - coveralls/upload
+      - when:
+          condition:
+            not:
+              equal: [ gh-pages, << pipeline.git.branch >> ]
+          steps:
+            - node/install
+            - run: npm t
+            - coveralls/upload
 workflows:
   test:
     jobs:
-      - node/test:
-          version: '16.10'
-          filters:
-            branches:
-              ignore: [ gh-pages ]
-      - coverage:
-          requires: [ node/test ]
+      - coverage
