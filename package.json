@@ -72,7 +72,6 @@
     "bootstrap-dark-5": "^1.1.3",
     "browserify": "^17.0.0",
     "c8": "^7.11.2",
-    "coveralls": "^3.1.1",
     "eslint": "^5.0.0 || ^6.0.0 || ^7.0.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "eslint-plugin-import": "^2.26.0",
@@ -99,7 +98,6 @@
     "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
     "build:prepare-ci": "cp -r .circleci docs",
     "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
-    "coveralls": "npm t && coveralls < coverage/lcov.info",
     "watch": "parcel --target demo --dist-dir docs",
     "node-demo": "ts-node src/node-demo"
   },
