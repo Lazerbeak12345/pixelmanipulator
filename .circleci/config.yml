@@ -14,7 +14,7 @@ jobs:
             not:
               equal: [ gh-pages, << pipeline.git.branch >> ]
           steps:
-            - node/install
+            - node/install-packages
             - run: npm t
             - coveralls/upload
 workflows:
