@@ -89,19 +89,19 @@
     "typescript": "<4.5.0"
   },
   "scripts": {
-    "test": "c8 -r lcov -r text -r text-summary --all --include src ava",
-    "watch": "parcel --target demo --dist-dir docs",
-    "check:lint": "eslint .",
-    "check:types": "tsc --noEmit",
-    "check": "npm run check:types && npm run check:lint",
+    "test": "npm run test:types && npm run test:lint && npm run test:test",
+    "test:types": "tsc --noEmit",
+    "test:lint": "eslint .",
+    "test:test": "c8 -r text -r text-summary -r lcov --all --include src ava",
+    "build": "npm t && npm run build:docs && npm run build:parcel && npm run build:bundle && npm run build:prepare-ci",
     "build:docs": "typedoc --name PixelManipulator --out docs --media media --includeVersion src/lib/*.ts",
     "build:parcel": "parcel build",
     "build:bundle": "browserify dist/browser.js -o dist/bundle.js --standalone pixelmanipulator",
     "build:prepare-ci": "cp -r .circleci docs",
-    "build": "npm run check && npm run build:docs && npm run build:parcel && npm run build:bundle && npm run build:prepare-ci",
     "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
-    "node-demo": "ts-node src/node-demo",
-    "coverage": "npm run test && c8 report -r text-lcov | coveralls"
+    "coveralls": "npm t && coveralls < coverage/lcov.info",
+    "watch": "parcel --target demo --dist-dir docs",
+    "node-demo": "ts-node src/node-demo"
   },
   "dependencies": {
     "@swc/helpers": "^0.3.8"
