@@ -1,5 +1,5 @@
 import { testProp, fc } from 'ava-fast-check'
-import { neighborhoods } from '../../src/lib/pixelmanipulator'
+import { neighborhoods } from '../../../src/lib/pixelmanipulator'
 const { rect } = neighborhoods
 
 testProp(
@@ -57,3 +57,4 @@ testProp(
     })
   }
 )
+// vi: tabstop=2 shiftwidth=2 expandtab

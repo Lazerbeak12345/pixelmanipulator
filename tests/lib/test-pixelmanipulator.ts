@@ -12,3 +12,4 @@ test('version numbers match', t => {
   // This one I actually keep forgetting to do
   t.is(version, package_lock_json.version, 'package lock matches version')
 })
+// vi: tabstop=2 shiftwidth=2 expandtab

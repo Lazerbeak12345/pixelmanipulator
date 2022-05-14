@@ -38,7 +38,7 @@ export function rect (topLeft: Location, bottomRight: Location): Location[] {
 *
 * Locations intentionally ordered to reflect use in higher-order functions.
 *
-* Area is f(x)=2x-1
+* Area is f(x)=2x+1
 *
 * @param radius - Count of how many to the right and left to include. Defaults
 * @param y - Count of how many to offset the y value by. Defaults to -1.
