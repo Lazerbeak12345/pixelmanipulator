@@ -110,6 +110,7 @@
     },
     "nodeArguments": [
       "--loader=ts-node/esm"
-    ]
+    ],
+    "timeout": "20s"
   }
 }

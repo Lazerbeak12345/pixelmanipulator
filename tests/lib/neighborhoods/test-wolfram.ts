@@ -5,7 +5,7 @@ const { wolfram } = neighborhoods
 
 test('default args have a specific output', t => t.snapshot(wolfram()))
 test('default radius', t => t.deepEqual(wolfram(), wolfram(1)))
-const radius = fc.nat({ max: 100 })
+const radius = fc.nat({ max: 2000 }) // This spends memory and time, so limit it.
 testProp('provided radius size', [radius], (t, r) => t.is(wolfram(r).length, 2 * r + 1))
 testProp('provided radius has no duplicates', [radius], (t, r) => {
   const list = wolfram(r).map(pos => JSON.stringify(pos))

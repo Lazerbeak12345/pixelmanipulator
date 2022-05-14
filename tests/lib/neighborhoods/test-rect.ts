@@ -2,10 +2,12 @@ import { testProp, fc } from 'ava-fast-check'
 import { neighborhoods } from '../../../src/lib/pixelmanipulator'
 const { rect } = neighborhoods
 
+const wh = fc.nat({ max: 500 })
+
 testProp(
   'rect\'s size output is the area',
   // Maximums provided to ensure reasonable time and memory is spent
-  [fc.integer(), fc.integer(), fc.nat({ max: 25 }), fc.nat({ max: 25 })],
+  [fc.integer(), fc.integer(), wh, wh],
   (t, x, y, w, h) => {
     const topLeft = {
       x,
@@ -22,7 +24,7 @@ testProp(
 )
 testProp(
   'return from rect has no duplicates',
-  [fc.integer(), fc.integer(), fc.nat({ max: 25 }), fc.nat({ max: 25 })],
+  [fc.integer(), fc.integer(), wh, wh],
   (t, x, y, w, h) => {
     const topLeft = {
       x,
@@ -39,7 +41,7 @@ testProp(
 )
 testProp(
   'return from rect keeps all values within bounds',
-  [fc.integer(), fc.integer(), fc.nat({ max: 25 }), fc.nat({ max: 25 })],
+  [fc.integer(), fc.integer(), wh, wh],
   (t, x, y, w, h) => {
     const topLeft = {
       x,

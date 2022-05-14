@@ -72,7 +72,7 @@ export function wolfram (radius?: number, y?: number, includeSelf?: boolean): Hi
 /**
 * Makes a moore neighborhood.
 *
-* Area is f(x)=(2r+1)^2
+* Area is f(x)=-1+(2r+1)^2 if `includeSelf` is `false` or undefined, f(x)=(2r+1)^2 if it is `true`
 *
 * @param radius - Count of how many rings around the center to include defaults
 * to 1.
