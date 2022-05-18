@@ -2,7 +2,7 @@ import { testProp, fc } from 'ava-fast-check'
 import { neighborhoods } from '../../../src/lib/pixelmanipulator'
 const { rect } = neighborhoods
 
-const wh = fc.nat({ max: 500 })
+const wh = fc.nat({ max: 250 })
 
 testProp(
   'rect\'s size output is the area',

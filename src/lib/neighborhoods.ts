@@ -104,7 +104,7 @@ export function moore (radius?: number, includeSelf?: boolean): Hitbox {
 /**
 * Makes a vonNeumann neighborhood.
 *
-* Area is f(x)=r^2+(r+1)^2
+* Area is f(x)=r^2+(r+1)^2 assuming `includeSelf` is true
 *
 * @param radius - Count of how many rings around the center to include. defaults
 * to 1.
@@ -128,21 +128,10 @@ export function moore (radius?: number, includeSelf?: boolean): Hitbox {
 * ```
 */
 export function vonNeumann (radius?: number, includeSelf?: boolean): Hitbox {
-  if (radius == null) {
-    radius = 1
-  }
   // A Von Neumann neighborhood of a given distance always fits inside of a
   // Moore neighborhood of the same. (This is a bit brute-force)
-  return rect({
-    x: -1 * radius,
-    y: -1 * radius
-  }, {
-    x: radius,
-    y: radius
-  }).filter(({ x, y }) =>
-    ((includeSelf ?? false) || !(x === 0 && y === 0)) &&
-    (Math.abs(x) + Math.abs(y) <= (radius ?? 1)) // Taxicab distance
-  )
+  return moore(radius, includeSelf).filter(({ x, y }) =>
+    (Math.abs(x) + Math.abs(y) <= (radius ?? 1))) // Taxicab distance
 }
 /**
 * Makes a euclidean neighborhood.
