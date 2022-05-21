@@ -1,14 +1,11 @@
 import test from 'ava'
 import { testProp, fc } from 'ava-fast-check'
 import { neighborhoods } from '../../../src/lib/pixelmanipulator'
+import { sizeWithoutDuplicates } from '../_functions'
 const { vonNeumann, moore } = neighborhoods
 test('default args have a specific output', t => t.snapshot(vonNeumann()))
 test('default radius', t => t.deepEqual(vonNeumann(), vonNeumann(1)))
-const radius = fc.nat({ max: 62 })
-testProp('provided radius has no duplicates', [radius], (t, r) => {
-  const list = vonNeumann(r).map(pos => JSON.stringify(pos))
-  t.is(list.length, new Set(list).size)
-})
+const radius = fc.nat({ max: 31 })
 testProp('provided radius all within moore radius', [radius.filter(num => num > 0)], (t, r) => {
   const m = moore(r).map(pos => JSON.stringify(pos))
   vonNeumann(r).forEach(pos =>
@@ -70,6 +67,10 @@ testProp(
 )
 testProp('default includeSelf', [radius], (t, r) => t.deepEqual(vonNeumann(r), vonNeumann(r, false)))
 const includeSelf = fc.boolean()
+testProp('has no duplicates', [radius, includeSelf], (t, r, i) => {
+  const list = vonNeumann(r, i)
+  t.is(list.length, sizeWithoutDuplicates(list))
+})
 testProp('size', [radius, includeSelf], (t, r, i) => {
   const list = vonNeumann(r, i)
   const equation = Math.pow(r, 2) + Math.pow(r + 1, 2) - (i ? 0 : 1)

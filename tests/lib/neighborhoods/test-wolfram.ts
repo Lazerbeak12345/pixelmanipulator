@@ -1,17 +1,13 @@
 import test from 'ava'
 import { testProp, fc } from 'ava-fast-check'
 import { neighborhoods } from '../../../src/lib/pixelmanipulator'
+import { sizeWithoutDuplicates } from '../_functions'
 const { wolfram } = neighborhoods
 
 test('default args have a specific output', t => t.snapshot(wolfram()))
 test('default radius', t => t.deepEqual(wolfram(), wolfram(1)))
 const radius = fc.nat({ max: 2000 }) // This spends memory and time, so limit it.
 testProp('provided radius size', [radius], (t, r) => t.is(wolfram(r).length, 2 * r + 1))
-testProp('provided radius has no duplicates', [radius], (t, r) => {
-  const list = wolfram(r).map(pos => JSON.stringify(pos))
-  const set = new Set(list)
-  t.is(list.length, set.size)
-})
 testProp('provided radius all within bounds', [radius], (t, r) => wolfram(r).forEach(pos => {
   t.true(-1 * r <= pos.x, 'left bound')
   t.true(pos.x <= r, 'right bound')
@@ -20,11 +16,6 @@ testProp('provided radius all within bounds', [radius], (t, r) => wolfram(r).for
 testProp('default y', [radius], (t, r) => t.deepEqual(wolfram(r), wolfram(r, -1)))
 const yProp = fc.integer()
 testProp('provided y size', [radius, yProp], (t, r, y) => t.is(wolfram(r, y).length, 2 * r + 1))
-testProp('provided y has no duplicates', [radius, yProp], (t, r, y) => {
-  const list = wolfram(r, y).map(pos => JSON.stringify(pos))
-  const set = new Set(list)
-  t.is(list.length, set.size)
-})
 testProp('provided y all within bounds', [radius, yProp], (t, r, y) => wolfram(r, y).forEach(pos => {
   t.true(-1 * r <= pos.x, 'left bound')
   t.true(pos.x <= r, 'right bound')
@@ -42,10 +33,9 @@ testProp('provided includeSelf?', [radius, yProp, includeSelf], (t, r, y, i) => 
     t.is(selfCount, 0, 'No pixels on self')
   }
 })
-testProp('provided includeSelf has no duplicates', [radius, yProp, includeSelf], (t, r, y, i) => {
-  const list = wolfram(r, y, i).map(pos => JSON.stringify(pos))
-  const set = new Set(list)
-  t.is(list.length, set.size)
+testProp('has no duplicates', [radius, yProp, includeSelf], (t, r, y, i) => {
+  const list = wolfram(r, y, i)
+  t.is(list.length, sizeWithoutDuplicates(list))
 })
 testProp(
   'provided includeSelf all within bounds',

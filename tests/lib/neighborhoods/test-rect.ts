@@ -1,5 +1,6 @@
 import { testProp, fc } from 'ava-fast-check'
 import { neighborhoods } from '../../../src/lib/pixelmanipulator'
+import { sizeWithoutDuplicates } from '../_functions'
 const { rect } = neighborhoods
 
 // Maximums provided to ensure reasonable time and memory is spent
@@ -23,8 +24,8 @@ testProp('rect\'s size output is the area', [tlBr], (t, [topLeft, bottomRight]) 
   t.is(rect(topLeft, bottomRight).length, w * h)
 })
 testProp('return from rect has no duplicates', [tlBr], (t, [topLeft, bottomRight]) => {
-  const list = rect(topLeft, bottomRight).map(pos => JSON.stringify(pos))
-  t.is(list.length, new Set(list).size)
+  const list = rect(topLeft, bottomRight)
+  t.is(list.length, sizeWithoutDuplicates(list))
 })
 testProp('return from rect keeps all values within bounds', [tlBr], (t, [topLeft, bottomRight]) =>
   rect(topLeft, bottomRight).forEach(pos => {
