@@ -14,7 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see http://www.gnu.org/licenses/
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 import { Location } from './renderers'
 /** A list of locations, usually relative around a pixel. */
@@ -33,8 +33,7 @@ export function rect (topLeft: Location, bottomRight: Location): Location[] {
   }
   return output
 }
-/**
-* Makes a wolfram neighborhood.
+/** Makes a wolfram neighborhood.
 *
 * Locations intentionally ordered to reflect use in higher-order functions.
 *
@@ -69,8 +68,7 @@ export function wolfram (radius?: number, y?: number, includeSelf?: boolean): Hi
   }
   return output
 }
-/**
-* Makes a moore neighborhood.
+/** Makes a moore neighborhood.
 *
 * Area is f(x)=-1+(2r+1)^2 if `includeSelf` is `false` or undefined, f(x)=(2r+1)^2 if it is `true`
 *
@@ -101,8 +99,7 @@ export function moore (radius?: number, includeSelf?: boolean): Hitbox {
   // And to think that this used to be hard... Perhaps they had a different
   // goal? Or just weren't using higher-order algorithims?
 }
-/**
-* Makes a vonNeumann neighborhood.
+/** Makes a vonNeumann neighborhood.
 *
 * Area is f(x)=r^2+(r+1)^2 assuming `includeSelf` is true
 *
@@ -133,8 +130,7 @@ export function vonNeumann (radius?: number, includeSelf?: boolean): Hitbox {
   return moore(radius, includeSelf).filter(({ x, y }) =>
     (Math.abs(x) + Math.abs(y) <= (radius ?? 1))) // Taxicab distance
 }
-/**
-* Makes a euclidean neighborhood.
+/** Makes a euclidean neighborhood.
 *
 * Area is not quite that of a circle. TODO find math for exact value.
 *

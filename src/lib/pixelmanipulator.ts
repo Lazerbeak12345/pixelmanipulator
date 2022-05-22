@@ -1,5 +1,4 @@
-/**
- * This is a cellular automata JavaScript library called PixelManipulator. For
+/** This is a cellular automata JavaScript library called PixelManipulator. For
  *  information about how to use this script, see
  *  https://github.com/Lazerbeak12345/pixelmanipulator
  *
