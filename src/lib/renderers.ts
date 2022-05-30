@@ -39,17 +39,25 @@ export function location2Index ({ x, y }: Location, width: number): number {
   return ((width * y) + x)
 }
 /** Transpose a list of locations, using a location.
-* @param locs - Locations to be transposed. If the frame or loop values are absent, they are set to the value in [offset].
-* @param offset - Amount to transpose the locations by, represented by a location.
+* @param locs - Locations to be transposed. If the frame or loop values are
+* absent, they are set to the value in [offset]. If absent from [offset] they
+* are not set.
+* @param offset - Amount to transpose the locations by, represented by a
+* location.
 */
 export function transposeLocations (locs: Location[], offset: Location): Location[] {
   const { x, y, frame, loop } = offset
-  return locs.map(loc => ({
-    x: loc.x + x,
-    y: loc.y + y,
-    frame: loc.frame ?? frame,
-    loop: loc.loop ?? loop
-  }))
+  return locs.map(loc => {
+    const newLoc: Location = {
+      x: loc.x + x,
+      y: loc.y + y,
+      frame: loc.frame ?? frame,
+      loop: loc.loop ?? loop
+    }
+    if (newLoc.frame == null) delete newLoc.frame
+    if (newLoc.loop == null) delete newLoc.loop
+    return newLoc
+  })
 }
 /** Abstract rendering type. Used by [[PixelManipulator]] to enable rendering to
 * various targets. */

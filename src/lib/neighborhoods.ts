@@ -141,21 +141,10 @@ export function vonNeumann (radius?: number, includeSelf?: boolean): Hitbox {
 * radius, where the precise euclidean distance is `<=` the radias.
 */
 export function euclidean (radius?: number, includeSelf?: boolean): Hitbox {
-  if (radius == null) {
-    radius = 1
-  }
   // A circle of a given diameter always fits inside of a square of the same
   // side-length. (This is a bit brute-force)
-  return rect({
-    x: -1 * radius,
-    y: -1 * radius
-  }, {
-    x: radius,
-    y: radius
-  }).filter(({ x, y }) =>
-    ((includeSelf ?? false) || !(x === 0 && y === 0)) &&
-    (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= (radius ?? 1)) // Euclidean distance
-  )
+  return moore(radius, includeSelf).filter(({ x, y }) =>
+    (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= (radius ?? 1))) // Euclidean distance
 }
 // TODO https://www.npmjs.com/package/compute-minkowski-distance ?
 // TODO Non-Euclidean distance algorithim?
