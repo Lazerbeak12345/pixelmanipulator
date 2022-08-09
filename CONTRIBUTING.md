@@ -93,7 +93,7 @@ I made this switch for these reasons.
 Here's the versioning rules for versions as old or older than
 
 - `2.0.0` in the backend
-- `1.21.21` in the backend.
+- `1.21.21` in the frontend
 
 ```txt
          /The first number is the major version number. It indicates a drastic differance in how one interacts with the library. And iterates once per turn of the release cycle identifier.
@@ -105,3 +105,6 @@ Here's the versioning rules for versions as old or older than
 
 There was also another syntax: `1.65`. This syntax is to be used in general terms _only_.
 As it is plain to see, the first number is the major version number from above, and the second is the feature number from above.
+
+> _Typos kept to preserve history:_
+> - _"alfa" should be "alpha," but was written "alfa" when this older scheme was used_
