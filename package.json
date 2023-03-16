@@ -82,7 +82,7 @@
     "fps-control": "^1.0.0",
     "gh-pages": "^3.2.3",
     "parcel": "^2.5.0",
-    "ts-node": "^10.7.0",
+    "tsx": "^3.12.5",
     "typedoc": "^0.22.15",
     "typedoc-plugin-mdn-links": "^1.0.6",
     "typescript": "<4.5.0"
@@ -99,7 +99,7 @@
     "build:prepare-ci": "cp -r .circleci docs",
     "updatedemo": "npm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
     "watch": "parcel --target demo --dist-dir docs",
-    "node-demo": "ts-node src/node-demo"
+    "node-demo": "tsx src/node-demo"
   },
   "dependencies": {
     "@swc/helpers": "^0.3.8"
@@ -109,7 +109,7 @@
       "ts": "module"
     },
     "nodeArguments": [
-      "--loader=ts-node/esm"
+      "--loader=tsx"
     ],
     "timeout": "20s"
   }
