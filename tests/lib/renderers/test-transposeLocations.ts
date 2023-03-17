@@ -1,4 +1,4 @@
-import { testProp, fc } from 'ava-fast-check'
+import { testProp, fc } from '@fast-check/ava'
 import { Arbitrary } from 'fast-check'
 import { transposeLocations, Location } from '../../../src/lib/pixelmanipulator'
 const locationParam = fc.nat()

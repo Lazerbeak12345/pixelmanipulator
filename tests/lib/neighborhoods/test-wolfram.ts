@@ -1,5 +1,5 @@
 import test from 'ava'
-import { testProp, fc } from 'ava-fast-check'
+import { testProp, fc } from '@fast-check/ava'
 import { neighborhoods } from '../../../src/lib/pixelmanipulator'
 import { sizeWithoutDuplicates } from '../_functions'
 const { wolfram } = neighborhoods

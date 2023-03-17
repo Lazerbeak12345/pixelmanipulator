@@ -1,4 +1,4 @@
-import { testProp, fc } from 'ava-fast-check'
+import { testProp, fc } from '@fast-check/ava'
 import { location2Index } from '../../../src/lib/pixelmanipulator'
 import { sizeWithoutDuplicates } from '../_functions'
 
