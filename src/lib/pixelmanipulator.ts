@@ -49,8 +49,8 @@ function cancelAnimation (num: number): void {
 function boolToNumber (bool: boolean): number {
   return bool ? 1 : 0
 }
-/** The argument to [[ElementDataUnknown.liveCell]] and
-* [[ElementDataUnknown.deadCell]]
+/** The argument to {@link ElementDataUnknown.liveCell} and
+* {@link ElementDataUnknown.deadCell}
 */
 export interface Rel{
   /** The X location of this pixel. */
@@ -62,13 +62,13 @@ export interface Rel{
   */
   oldId: number
   /** The ID of the element for which this is being called. (in a
-  * [[ElementDataUnknown.liveCell]] that's the same as [[Rel.oldId]], but in a
-  * [[ElementDataUnknown.deadCell]] it's the id that the deadCell belongs to.
+  * {@link ElementDataUnknown.liveCell} that's the same as {@link Rel.oldId}, but in a
+  * {@link ElementDataUnknown.deadCell} it's the id that the deadCell belongs to.
   */
   thisId: number
 }
-/** Much like [[ElementDataUnknown]] but all fields except [[ElementData.loop]],
-* [[ElementData.liveCell]] and [[ElementData.liveCell]] are mandatory. */
+/** Much like {@link ElementDataUnknown} but all fields except {@link ElementData.madeWithRule},
+* {@link ElementData.liveCell} and {@link ElementData.deadCell} are mandatory. */
 export interface ElementData<T> extends ElementDataUnknownNameMandatory<T> {
   renderAs: T
   hitbox: Hitbox
@@ -79,9 +79,9 @@ export interface ElementDataUnknown<T>{
   name?: string
   /** Information on how to render this element */
   renderAs?: T
-  /** [[ElementDataUnknown.deadCell]] will only be called on empty
+  /** {@link ElementDataUnknown.deadCell} will only be called on empty
   * pixels within the hitbox of a live cell. Array of relative coordinate pairs.
-  * Optional, defaults to the result of [[PixelManipulator.neighborhoods.moore]]
+  * Optional, defaults to the result of {@link neighborhoods.moore}
   * called with no arguments.
   */
   hitbox?: Hitbox
@@ -90,15 +90,15 @@ export interface ElementDataUnknown<T>{
   liveCell?: (rel: Rel) => void
   /** Every frame of animation, pixelmanipulator iterates through each and every
   * pixel on the screen. If this element is found, it calls this function on
-  * each of the locations defined in [[ElementDataUnknown.hitbox]] so long as
-  * the pixel matches the value in [[PixelManipulator.defaultId]], without
+  * each of the locations defined in {@link ElementDataUnknown.hitbox} so long as
+  * the pixel matches the value in {@link PixelManipulator.defaultId}, without
   * calling the same dead pixel twice.
   */
   deadCell?: (rel: Rel) => void
   /** If present, indicates that this element was auto-generated */
   madeWithRule?: true
 }
-/** Much like [[ElementDataUnknown]] but the name is mandatory. */
+/** Much like {@link ElementDataUnknown} but the name is mandatory. */
 export interface ElementDataUnknownNameMandatory<T> extends ElementDataUnknown<T>{
   name: string
 }
@@ -115,11 +115,11 @@ function _convertNumListToBf (nl: string): number {
 /** Template generators for your elements. */
 export const rules = {
   /** Generates elements like conway's game of life.
-  * @param p - `lifelike` needs to be able to call [[PixelManipulator.mooreNearbyCounter]]
+  * @param p - `lifelike` needs to be able to call {@link PixelManipulator.mooreNearbyCounter}
   * @param pattern - The B/S syntax indicator of on how many cells of the same
   * type in the moore radius around each pixel should survive, and on how many
   * should be born.
-  * @param loop - Should this loop around screen edges? (Passed to [[Location.loop]])
+  * @param loop - Should this loop around screen edges? (Passed to {@link renderers!Location.loop})
   */
   lifelike: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const numbers = pattern.split(/\/?[a-z]/gi)// "B",born,die
@@ -143,12 +143,12 @@ export const rules = {
     }
   },
   /** Generates fundamental cellular automata
-  * @param p - `wolfram` needs to be able to call [[PixelManipulator.wolframNearbyCounter]]
+  * @param p - `wolfram` needs to be able to call {@link PixelManipulator.wolframNearbyCounter}
   * @param pattern - The Rule num syntax, where the 8-bit number is translated
   * into a binary list, each where the inverted 3-binary-digit index represents
   * the state of cells in the row above. On a match, the cell becomes the state
   * specified in the initial 8-bit number.
-  * @param loop - Should this loop around screen edges? (Passed to [[PixelManipulator.wolframNearby]])
+  * @param loop - Should this loop around screen edges? (Passed to {@link PixelManipulator.wolframNearby})
   */
   wolfram: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const binStates = parseInt(pattern.split(/Rule /gi)[1])
@@ -210,7 +210,7 @@ export class PixelManipulator<T> {
   * A low-level listing of the availiable elements.
   *
   * Format is much like the argument to
-  * [[PixelManipulator.addMultipleElements]], but is not sanitized.
+  * {@link PixelManipulator.addMultipleElements}, but is not sanitized.
   */
   readonly elements: Array<ElementData<T>>= []
 
@@ -235,17 +235,17 @@ export class PixelManipulator<T> {
   * and what elements should return to when they are "dead". Default value is
   * 0, an element with the color `#000F`
   *
-  * If you update this, be sure to update [[PixelManipulator.renderer.defaultRenderAs]]
+  * If you update this, be sure to update {@link renderers!Renderer.defaultRenderAs} in {@link PixelManipulator.renderer}
   */
   defaultId: number
-  /** Called before [[PixelManipulator.iterate]] does its work.
+  /** Called before {@link PixelManipulator.iterate} does its work.
   * @returns false to postposne iteration.
   */
   onIterate: () => (boolean | void) =() => {} // eslint-disable-line @typescript-eslint/no-invalid-void-type
-  /** Called after [[PixelManipulator.iterate]] does its work. */
+  /** Called after {@link PixelManipulator.iterate} does its work. */
   onAfterIterate: () => void=() => {}
 
-  /** Gets called after a call to [[PixelManipulator.modifyElement]]. The ID is
+  /** Gets called after a call to {@link PixelManipulator.modifyElement}. The ID is
   * passed as the only argument.
   * @param id - The element that was modified.
   */
@@ -289,7 +289,7 @@ export class PixelManipulator<T> {
   *
   * @param elements - Index is the element name, value is the element data (and
   * does not require the name). Value is passed to
-  * [[PixelManipulator.addElement]]
+  * {@link PixelManipulator.addElement}
   */
   addMultipleElements (elements: {[index: string]: ElementDataUnknown<T>}): void {
     for (const elm in elements) {
@@ -300,7 +300,7 @@ export class PixelManipulator<T> {
 
   /** Add an element with the given element data
   * @param data - The details about the element.
-  * @returns The generated [[ElementData.number]]
+  * @returns The generated {@link PixelManipulator.elements} index
   */
   addElement (
     data: ElementDataUnknownNameMandatory<T>
@@ -322,8 +322,8 @@ export class PixelManipulator<T> {
   * @param id - How to identify what element to modify.
   * @param data - Values to apply to the pre-existing element.
   *
-  * Automatically calls [[PixelManipulator.aliasElements]] if
-  * [[ElementDataUnknown.name]] is present in `data`
+  * Automatically calls {@link PixelManipulator.aliasElements} if
+  * {@link ElementDataUnknown.name} is present in `data`
   */
   modifyElement (id: number, data: ElementDataUnknown<T>): void {
     const oldData = this.elements[id]
@@ -344,10 +344,10 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * @param oldName - The old [[ElementData.name]]
-  * @param newName - The new [[ElementData.name]]
+  * @param oldName - The old {@link ElementData.name}
+  * @param newName - The new {@link ElementData.name}
   *
-  * Adds the name to [[PixelManipulator.nameAliases]], and ensures no alias
+  * Adds the name to {@link PixelManipulator.nameAliases}, and ensures no alias
   * loops are present.
   */
   aliasElements (oldName: string, newName: string): void {
@@ -374,8 +374,8 @@ export class PixelManipulator<T> {
 
   /**
   * @param name - Name of the (possibly aliased) element.
-  * @returns The element from [[PixelManipulator.elementTypeMap]], respecting
-  * aliases in [[PixelManipulator.nameAliases]], or [[undefined]] if not found.
+  * @returns The element from {@link PixelManipulator.elements}, respecting
+  * aliases in {@link PixelManipulator.nameAliases}, or {@link undefined} if not found.
   */
   getElementByName (name: string): ElementData<T>|undefined {
     return this.elements[this.nameToId(name)]
@@ -383,18 +383,18 @@ export class PixelManipulator<T> {
 
   /**
   * @param loc - Location of the element.
-  * @returns Name of element at passed-in location. See [[ElementData.name]]
+  * @returns Name of element at passed-in location. See {@link ElementData.name}
   */
   whatIs (loc: Location): string {
     return this.elements[this.getPixelId(loc)].name
   }
 
   /** Start iterations on all of the elements on the canvas.
-  * Sets [[PixelManipulator.mode]] to `"playing"`, and requests a new animation
-  * frame, saving it in [[PixelManipulator.loopint]].
+  * Sets {@link PixelManipulator.mode} to `"playing"`, and requests a new animation
+  * frame, saving it in {@link PixelManipulator.loopint}.
   *
-  * @param canvasSizes - If [[PixelManipulator.mode]] is already `"playing"` then
-  * canvasSizes is passed to [[PixelManipulator.reset]]. Otherwise reset is not
+  * @param canvasSizes - If {@link PixelManipulator.mode} is already `"playing"` then
+  * canvasSizes is passed to {@link PixelManipulator.reset}. Otherwise reset is not
   * called.
   */
   play (canvasSizes?: CanvasSizes): void {
@@ -406,8 +406,8 @@ export class PixelManipulator<T> {
   }
 
   /** Reset, resize and initialize the canvas(es).
-  * Calls [[PixelManipulator.pause]] [[PixelManipulator.updateData]]
-  * [[PixelManipulator.update]] resets all internal state, excluding the
+  * Calls {@link PixelManipulator.pause} then
+  * {@link PixelManipulator.update}. Resets all internal state, excluding the
   * element definitions.
   *
   * @param canvasSizes - Allows one to change the size of the canvases during
@@ -432,8 +432,8 @@ export class PixelManipulator<T> {
   }
 
   /** pause canvas iterations
-  * Sets [[PixelManipulator.mode]] to `"paused"` and cancels the animation frame
-  * referenced in [[PixelManipulator.loopint]]
+  * Sets {@link PixelManipulator.mode} to `"paused"` and cancels the animation frame
+  * referenced in {@link PixelManipulator.loopint}
   */
   pause (): void {
     this.mode = 'paused'
@@ -471,7 +471,7 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * Applies any changes made with [[PixelManipulator.renderPixel]] to the canvas
+  * Applies any changes made with {@link renderers!Renderer.renderPixel} on {@link PixelManipulator.renderer} to the canvas
   */
   update (): void {
     this.renderer.update()
@@ -517,8 +517,8 @@ export class PixelManipulator<T> {
   /** @param area - The Area to search within
   * @param ruleNum - A bitfield of what states a pixel should live or die on.
   * @param search - The element to search for
-  * @see [[PixelManipulator.wolframNewState]] for higher-level tool
-  * @see [[PixelManipulator.fundamentalStatesWithin]] for lower-level tool
+  * @see {@link PixelManipulator.wolframNewState} for higher-level tool
+  * @see {@link PixelManipulator.fundamentalStatesWithin} for lower-level tool
   * @returns The state that the bitfied says this pixel should be in the next frame.
   */
   fundamentalNewState (area: Location[], ruleNum: number, search: number | string): boolean {
@@ -527,7 +527,7 @@ export class PixelManipulator<T> {
 
   /** @param area - Locations to look at.
   * @param search - Locations to mark as a true bit.
-  * @see [[PixelManipulator.fundamentalNewState]] for higher-level tool
+  * @see {@link PixelManipulator.fundamentalNewState} for higher-level tool
   * @returns number as a bitfied array, in order of the items in area, from left to right.
   *
   * That means that `(fundamentalStatesWithin([loc], search) & 1) === boolToNumber(confirmElm(loc, search))`
@@ -543,10 +543,10 @@ export class PixelManipulator<T> {
 
   private static readonly _wolfram = _neighborhoods.wolfram()
 
-  /** @param loc - The pixel to change. (Defaults [[Location.loop]] to false)
+  /** @param loc - The pixel to change. (Defaults {@link renderers!Location.loop} to false)
   * @param ruleNum - A bitfield of what states a pixel should live or die on.
   * @param search - The element to search for
-  * @see [[PixelManipulator.fundamentalNewState]] for more general tool.
+  * @see {@link PixelManipulator.fundamentalNewState} for more general tool.
   * @returns The state that the bitfied says this pixel should be in the next frame.
   */
   wolframNewState (loc: Location, ruleNum: number, search: number | string): boolean {
@@ -560,9 +560,9 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * @param current - "Current" pixel location. (Defaults [[Location.loop]] to false)
+  * @param current - "Current" pixel location. (Defaults {@link renderers!Location.loop} to false)
   * @param search - element to look for
-  * @see [[PixelManipulator.fundamentalStatesWithin]] for lower-level tool
+  * @see {@link PixelManipulator.fundamentalStatesWithin} for lower-level tool
   * @returns Number used as bit area to indicate occupied cells
   */
   wolframNearby (current: Location, search: number|string): number {
@@ -575,7 +575,7 @@ export class PixelManipulator<T> {
   }
 
   /** Counter tool used in slower wolfram algorithim.
-  * @deprecated Replaced with [[PixelManipulator.wolframNearby]] for use in faster
+  * @deprecated Replaced with {@link PixelManipulator.wolframNearby} for use in faster
   * algorithms
   * @param current - "Current" pixel location
   * @param name - element to look for
@@ -599,7 +599,7 @@ export class PixelManipulator<T> {
   * - If a string, it assumes it's an element name.
   * - If a number, it assumes it's an element ID
   *
-  * @param loop - Defaults to [[true]]. Wraps `x` and `y` around canvas borders.
+  * @param loop - Defaults to {@link true}. Wraps `x` and `y` around canvas borders.
   */
   setPixel (loc: Location, ident: string|number): void {
     let id = 0
@@ -624,9 +624,9 @@ export class PixelManipulator<T> {
   }={}
 
   /** A single frame of animation. Media functions pass this into
-  * [[requestAnimationFrame]].
+  * {@link requestAnimationFrame}.
   *
-  * > Be careful! Calling this while [[PixelManipulator.mode]] is `"playing"`
+  * > Be careful! Calling this while {@link PixelManipulator.mode} is `"playing"`
   * > might cause two concurrent calls to this function. If any of your automata
   * > have "hidden state" - that is they don't represent every detail about
   * > themselves as data within the pixels - it might cause conflicts.
@@ -705,7 +705,7 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * A List of [[Uint32Array]]s each the length of width times height of the
+  * A List of {@link Uint32Array}s each the length of width times height of the
   * canvas. Frame 0 is the new frame, frame one is the prior, etc. Each item
   * holds the element id of each element on screen, from left to right, top to
   * bottom.

@@ -22,7 +22,7 @@ export interface Location{
   x: number
   /** y position */
   y: number
-  /** Should this locaiton loop around screen borders? */
+  /** Should this location loop around screen borders? */
   loop?: boolean
   /** Should this location be treated to be on the current frame, previous, or older?
   *
@@ -59,25 +59,25 @@ export function transposeLocations (locs: Location[], offset: Location): Locatio
     return newLoc
   })
 }
-/** Abstract rendering type. Used by [[PixelManipulator]] to enable rendering to
+/** Abstract rendering type. Used by {@link pixelmanipulator!PixelManipulator} to enable rendering to
 * various targets. */
 export abstract class Renderer<T> {
-  /** Renders a pixel on a given location on the next call to [[Renderer.update]]
+  /** Renders a pixel on a given location on the next call to {@link Renderer.update}
   * @param location - Where to render the pixel.
   * @param id - the pixel to render.
   */
   abstract renderPixel (location: Location, id: number): void
   /** Reset the render target. */
   abstract reset (): void
-  /** Update the render target. Draws all changes queued up by [[Renderer.renderPixel]]. */
+  /** Update the render target. Draws all changes queued up by {@link Renderer.renderPixel}. */
   abstract update (): void
-  /** The [[ElementData.renderAs]] value for the default element */
+  /** The {@link pixelmanipulator!ElementData.renderAs} value for the default element */
   abstract defaultRenderAs: T
-  /** Ordered by ID, the renderAs info for each element. */
+  /** Ordered by ID, the {@link pixelmanipulator!ElementData.renderAs} info for each element. */
   renderInfo: T[] = []
   /** Intentionally overridable, called when an element is modified.
   * @param id - The id of the element to modify.
-  * @param newRenderAs - The new [[ElementData.renderAs]] info.
+  * @param newRenderAs - The new {@link pixelmanipulator!ElementData.renderAs} info.
   * @returns The value passed upstream to be stored as the actual renderAs info,
   * allowing for sanitation in this function, or one overriding it.
   */
@@ -114,7 +114,7 @@ export abstract class Renderer<T> {
 }
 /** The color of an element */
 export type Color=[number, number, number, number]|[number, number, number]|[number, number]|[number]|[]
-/** Render onto an [[HTMLCanvasElement]] using a [[CanvasRenderingContext2D]] */
+/** Render onto an {@link HTMLCanvasElement} using a {@link CanvasRenderingContext2D} */
 export class Ctx2dRenderer extends Renderer<Color> {
   /** @param canvas - The canvas to render on, and to adjust the size of */
   constructor (canvas: HTMLCanvasElement) {
@@ -128,7 +128,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
     this.imageData = this.ctx.getImageData(0, 0, this.get_width(), this.get_height())
   }
 
-  /** The last known image data from [[PixelManipulator.ctx]] */
+  /** The last known image data from {@link Ctx2dRenderer.ctx} */
   imageData: ImageData
   /** The rendering context for the canvas */
   ctx: CanvasRenderingContext2D
@@ -137,7 +137,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
   /** Default color is solid black */
   defaultRenderAs = [0, 0, 0, 255] as Color
 
-  /** In addition to calling [[Renderer.modifyElement]], this leftpads colors
+  /** In addition to calling {@link Renderer.modifyElement}, this leftpads colors
   * with `255` and checks for dupicates.
   * @param id - Id of element
   * @param newRenderAs - The proposed color of the element.
@@ -155,7 +155,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
     return super.modifyElement(id, newRenderAs)
   }
 
-  /** @param loc - location of the pixel to render. Ignores [[Location.frame]] and [[Location.loop]]
+  /** @param loc - location of the pixel to render. Ignores {@link Location.frame} and {@link Location.loop}
   * @param id - The id of the pixel to render.
   */
   renderPixel (loc: Location, id: number): void {
@@ -197,10 +197,10 @@ export class Ctx2dRenderer extends Renderer<Color> {
 export class StringRenderer extends Renderer<string> {
   defaultRenderAs = ' '
   private _chars: string[][] = []
-  /** The callback function passed to the constructor. Called on [[StringRenderer.update]] */
+  /** The callback function passed to the constructor. Called on {@link StringRenderer.update} */
   readonly _callback: (string: string) => void
-  /** @param callback - A function called on [[StringRenderer.update]]. Passed a
-  * string with the renderable state of the [[PixelManipulator]] */
+  /** @param callback - A function called on {@link StringRenderer.update}. Passed a
+  * string with the renderable state of the {@link pixelmanipulator!PixelManipulator} */
   constructor (callback: (string: string) => void) {
     super()
     this._callback = callback
@@ -237,7 +237,7 @@ export class StringRenderer extends Renderer<string> {
     this._callback(this._chars.map(l => l.join('')).join('\n'))
   }
 }
-/** render on two different targets (which may also be [[SplitRenderer]]) */
+/** render on two different targets (which may also be {@link SplitRenderer}) */
 export class SplitRenderer<A, B> extends Renderer<{ a: A, b: B}> {
   defaultRenderAs: { a: A, b: B}
   a: Renderer<A>
