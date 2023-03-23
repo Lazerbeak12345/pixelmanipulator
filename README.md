@@ -88,7 +88,7 @@ Start with this html:
 <!doctype html>
 <html>
   <head>
-    <script src="https://unpkg.com/pixelmanipulator@^5.5.3"></script>
+    <script src="https://unpkg.com/pixelmanipulator@^5.5.4"></script>
   </head>
   <body>
     <canvas id="myCanvas"></canvas>
