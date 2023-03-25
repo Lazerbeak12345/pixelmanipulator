@@ -2,7 +2,7 @@
 
 [![js-standard-style][standard svg]](http://standardjs.com)
 [![View the Docs][vtdosvg]][the docs]
-![npms score](https://badges.npms.io/pixelmanipulator.svg)
+[![pixelmanipulator snyk score](/advisor/npm-package/pixelmanipulator/badge.svg)](/advisor/npm-package/pixelmanipulator)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/pixelmanipulator)](https://bundlephobia.com/package/pixelmanipulator)
 [![npm type definitions](https://img.shields.io/npm/types/pixelmanipulator?logo=typescript&logoColor=white&color=3178c6)](https://www.typescriptlang.org)
 [![Coveralls](https://img.shields.io/coveralls/github/Lazerbeak12345/pixelmanipulator?logo=coveralls)](https://coveralls.io/github/Lazerbeak12345/pixelmanipulator?branch=master)
