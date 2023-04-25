@@ -1,6 +1,6 @@
 {
   "name": "pixelmanipulator",
-  "version": "5.5.5",
+  "version": "5.5.6",
   "description": "Run any cellular automata on an html5 canvas.",
   "main": "dist/main.js",
   "browser": "dist/browser.js",
