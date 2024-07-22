@@ -4,9 +4,11 @@ orbs:
   coveralls: coveralls/coveralls@1
 jobs:
   coverage:
-    executor:
-        name: node/default
-        tag: "16.10"
+    docker:
+      - image: node:18
+    resource_class: large
+    parallelism: 10
+
     steps:
       - checkout
       - when:
