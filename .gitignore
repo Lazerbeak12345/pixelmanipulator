@@ -4,6 +4,8 @@ node_modules
 # Compile targets
 dist/
 docs/
+.tsimp/
+build/
 
 # Compiler caches
 .parcel-cache

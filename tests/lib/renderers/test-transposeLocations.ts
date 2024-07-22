@@ -1,6 +1,6 @@
 import { testProp, fc } from '@fast-check/ava'
-import { Arbitrary } from 'fast-check'
-import { transposeLocations, Location } from '../../../src/lib/pixelmanipulator'
+import { type Arbitrary } from 'fast-check'
+import { transposeLocations, type Location } from '../../../src/lib/pixelmanipulator'
 const locationParam = fc.nat()
 const location = fc.tuple(locationParam, locationParam).map(([x, y]) => ({ x, y }))
 const listSize = fc.nat({ max: 2_500 })
@@ -28,11 +28,11 @@ testProp(
     locationNo0.map(({ x, y, ...rest }) =>
       ({ x: Math.abs(x), y: Math.abs(y), ...rest }))
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ x, y }, index) => {
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ x, y }, index) => {
     const old = locs[index]
     t.true(x > old.x)
     t.true(y > old.y)
-  })
+  }); }
 )
 testProp(
   'list of * added to item -|A| is less than it was before',
@@ -41,11 +41,11 @@ testProp(
     locationNo0.map(({ x, y, ...rest }) =>
       ({ x: Math.abs(x) * -1, y: Math.abs(y) * -1, ...rest }))
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ x, y }, index) => {
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ x, y }, index) => {
     const old = locs[index]
     t.true(x < old.x)
     t.true(y < old.y)
-  })
+  }); }
 )
 const locationWithFrame = fc.tuple(location, fc.integer()).map(([loc, frame]) => ({ frame, ...loc }))
 const locationsWithFrame = arrayNo0(locationWithFrame)
@@ -55,7 +55,7 @@ testProp(
     locationsWithFrame,
     location
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ frame }, index) => t.is(frame, locs[index].frame))
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ frame }, index) => t.is(frame, locs[index].frame)); }
 )
 const locationWithLoop = fc.tuple(location, fc.boolean()).map(([loc, loop]) => ({ loop, ...loc }))
 const locationsWithLoop = arrayNo0(locationWithLoop)
@@ -65,7 +65,7 @@ testProp(
     locationsWithLoop,
     location
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ loop }, index) => t.is(loop, locs[index].loop))
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ loop }, index) => t.is(loop, locs[index].loop)); }
 )
 testProp(
   'list of A without frames def added to B with is C with frames def',
@@ -73,7 +73,7 @@ testProp(
     locations,
     locationWithFrame
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ frame }) => t.is(frame, trLoc.frame))
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ frame }) => t.is(frame, trLoc.frame)); }
 )
 testProp(
   'list of A without loop def added to B with is C with loop def',
@@ -81,7 +81,7 @@ testProp(
     locations,
     locationWithLoop
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ loop }) => t.is(loop, trLoc.loop))
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ loop }) => t.is(loop, trLoc.loop)); }
 )
 testProp(
   'list of A with frames def added to B with is C with frames def and set to A frame',
@@ -89,7 +89,7 @@ testProp(
     locationsWithFrame,
     locationWithFrame
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ frame }, index) => t.is(frame, locs[index].frame))
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ frame }, index) => t.is(frame, locs[index].frame)); }
 )
 testProp(
   'list of A with loop def added to B with is C with loop def and set to A frame',
@@ -97,6 +97,6 @@ testProp(
     locationsWithLoop,
     locationWithLoop
   ],
-  (t, locs, trLoc) => tLFE(locs, trLoc, ({ loop }, index) => t.is(loop, locs[index].loop))
+  (t, locs, trLoc) => { tLFE(locs, trLoc, ({ loop }, index) => t.is(loop, locs[index].loop)); }
 )
 // vi: tabstop=2 shiftwidth=2 expandtab

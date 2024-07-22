@@ -1,8 +1,8 @@
 /** To run me
 *
 * 1. Clone this repo.
-* 2. `npm i`
-* 3. `npm run node-demo`
+* 2. `pnpm i`
+* 3. `pnpm run node-demo`
 */
 import { PixelManipulator, rules, StringRenderer } from '../lib/pixelmanipulator'
 
@@ -15,14 +15,14 @@ const p = new PixelManipulator(renderer, process.stdout.columns, process.stdout.
 const bbd = p.addElement({
   name: "Brian's Brain (dying)",
   renderAs: '#',
-  liveCell: loc => p.setPixel(loc, p.defaultId)
+  liveCell: loc => { p.setPixel(loc, p.defaultId); }
 })
 const bbo = p.addElement({
   ...rules.lifelike(p, 'B2/S'),
   name: "Brian's Brain (on)",
   renderAs: '0',
-  liveCell: loc => p.setPixel(loc, bbd)
+  liveCell: loc => { p.setPixel(loc, bbd); }
 })
 p.randomlyFill(bbo)
-setInterval(() => p.iterate(), 1000 / 15)
+setInterval(() => { p.iterate(); }, 1000 / 15)
 // vim: tabstop=2 shiftwidth=2 expandtab

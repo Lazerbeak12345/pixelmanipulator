@@ -59,7 +59,7 @@ export function transposeLocations (locs: Location[], offset: Location): Locatio
     return newLoc
   })
 }
-/** Abstract rendering type. Used by {@link pixelmanipulator!PixelManipulator} to enable rendering to
+/** Abstract rendering type. Used by {@link pixelmanipulator.PixelManipulator} to enable rendering to
 * various targets. */
 export abstract class Renderer<T> {
   /** Renders a pixel on a given location on the next call to {@link Renderer.update}
@@ -71,13 +71,13 @@ export abstract class Renderer<T> {
   abstract reset (): void
   /** Update the render target. Draws all changes queued up by {@link Renderer.renderPixel}. */
   abstract update (): void
-  /** The {@link pixelmanipulator!ElementData.renderAs} value for the default element */
+  /** The {@link pixelmanipulator.ElementData.renderAs} value for the default element */
   abstract defaultRenderAs: T
-  /** Ordered by ID, the {@link pixelmanipulator!ElementData.renderAs} info for each element. */
+  /** Ordered by ID, the {@link pixelmanipulator.ElementData.renderAs} info for each element. */
   renderInfo: T[] = []
   /** Intentionally overridable, called when an element is modified.
   * @param id - The id of the element to modify.
-  * @param newRenderAs - The new {@link pixelmanipulator!ElementData.renderAs} info.
+  * @param newRenderAs - The new {@link pixelmanipulator.ElementData.renderAs} info.
   * @returns The value passed upstream to be stored as the actual renderAs info,
   * allowing for sanitation in this function, or one overriding it.
   */
@@ -200,7 +200,7 @@ export class StringRenderer extends Renderer<string> {
   /** The callback function passed to the constructor. Called on {@link StringRenderer.update} */
   readonly _callback: (string: string) => void
   /** @param callback - A function called on {@link StringRenderer.update}. Passed a
-  * string with the renderable state of the {@link pixelmanipulator!PixelManipulator} */
+  * string with the renderable state of the {@link pixelmanipulator.PixelManipulator} */
   constructor (callback: (string: string) => void) {
     super()
     this._callback = callback

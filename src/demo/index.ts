@@ -1,4 +1,4 @@
-import { PixelManipulator, version, rules, Ctx2dRenderer, Location } from '../lib/pixelmanipulator'
+import { PixelManipulator, version, rules, Ctx2dRenderer, type Location } from '../lib/pixelmanipulator'
 import '@fortawesome/fontawesome-free/attribution.js'
 import 'bootstrap/js/dist/collapse' // For #sideAccordion
 import FPSControl from 'fps-control'
@@ -225,7 +225,7 @@ function changeColor (): void {
 }
 /// Select the element to customize
 const customSelect = document.getElementById('customSelect') as HTMLSelectElement
-customSelect.addEventListener('change', () => updateCustomizer())
+customSelect.addEventListener('change', () => { updateCustomizer(); })
 /// Change the color
 const customizeColor = document.getElementById('customizeColor') as HTMLInputElement
 customizeColor.addEventListener('change', changeColor)
@@ -328,7 +328,7 @@ playBtn.addEventListener('click', () => {
   }
 })
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
-oneFrameAtATime.addEventListener('click', () => p.iterate())
+oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
 /// Sizes for render canvas
 const widthE = document.getElementById('width') as HTMLInputElement
@@ -482,13 +482,13 @@ p.addMultipleElements({
     // not quite white
     renderAs: [254, 254, 254, 255],
     // Cells that were in the dying state go into the off state
-    liveCell: loc => p.setPixel(loc, p.defaultId)
+    liveCell: loc => { p.setPixel(loc, p.defaultId); }
   },
   "Brian's Brain (on)": {
     ...rules.lifelike(p, 'B2/S'), // same pattern as seeds
     renderAs: [0, 0, 254, 255], // not quite blue
     // All cells that were "on" go into the "dying" state, which is not counted as an "on" cell in the neighbor count, and prevents any cell from being born there.
-    liveCell: loc => p.setPixel(loc, "Brian's Brain (dying)")
+    liveCell: loc => { p.setPixel(loc, "Brian's Brain (dying)"); }
   },
   Seeds: {
     ...rules.lifelike(p, 'B2/S'),
@@ -513,11 +513,11 @@ p.addMultipleElements({
   },
   'Wireworld Electricity': {
     renderAs: [148, 133, 0, 255],
-    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld FadingElectricity')
+    liveCell: ({ x, y }) => { p.setPixel({ x, y, loop: false }, 'Wireworld FadingElectricity'); }
   },
   'Wireworld FadingElectricity': {
     renderAs: [74, 61, 0, 255],
-    liveCell: ({ x, y }) => p.setPixel({ x, y, loop: false }, 'Wireworld Conductor')
+    liveCell: ({ x, y }) => { p.setPixel({ x, y, loop: false }, 'Wireworld Conductor'); }
   },
   Highlife: {
     ...rules.lifelike(p, 'B36/S23'), // born on 3 or 6, survives on 2 or 3

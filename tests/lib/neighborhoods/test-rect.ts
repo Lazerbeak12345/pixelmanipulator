@@ -28,8 +28,8 @@ testProp('return from rect has no duplicates', [tlBr], (t, [topLeft, bottomRight
   t.is(list.length, sizeWithoutDuplicates(list))
 })
 testProp('return from rect keeps all values within bounds', [tlBr], (t, [topLeft, bottomRight]) =>
-  rect(topLeft, bottomRight).forEach(pos => {
+  { rect(topLeft, bottomRight).forEach(pos => {
     t.true(topLeft.x <= pos.x && pos.x <= bottomRight.x)
     t.true(topLeft.y <= pos.y && pos.y <= bottomRight.y)
-  }))
+  }); })
 // vi: tabstop=2 shiftwidth=2 expandtab

@@ -8,19 +8,19 @@ test('default args have a specific output', t => t.snapshot(wolfram()))
 test('default radius', t => t.deepEqual(wolfram(), wolfram(1)))
 const radius = fc.nat({ max: 2000 }) // This spends memory and time, so limit it.
 testProp('provided radius size', [radius], (t, r) => t.is(wolfram(r).length, 2 * r + 1))
-testProp('provided radius all within bounds', [radius], (t, r) => wolfram(r).forEach(pos => {
+testProp('provided radius all within bounds', [radius], (t, r) => { wolfram(r).forEach(pos => {
   t.true(-1 * r <= pos.x, 'left bound')
   t.true(pos.x <= r, 'right bound')
   t.is(pos.y, -1, 'y value')
-}))
+}); })
 testProp('default y', [radius], (t, r) => t.deepEqual(wolfram(r), wolfram(r, -1)))
 const yProp = fc.integer()
 testProp('provided y size', [radius, yProp], (t, r, y) => t.is(wolfram(r, y).length, 2 * r + 1))
-testProp('provided y all within bounds', [radius, yProp], (t, r, y) => wolfram(r, y).forEach(pos => {
+testProp('provided y all within bounds', [radius, yProp], (t, r, y) => { wolfram(r, y).forEach(pos => {
   t.true(-1 * r <= pos.x, 'left bound')
   t.true(pos.x <= r, 'right bound')
   t.is(pos.y, y, 'y value')
-}))
+}); })
 testProp('default includeSelf', [radius, yProp], (t, r, y) => t.deepEqual(wolfram(r, y), wolfram(r, y, true)))
 const includeSelf = fc.boolean()
 testProp('provided includeSelf size', [radius, yProp, includeSelf], (t, r, y, i) =>

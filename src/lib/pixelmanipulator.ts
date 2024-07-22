@@ -15,11 +15,11 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses>.
+ *  along with this program.  If not, see http://www.gnu.org/licenses.
  */
 import * as package_json from '../../package.json'
-import { Hitbox } from './neighborhoods'
-import { Renderer, Location } from './renderers'
+import { type Hitbox } from './neighborhoods'
+import { type Renderer, type Location } from './renderers'
 import * as _renderers from './renderers'
 // export * as neighborhoods from './neighborhoods'
 import * as _neighborhoods from './neighborhoods'
@@ -119,7 +119,7 @@ export const rules = {
   * @param pattern - The B/S syntax indicator of on how many cells of the same
   * type in the moore radius around each pixel should survive, and on how many
   * should be born.
-  * @param loop - Should this loop around screen edges? (Passed to {@link renderers!Location.loop})
+  * @param loop - Should this loop around screen edges? (Passed to {@link renderers.Location.loop})
   */
   lifelike: function<T> (p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
     const numbers = pattern.split(/\/?[a-z]/gi)// "B",born,die
@@ -202,8 +202,8 @@ export class PixelManipulator<T> {
   * This is the number that indicates what animation frame the iterate function
   * is being called with.
   *
-  * > You can use this to mannually stop the iterations like so:
-  * > `cancelAnimationFrame(this.loopint)` (not reccommended)
+  * You can use this to mannually stop the iterations like so:
+  * `cancelAnimationFrame(this.loopint)` (not reccommended)
   */
   loopint=0
   /**
@@ -219,15 +219,15 @@ export class PixelManipulator<T> {
   *
   * Allows a user to modify the name of an element at runtime.
   */
-  nameAliases: Map<string, string>=new Map()
+  nameAliases=new Map<string, string>()
   /**
   * A string indicating weather it is currently animating or not.
   *
   * It is `"playing"` if it is currently animating, or `"paused"` if not
   * currently animating.
   *
-  * > This has been around since early version 0, and once was the `innerText`
-  * > value of a pause/play button!
+  * This has been around since early version 0, and once was the `innerText`
+  * value of a pause/play button!
   */
   mode: 'playing'|'paused'='paused'
   /**
@@ -235,7 +235,7 @@ export class PixelManipulator<T> {
   * and what elements should return to when they are "dead". Default value is
   * 0, an element with the color `#000F`
   *
-  * If you update this, be sure to update {@link renderers!Renderer.defaultRenderAs} in {@link PixelManipulator.renderer}
+  * If you update this, be sure to update {@link renderers.Renderer.defaultRenderAs} in {@link PixelManipulator.renderer}
   */
   defaultId: number
   /** Called before {@link PixelManipulator.iterate} does its work.
@@ -291,7 +291,7 @@ export class PixelManipulator<T> {
   * does not require the name). Value is passed to
   * {@link PixelManipulator.addElement}
   */
-  addMultipleElements (elements: {[index: string]: ElementDataUnknown<T>}): void {
+  addMultipleElements (elements: Record<string, ElementDataUnknown<T>>): void {
     for (const elm in elements) {
       elements[elm].name = elm
       this.addElement(elements[elm] as ElementDataUnknownNameMandatory<T>)
@@ -471,7 +471,7 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * Applies any changes made with {@link renderers!Renderer.renderPixel} on {@link PixelManipulator.renderer} to the canvas
+  * Applies any changes made with {@link renderers.Renderer.renderPixel} on {@link PixelManipulator.renderer} to the canvas
   */
   update (): void {
     this.renderer.update()
@@ -543,7 +543,7 @@ export class PixelManipulator<T> {
 
   private static readonly _wolfram = _neighborhoods.wolfram()
 
-  /** @param loc - The pixel to change. (Defaults {@link renderers!Location.loop} to false)
+  /** @param loc - The pixel to change. (Defaults {@link renderers.Location.loop} to false)
   * @param ruleNum - A bitfield of what states a pixel should live or die on.
   * @param search - The element to search for
   * @see {@link PixelManipulator.fundamentalNewState} for more general tool.
@@ -560,7 +560,7 @@ export class PixelManipulator<T> {
   }
 
   /**
-  * @param current - "Current" pixel location. (Defaults {@link renderers!Location.loop} to false)
+  * @param current - "Current" pixel location. (Defaults {@link renderers.Location.loop} to false)
   * @param search - element to look for
   * @see {@link PixelManipulator.fundamentalStatesWithin} for lower-level tool
   * @returns Number used as bit area to indicate occupied cells
@@ -619,17 +619,15 @@ export class PixelManipulator<T> {
   }
 
   /** Number of pixels per element in the last frame */
-  pixelCounts: {
-    [index: number]: number
-  }={}
+  pixelCounts: Record<number, number>={}
 
   /** A single frame of animation. Media functions pass this into
   * {@link requestAnimationFrame}.
   *
-  * > Be careful! Calling this while {@link PixelManipulator.mode} is `"playing"`
-  * > might cause two concurrent calls to this function. If any of your automata
-  * > have "hidden state" - that is they don't represent every detail about
-  * > themselves as data within the pixels - it might cause conflicts.
+  * Be careful! Calling this while {@link PixelManipulator.mode} is `"playing"`
+  * might cause two concurrent calls to this function. If any of your automata
+  * have "hidden state" - that is they don't represent every detail about
+  * themselves as data within the pixels - it might cause conflicts.
   */
   iterate (): void {
     if (this.onIterate() ?? true) {
@@ -671,10 +669,12 @@ export class PixelManipulator<T> {
             }
             for (let hi = 0; hi < elm.hitbox.length; hi++) {
               const pixel = elm.hitbox[hi]
-              const hbLoc = this.locationBoundsCheck({
+              // We are looping, so it can't be null. Eslint doesn't like non-null assertions, so we must do this.
+              const hblocStupidFallback:Location = {
                 x: x + pixel.x,
                 y: y + pixel.y
-              }) as Location // We are looping, so it can't be null
+              }
+              const hbLoc:Location = this.locationBoundsCheck(hblocStupidFallback) ?? hblocStupidFallback;
               const index = Math.floor(_renderers.location2Index(hbLoc, w) / 8)
               const oldValue = typedUpdatedDead[currentPixId][index]
               const bitMask = 1 << (hbLoc.x % 8)
