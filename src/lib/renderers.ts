@@ -1,6 +1,6 @@
 /** Various rendering targets
  *
- *  Copyright (C) 2018-2022  Nathan Fritzler
+ *  Copyright (C) 2018-2024  Nathan Fritzler
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 import { PixelManipulator, version, rules, Ctx2dRenderer, type Location } from '../lib/pixelmanipulator'
-import '@fortawesome/fontawesome-free/attribution.js'
+//import '@fortawesome/fontawesome-free/attribution.js'
 import 'bootstrap/js/dist/collapse' // For #sideAccordion
 import FPSControl from 'fps-control'
 /**

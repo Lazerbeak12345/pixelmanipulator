@@ -2,7 +2,7 @@
  *  information about how to use this script, see
  *  https://github.com/Lazerbeak12345/pixelmanipulator
  *
- *  Copyright (C) 2018-2022  Nathan Fritzler
+ *  Copyright (C) 2018-2024  Nathan Fritzler
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -716,7 +716,7 @@ export class PixelManipulator<T> {
 export const version = package_json.version as string // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
 /** Licence disclaimer for PixelManipulator */
 export const licence = 'PixelManipulator v' + version + ' Copyright (C) ' +
-  '2018-2022 Nathan Fritzler\nThis program comes with ABSOLUTELY NO ' +
+  '2018-2024 Nathan Fritzler\nThis program comes with ABSOLUTELY NO ' +
   'WARRANTY\nThis is free software, and you are welcome to redistribute it\n' +
   'under certain conditions, as according to the GNU GENERAL PUBLIC LICENSE ' +
   'version 3 or later.'
