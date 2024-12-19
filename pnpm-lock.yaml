@@ -14,9 +14,15 @@ importers:
       '@fortawesome/fontawesome-free':
         specifier: ^6.7.2
         version: 6.7.2
+      '@parcel/packager-ts':
+        specifier: 2.13.3
+        version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
       '@parcel/transformer-sass':
         specifier: 2.13.3
         version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
+      '@parcel/transformer-typescript-types':
+        specifier: 2.13.3
+        version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))(typescript@5.6.3)
       '@popperjs/core':
         specifier: ^2.11.8
         version: 2.11.8
@@ -386,6 +392,10 @@ packages:
     resolution: {integrity: sha512-tKGRiFq/4jh5u2xpTstNQ7gu+RuZWzlWqpw5NaFmcKe6VQe5CMcS499xTFoREAGnRvevSeIgC38X1a+VOo+/AA==}
     engines: {node: '>= 16.0.0', parcel: ^2.13.3}
 
+  '@parcel/packager-ts@2.13.3':
+    resolution: {integrity: sha512-z7GcPe2V2dScOw+rVUmtsurkCiWCiy61/jCjKuX21HezDhK/+zta95wht2SbUSlrPgwK+/TWbb+9laDFHklWgA==}
+    engines: {node: '>= 16.0.0', parcel: ^2.13.3}
+
   '@parcel/packager-wasm@2.13.3':
     resolution: {integrity: sha512-SZB56/b230vFrSehVXaUAWjJmWYc89gzb8OTLkBm7uvtFtov2J1R8Ig9TTJwinyXE3h84MCFP/YpQElSfoLkJw==}
     engines: {node: '>=16.0.0', parcel: ^2.13.3}
@@ -489,6 +499,18 @@ packages:
   '@parcel/transformer-svg@2.13.3':
     resolution: {integrity: sha512-9jm7ZF4KHIrGLWlw/SFUz5KKJ20nxHvjFAmzde34R9Wu+F1BOjLZxae7w4ZRwvIc+UVOUcBBQFmhSVwVDZg6Dw==}
     engines: {node: '>= 16.0.0', parcel: ^2.13.3}
+
+  '@parcel/transformer-typescript-types@2.13.3':
+    resolution: {integrity: sha512-5FRqoj2/ZH3zVc4HO/OnMA1B22kgGIRb3CfsircP3/KHj5t38IDU+s2tctrccs0EjFGyjwIEwyaeuWgqf6fq4g==}
+    engines: {node: '>= 16.0.0', parcel: ^2.13.3}
+    peerDependencies:
+      typescript: '>=3.0.0'
+
+  '@parcel/ts-utils@2.13.3':
+    resolution: {integrity: sha512-ZHPJd7yh5b8iYgyHCZ31nqXHKLGKYnxqhLlEe/zPg8EV3NAVbbiuj2905w2ED5mt5BC+AR1cOEyMuxMRMtUuSQ==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      typescript: '>=3.0.0'
 
   '@parcel/types-internal@2.13.3':
     resolution: {integrity: sha512-Lhx0n+9RCp+Ipktf/I+CLm3zE9Iq9NtDd8b2Vr5lVWyoT8AbzBKIHIpTbhLS4kjZ80L3I6o93OYjqAaIjsqoZw==}
@@ -3807,6 +3829,12 @@ snapshots:
     transitivePeerDependencies:
       - '@parcel/core'
 
+  '@parcel/packager-ts@2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))':
+    dependencies:
+      '@parcel/plugin': 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
+    transitivePeerDependencies:
+      - '@parcel/core'
+
   '@parcel/packager-wasm@2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))':
     dependencies:
       '@parcel/plugin': 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
@@ -4026,6 +4054,23 @@ snapshots:
       semver: 7.6.3
     transitivePeerDependencies:
       - '@parcel/core'
+
+  '@parcel/transformer-typescript-types@2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))(typescript@5.6.3)':
+    dependencies:
+      '@parcel/diagnostic': 2.13.3
+      '@parcel/plugin': 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
+      '@parcel/source-map': 2.1.1
+      '@parcel/ts-utils': 2.13.3(typescript@5.6.3)
+      '@parcel/utils': 2.13.3
+      nullthrows: 1.1.1
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - '@parcel/core'
+
+  '@parcel/ts-utils@2.13.3(typescript@5.6.3)':
+    dependencies:
+      nullthrows: 1.1.1
+      typescript: 5.6.3
 
   '@parcel/types-internal@2.13.3':
     dependencies:

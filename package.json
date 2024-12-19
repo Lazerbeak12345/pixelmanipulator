@@ -63,7 +63,9 @@
   "devDependencies": {
     "@fast-check/ava": "^1.2.1",
     "@fortawesome/fontawesome-free": "^6.7.2",
+    "@parcel/packager-ts": "2.13.3",
     "@parcel/transformer-sass": "2.13.3",
+    "@parcel/transformer-typescript-types": "2.13.3",
     "@popperjs/core": "^2.11.8",
     "@rollup/plugin-commonjs": "^26.0.3",
     "@types/eslint": "^8.56.12",
