@@ -31,3 +31,6 @@ tests
 
 # Config files for Dev
 *.config.mjs
+
+# Node demo compile target
+.tsimp
