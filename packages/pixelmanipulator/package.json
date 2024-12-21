@@ -1,0 +1,111 @@
+{
+  "name": "pixelmanipulator",
+  "version": "5.5.8",
+  "description": "A super powerful Typescript library for cellular automation.",
+  "main": "dist/main.js",
+  "browser": "dist/browser.js",
+  "module": "dist/module.js",
+  "types": "dist/types.d.ts",
+  "demo": "docs/pixelmanipulator.html",
+  "unpkg": "dist/bundle.js",
+  "targets": {
+    "main": {
+      "source": "./src/lib/pixelmanipulator.ts"
+    },
+    "module": {
+      "source": "src/lib/pixelmanipulator.ts"
+    },
+    "browser": {
+      "source": "src/lib/pixelmanipulator.ts",
+      "outputFormat": "commonjs"
+    },
+    "types": {
+      "source": "src/lib/pixelmanipulator.ts"
+    },
+    "demo": {
+      "source": "src/demo/pixelmanipulator.html",
+      "publicUrl": ".",
+      "context": "browser"
+    }
+  },
+  "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
+  "homepage": "https://lazerbeak12345.github.io/pixelmanipulator",
+  "author": "Nathan Fritzler <nfblaster@live.com>",
+  "license": "GPL-3.0-or-later",
+  "browserslist": "defaults",
+  "keywords": [
+    "cellular automata",
+    "game of life",
+    "highlife",
+    "brians-brain",
+    "wireworld",
+    "wolfram",
+    "rule-30",
+    "rule-90",
+    "rule-110",
+    "rule-184",
+    "conway",
+    "pixel",
+    "game",
+    "life",
+    "cellular",
+    "automata",
+    "automaton",
+    "gameoflife",
+    "gol",
+    "brian's-brain",
+    "particle",
+    "simulation",
+    "engine",
+    "grid",
+    "canvas"
+  ],
+  "devDependencies": {
+    "@fast-check/ava": "^1.2.1",
+    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@parcel/packager-ts": "2.13.3",
+    "@parcel/transformer-sass": "2.13.3",
+    "@parcel/transformer-typescript-types": "2.13.3",
+    "@popperjs/core": "^2.11.8",
+    "@rollup/plugin-commonjs": "^26.0.3",
+    "@types/eslint": "^8.56.12",
+    "@types/node": "^20.17.10",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "ava": "^6.2.0",
+    "bootstrap": "^5.3.3",
+    "c8": "^10.1.3",
+    "eslint": "^8.57.1",
+    "eslint-config-love": "^54.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.6.0",
+    "eslint-plugin-tsdoc": "^0.3.0",
+    "fast-check": "^3.23.2",
+    "fps-control": "^1.0.0",
+    "gh-pages": "^6.2.0",
+    "parcel": "^2.13.3",
+    "rollup": "^4.28.1",
+    "tsimp": "^2.0.12",
+    "typedoc": "^0.26.11",
+    "typedoc-plugin-mdn-links": "^3.3.8",
+    "typescript": "^5.6.3"
+  },
+  "scripts": {
+    "test": "pnpm run test:types && pnpm run test:lint && pnpm run test:test",
+    "test:types": "rm -r build; tsc --outDir build",
+    "test:lint": "eslint . --ignore-pattern dist --ignore-pattern docs --ignore-pattern coverage --ignore-pattern .tsimp --ignore-pattern build",
+    "test:test": "c8 -r text -r text-summary -r lcov --all --include build/src ava",
+    "build": "pnpm t && pnpm run build:docs && pnpm run build:parcel && pnpm run build:bundle && pnpm run build:prepare-ci",
+    "build:docs": "typedoc --name PixelManipulator --out docs --includeVersion src/lib/*.ts",
+    "build:parcel": "parcel build",
+    "build:bundle": "rollup -c",
+    "build:prepare-ci": "cp -r .circleci docs && cp -r media/* docs",
+    "updatedemo": "pnpm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
+    "watch": "parcel --target demo --dist-dir docs",
+    "node-demo": "tsimp src/node-demo/index.ts"
+  },
+  "ava": {
+    "timeout": "20s"
+  },
+  "packageManager": "pnpm@9.4.0+sha512.f549b8a52c9d2b8536762f99c0722205efc5af913e77835dbccc3b0b0b2ca9e7dc8022b78062c17291c48e88749c70ce88eb5a74f1fa8c4bf5e18bb46c8bd83a"
+}

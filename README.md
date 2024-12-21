@@ -1,4 +1,4 @@
-# ![PixelManipulator logo](media/pixelmanipulator_logo.svg) PixelManipulator [![View the Demo][vtdsvg]][the demo]
+# ![PixelManipulator logo][pm_svg] PixelManipulator [![View the Demo][vtdsvg]][the demo]
 
 [![js-standard-style][standard svg]](http://standardjs.com)
 [![View the Docs][vtdosvg]][the docs]
@@ -15,6 +15,7 @@ PixelManipulator is a TypeScript library that can run any two-dimensional
 cellular automata, such as "Conway's Game of Life," and "Rule 90." Inspired by the
 [The Powder Toy](https://powdertoy.co.uk/).
 
+[pm_svg]: ./media/pixelmanipulator_logo.svg
 [repo]: https://github.com/lazerbeak12345/pixelmanipulator
 [the demo]: https://lazerbeak12345.github.io/pixelmanipulator/pixelmanipulator.html
 [vtdsvg]: https://img.shields.io/badge/view-the_demo-green.svg
@@ -59,8 +60,8 @@ Pre-programmed cellular automata include:
 
 In your project run one of these:
 
-- For yarn, `yarn add pixelmanipulator`
-- For npm, `npm i pixelmanipulator`
+- For pnpm, `pnpm i --save pixelmanipulator`
+- For npm, `npm i --save pixelmanipulator`
 
 If you are using esmodules, you now can import it like this:
 

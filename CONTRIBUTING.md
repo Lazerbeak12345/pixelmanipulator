@@ -2,11 +2,17 @@
 
 ## Local setup
 
-1. Make sure you have `npm` installed
+1. Make sure you have `pnpm` installed
 2. Clone the project locally
-3. `npm install`
+3. `pnpm install`
+
+### Why not plain npm?
+
+pnpm takes much less space on my system, and has a slightly better user experience than npm.
 
 ### Why not yarn?
+
+> Below is after I switched back from yarn to npm. We use pnpm now.
 
 I've been a big fan of yarn. I'm still a big fan of yarn. Why not use it then?
 
@@ -33,17 +39,17 @@ I've been a big fan of yarn. I'm still a big fan of yarn. Why not use it then?
 
 ## Running code locally
 
-1. `npm run watch`
+1. `pnpm run watch`
 2. Open the url it gives you on a fairly new browser (as watch mode, unlike
    production, does not apply as many polyfills)
 
 ## Updating the demo and the docs
 
-Run `npm run updatedemo` (only works if you have push privs)
+Run `pnpm run updatedemo` (only works if you have push privs)
 
 ## Building
 
-Run `npm run build`
+Run `pnpm run build`
 
 All files are either in `/docs` or in `/dist`. You can see the specifics in `/package.json`
 
