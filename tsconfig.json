@@ -1,0 +1,30 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	/*"include": [
+		// It's possible that this breaks module isolation.
+		"src",
+		"tests"
+	],*/
+	"compilerOptions":{
+		"lib":[
+			"dom",
+			"esnext"
+		],
+		"sourceMap": true,
+		"isolatedModules":true,
+		"resolveJsonModule":true,
+		"allowSyntheticDefaultImports": true,
+		"allowUnreachableCode":false,
+		"allowUnusedLabels": false,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch":true,
+		"noUnusedLocals":true,
+		"noUnusedParameters":true,
+		"suppressExcessPropertyErrors":false,
+		"suppressImplicitAnyIndexErrors": false,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noImplicitOverride": true
+	}
+}

@@ -5,10 +5,15 @@
   "packageManager": "pnpm@9.6.0+sha512.38dc6fba8dba35b39340b9700112c2fe1e12f10b17134715a4aa98ccf7bb035e76fd981cf0bb384dfa98f8d6af5481c2bef2f4266a24bfa20c34eb7147ce0b5e",
   "scripts": {
     "test": "pnpm run -r test",
-    "watch": "pnpm run -r watch",
-    "node-demo": "pnpm run -r node-demo"
+    "build": "pnpm run -r build",
+    "watch": "pnpm run --parallel -r watch",
+    "node-demo": "pnpm run --filter pixelmanipulator-node-demo node-demo"
   },
   "devDependencies": {
-    "@parcel/transformer-sass": "2.13.3"
+    "@parcel/packager-ts": "catalog:",
+    "@parcel/transformer-sass": "catalog:",
+    "@parcel/transformer-typescript-types": "catalog:",
+    "typescript": "catalog:",
+    "tsimp": "catalog:"
   }
 }

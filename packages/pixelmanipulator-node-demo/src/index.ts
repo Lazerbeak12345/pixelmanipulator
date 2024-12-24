@@ -1,10 +1,11 @@
 /** To run me
 *
-* 1. Clone this repo.
+* 1. Clone this repo, then run the following commands at the root of the monorepo.
 * 2. `pnpm i`
-* 3. `pnpm run node-demo`
+* 3. `pnpm build`
+* 4. `pnpm node-demo`
 */
-import { PixelManipulator, rules, StringRenderer } from '../lib/pixelmanipulator'
+import { PixelManipulator, rules, StringRenderer } from 'pixelmanipulator'
 
 const renderer = new StringRenderer(str => {
   console.clear()
