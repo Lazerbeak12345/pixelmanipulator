@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@5
-  coveralls: coveralls/coveralls@1
+  coveralls: coveralls/coveralls@2.1
 jobs:
   coverage:
     docker:
@@ -10,6 +10,8 @@ jobs:
     parallelism: 10
 
     steps:
+      # Ensure that we can run locally (my docker is root only)
+      - run: git config --global --add safe.directory '*'
       - checkout
       - when:
           condition:
@@ -24,7 +26,7 @@ jobs:
                 name: Install pnpm package manager
                 command: |
                   corepack enable
-                  corepack prepare pnpm@latest-9 --activate
+                  corepack prepare pnpm@9.6.0 --activate
                   pnpm config set store-dir .pnpm-store
             - run:
                 name: Install Dependencies
