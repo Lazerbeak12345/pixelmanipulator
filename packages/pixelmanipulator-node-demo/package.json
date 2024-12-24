@@ -3,13 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "node-demo": "tsimp src/index.ts"
+    "node-demo": "tsimp src/index.ts",
+    "lint": "eslint . --ignore-pattern .tsimp"
   },
   "dependencies": {
     "pixelmanipulator": "workspace:*",
     "tsimp": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:"
+    "@types/eslint": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-love": "catalog:",
+    "eslint-plugin-node": "catalog:",
+    "eslint-plugin-promise": "catalog:",
+    "eslint-plugin-tsdoc": "catalog:"
   }
 }

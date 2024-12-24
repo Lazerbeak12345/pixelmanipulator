@@ -90,9 +90,9 @@
     "typescript": "^5.6.3"
   },
   "scripts": {
-    "test": "pnpm run test:types && pnpm run test:lint && pnpm run test:test",
+    "test": "pnpm run test:types && pnpm run lint && pnpm run test:test",
     "test:types": "rm -r build; tsc --outDir build",
-    "test:lint": "eslint . --ignore-pattern dist --ignore-pattern docs --ignore-pattern coverage --ignore-pattern .tsimp --ignore-pattern build",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern docs --ignore-pattern coverage --ignore-pattern build",
     "test:test": "c8 -r text -r text-summary -r lcov --all --include build/src ava",
     "build": "pnpm t && pnpm run build:docs && pnpm run build:parcel && pnpm run build:bundle && pnpm run build:prepare-ci",
     "build:docs": "typedoc --name PixelManipulator --out docs --includeVersion src/lib/*.ts",
