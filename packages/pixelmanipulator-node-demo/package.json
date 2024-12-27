@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "node-demo": "tsimp src/index.ts",
-    "lint": "eslint . --ignore-pattern .tsimp"
+    "lint": "eslint . --ignore-pattern .tsimp",
+    "test": "pnpm run lint"
   },
   "dependencies": {
     "pixelmanipulator": "workspace:*",

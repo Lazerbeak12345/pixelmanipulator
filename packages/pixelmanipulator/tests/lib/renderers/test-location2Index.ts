@@ -3,12 +3,14 @@ import { location2Index } from '../../../src/lib/pixelmanipulator'
 import { sizeWithoutDuplicates } from '../_functions'
 
 const wOrH = fc.integer({
-  min: 1, // Can't have w of zero
-  max: 500 // Memory space and time saver
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- Can't have w of zero
+  min: 1,
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- Memory space and time saver
+  max: 500
 })
 
 function listFullOfIndexes (w: number, h: number): number[] {
-  const list = []
+  const list:number[] = []
   for (let y = 0; y < h; y++) { // That we start on y matters a lot.
     for (let x = 0; x < w; x++) {
       list.push(location2Index({ x, y }, w))

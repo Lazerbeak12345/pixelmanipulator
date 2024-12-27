@@ -17,7 +17,7 @@
  */
 
 /** The location of a pixel */
-export interface Location{
+export interface Location {
   /** x position */
   x: number
   /** y position */
@@ -35,7 +35,7 @@ export interface Location{
 * @param y - y location
 * @param width - width of the canvas
 */
-export function location2Index ({ x, y }: Location, width: number): number {
+export function location2Index({ x, y }: Location, width: number): number {
   return ((width * y) + x)
 }
 /** Transpose a list of locations, using a location.
@@ -45,7 +45,7 @@ export function location2Index ({ x, y }: Location, width: number): number {
 * @param offset - Amount to transpose the locations by, represented by a
 * location.
 */
-export function transposeLocations (locs: Location[], offset: Location): Location[] {
+export function transposeLocations(locs: Location[], offset: Location): Location[] {
   const { x, y, frame, loop } = offset
   return locs.map(loc => {
     const newLoc: Location = {
@@ -66,11 +66,11 @@ export abstract class Renderer<T> {
   * @param location - Where to render the pixel.
   * @param id - the pixel to render.
   */
-  abstract renderPixel (location: Location, id: number): void
+  abstract renderPixel(location: Location, id: number): void
   /** Reset the render target. */
-  abstract reset (): void
+  abstract reset(): void
   /** Update the render target. Draws all changes queued up by {@link Renderer.renderPixel}. */
-  abstract update (): void
+  abstract update(): void
   /** The {@link pixelmanipulator.ElementData.renderAs} value for the default element */
   abstract defaultRenderAs: T
   /** Ordered by ID, the {@link pixelmanipulator.ElementData.renderAs} info for each element. */
@@ -81,7 +81,7 @@ export abstract class Renderer<T> {
   * @returns The value passed upstream to be stored as the actual renderAs info,
   * allowing for sanitation in this function, or one overriding it.
   */
-  modifyElement (id: number, newRenderAs: T): T {
+  modifyElement(id: number, newRenderAs: T): T {
     if (this.renderInfo.length === id) {
       this.renderInfo.push(newRenderAs)
     } else if (this.renderInfo.length > id) {
@@ -90,34 +90,37 @@ export abstract class Renderer<T> {
     return newRenderAs
   }
 
-  private _width: number=1
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default value
+  private _width = 1
   /** @param value - The new width of the canvas */
-  set_width (value: number): void {
+  set_width(value: number): void {
     this._width = value
   }
 
   /** @returns the width of the canvas */
-  get_width (): number {
+  get_width(): number {
     return this._width
   }
 
-  private _height: number=1
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default value
+  private _height = 1
   /** @param value - The new height of the canvas */
-  set_height (value: number): void {
+  set_height(value: number): void {
     this._height = value
   }
 
   /** @returns the height of the canvas */
-  get_height (): number {
+  get_height(): number {
     return this._height
   }
 }
 /** The color of an element */
-export type Color=[number, number, number, number]|[number, number, number]|[number, number]|[number]|[]
+export type Color = [number, number, number, number] | [number, number, number] | [number, number] | [number] | []
+const NUMBER_OF_COLORS = 4
 /** Render onto an {@link HTMLCanvasElement} using a {@link CanvasRenderingContext2D} */
 export class Ctx2dRenderer extends Renderer<Color> {
   /** @param canvas - The canvas to render on, and to adjust the size of */
-  constructor (canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     super()
     this.canvas = canvas
     const ctx = canvas.getContext('2d')
@@ -125,6 +128,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
       throw new Error('CanvasRenderingContext2D not supported in enviroment')
     }
     this.ctx = ctx
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- top-left corner
     this.imageData = this.ctx.getImageData(0, 0, this.get_width(), this.get_height())
   }
 
@@ -135,7 +139,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
   /** The canvas */
   canvas: HTMLCanvasElement
   /** Default color is solid black */
-  defaultRenderAs = [0, 0, 0, 255] as Color
+  defaultRenderAs = [0, 0, 0, 255] as Color // eslint-disable-line @typescript-eslint/no-magic-numbers -- top-left corner
 
   /** In addition to calling {@link Renderer.modifyElement}, this leftpads colors
   * with `255` and checks for dupicates.
@@ -143,13 +147,15 @@ export class Ctx2dRenderer extends Renderer<Color> {
   * @param newRenderAs - The proposed color of the element.
   * @returns the actual color of the element. Always 4 long.
   */
-  override modifyElement (id: number, newRenderAs: Color): Color {
+  override modifyElement(id: number, newRenderAs: Color): Color {
     // allows for arrays that are too small
-    while (newRenderAs.length < 4) {
-      (newRenderAs as [number]).push(255)
+    while (newRenderAs.length < NUMBER_OF_COLORS) {
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values to 255
+      (newRenderAs as number[]).push(255)
     }
+    const NOT_FOUND = -1
     const indexOfColor = this.renderInfo.indexOf(newRenderAs)
-    if (!(indexOfColor === id || indexOfColor === -1)) {
+    if (!(indexOfColor === id || indexOfColor === NOT_FOUND)) {
       throw new Error(`The color ${JSON.stringify(newRenderAs)} is already in use!`)
     }
     return super.modifyElement(id, newRenderAs)
@@ -158,37 +164,42 @@ export class Ctx2dRenderer extends Renderer<Color> {
   /** @param loc - location of the pixel to render. Ignores {@link Location.frame} and {@link Location.loop}
   * @param id - The id of the pixel to render.
   */
-  renderPixel (loc: Location, id: number): void {
-    const color = this.renderInfo[id]
-    if (color == null) {
+  renderPixel(loc: Location, id: number): void {
+    const { renderInfo: { [id]: color } } = this
+    if (typeof color === "undefined") {
       throw new Error(`Invalid ID ${id}`)
     }
     // allows for arrays that are too small
-    while (color.length < 4) {
-      (color as [number]).push(255)
+    // TODO: unify this code (duplicate in above function)
+    while (color.length < NUMBER_OF_COLORS) {
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values to 255
+      (color as number[]).push(255)
     }
     const w = this.get_width()
-    const pixelOffset = location2Index(loc, w) * 4
-    for (let i = 0; i < 4; ++i) {
+    const pixelOffset = location2Index(loc, w) * NUMBER_OF_COLORS
+    for (let i = 0; i < NUMBER_OF_COLORS; ++i) {
+      // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- destructuring is more messy here
       this.imageData.data[pixelOffset + i] = color[i]
     }
   }
 
-  reset (): void {
+  reset(): void {
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- top left corner
     this.imageData = this.ctx.getImageData(0, 0, this.get_width(), this.get_height())
     this.ctx.imageSmoothingEnabled = false
   }
 
-  update (): void {
+  update(): void {
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- top left corner
     this.ctx.putImageData(this.imageData, 0, 0)
   }
 
-  override set_width (value: number): void {
+  override set_width(value: number): void {
     this.canvas.width = value
     super.set_width(value)
   }
 
-  override set_height (value: number): void {
+  override set_height(value: number): void {
     this.canvas.height = value
     super.set_height(value)
   }
@@ -201,14 +212,15 @@ export class StringRenderer extends Renderer<string> {
   readonly _callback: (string: string) => void
   /** @param callback - A function called on {@link StringRenderer.update}. Passed a
   * string with the renderable state of the {@link pixelmanipulator.PixelManipulator} */
-  constructor (callback: (string: string) => void) {
+  constructor(callback: (string: string) => void) {
     super()
     this._callback = callback
   }
 
   /** @param newRenderAs - The proposed character to use. Must be 1 char long and unique */
-  override modifyElement (id: number, newRenderAs: string): string {
-    if (newRenderAs.length !== 1) { // TODO measure rendered chars, not length
+  override modifyElement(id: number, newRenderAs: string): string {
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- single char is len one (if ascii)
+    if (newRenderAs.length !== 1) { // TODO: measure rendered chars, not length
       throw new Error('Element must be a single char')
     }
     if (this.renderInfo.includes(newRenderAs)) {
@@ -217,32 +229,33 @@ export class StringRenderer extends Renderer<string> {
     return super.modifyElement(id, newRenderAs)
   }
 
-  reset (): void {
+  reset(): void {
     const w = this.get_width()
     const h = this.get_height()
     this._chars = new Array(h)
-      .fill(0)
-      .map(() => new Array(w).fill(this.defaultRenderAs))
+      .fill([])
+      .map(() => new Array<string>(w).fill(this.defaultRenderAs))
   }
 
   /** @param x - X location of pixel
   * @param y - y location of pixel
   * @param id - The id of the pixel
   */
-  renderPixel ({ x, y }: Location, id: number): void {
-    this._chars[y][x] = this.renderInfo[id]
+  renderPixel({ x, y }: Location, id: number): void {
+    const { renderInfo: { [id]: char } } = this
+    this._chars[y][x] = char
   }
 
-  update (): void {
+  update(): void {
     this._callback(this._chars.map(l => l.join('')).join('\n'))
   }
 }
 /** render on two different targets (which may also be {@link SplitRenderer}) */
-export class SplitRenderer<A, B> extends Renderer<{ a: A, b: B}> {
-  defaultRenderAs: { a: A, b: B}
+export class SplitRenderer<A, B> extends Renderer<{ a: A, b: B }> {
+  defaultRenderAs: { a: A, b: B }
   a: Renderer<A>
   b: Renderer<B>
-  constructor (a: Renderer<A>, b: Renderer<B>) {
+  constructor(a: Renderer<A>, b: Renderer<B>) {
     super()
     this.a = a
     this.b = b
@@ -252,22 +265,22 @@ export class SplitRenderer<A, B> extends Renderer<{ a: A, b: B}> {
     }
   }
 
-  renderPixel (loc: Location, id: number): void {
+  renderPixel(loc: Location, id: number): void {
     this.a.renderPixel(loc, id)
     this.b.renderPixel(loc, id)
   }
 
-  reset (): void {
+  reset(): void {
     this.a.reset()
     this.b.reset()
   }
 
-  update (): void {
+  update(): void {
     this.a.update()
     this.b.update()
   }
 
-  override modifyElement (id: number, { a, b }: { a: A, b: B }): { a: A, b: B } {
+  override modifyElement(id: number, { a, b }: { a: A, b: B }): { a: A, b: B } {
     return super.modifyElement(id, {
       a: this.a.modifyElement(id, a),
       b: this.b.modifyElement(id, b)
