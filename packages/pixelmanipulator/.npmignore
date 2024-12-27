@@ -1,0 +1,36 @@
+# Compile cache
+.parcel-cache
+
+# Rendered documentation
+docs
+
+# Github-only markdown files
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+todo.md
+
+# Demo code
+*.html
+
+# Source code
+src
+*.png
+*.ico
+
+# Config files
+.circleci
+.eslintrc
+*.json
+.github
+
+# Code coverage
+coverage
+
+# Test code
+tests
+
+# Config files for Dev
+*.config.mjs
+
+# Node demo compile target
+.tsimp
