@@ -1,7 +1,8 @@
 version: 2.1
 orbs:
   node: circleci/node@5
-  coveralls: coveralls/coveralls@2.1
+  # TODO: the univeral thingy seems to reading the lcov wrong
+  coveralls: coveralls/coveralls@1
 jobs:
   coverage:
     docker:

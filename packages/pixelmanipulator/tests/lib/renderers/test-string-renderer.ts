@@ -62,7 +62,7 @@ propIt("can handle any string data", [
   t.plan(1)
   const sr = new StringRenderer(s => {
     t.is(s, data.map(row =>
-      row.map(data => data ? str : ' ').join('')
+      row.map(data => data ? str : sr.defaultRenderAs).join('')
     ).join('\n'))
   })
   sr.set_width(w)
@@ -87,11 +87,16 @@ propIt("can handle any string data", [
     [[1, 1, [[true]]] as StrDataBools, "#"],
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- example
     [[1, 1, [[false]]] as StrDataBools, "#"],
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- example
+    [[1, 3, [[false], [false], [false]]] as StrDataBools, " "],
   ]
 })
 
 propIt("only allows unique chars in modifyElement", [fc.string()], (t, str) => {
   const sr = new StringRenderer(() => t.fail("Should not be called."))
+  if (str === sr.defaultRenderAs) {
+    sr.defaultRenderAs = "#"
+  }
   sr.modifyElement(sr.renderInfo.length, sr.defaultRenderAs)
   sr.modifyElement(sr.renderInfo.length, str)
   t.throws(() => {
@@ -99,4 +104,8 @@ propIt("only allows unique chars in modifyElement", [fc.string()], (t, str) => {
   }, {
     message: 'Element 2 must have a unique renderAs'
   })
+}, {
+  examples: [
+    [' '] // Same as defaultRenderAs
+  ]
 })
