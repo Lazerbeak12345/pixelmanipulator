@@ -34,7 +34,8 @@ jobs:
                 command: |
                   pnpm install
             - run: pnpm t
-            - coveralls/upload
+            - coveralls/upload:
+              path_to_lcov: ./packages/pixelmanipulator/coverage/lcov.info
 workflows:
   test:
     jobs:
