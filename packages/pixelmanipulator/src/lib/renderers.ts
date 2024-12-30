@@ -219,10 +219,6 @@ export class StringRenderer extends Renderer<string> {
 
   /** @param newRenderAs - The proposed character to use. Must be 1 char long and unique */
   override modifyElement(id: number, newRenderAs: string): string {
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- single char is len one (if ascii)
-    if (newRenderAs.length !== 1) { // TODO: measure rendered chars, not length
-      throw new Error('Element must be a single char')
-    }
     if (this.renderInfo.includes(newRenderAs)) {
       throw new Error(`Element ${id} must have a unique renderAs`)
     }
