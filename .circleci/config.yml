@@ -1,0 +1,40 @@
+version: 2.1
+orbs:
+  node: circleci/node@5
+  coveralls: coveralls/coveralls@2
+jobs:
+  coverage:
+    docker:
+      - image: node:18
+    resource_class: large
+    parallelism: 10
+
+    steps:
+      # Ensure that we can run locally (my docker is root only)
+      - run: git config --global --add safe.directory '*'
+      - checkout
+      - when:
+          condition:
+            not:
+              equal: [ gh-pages, << pipeline.git.branch >> ]
+          steps:
+            - restore_cache:
+                name: Restore pnpm Package Cache
+                keys:
+                  - pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
+            - run:
+                name: Install pnpm package manager
+                command: |
+                  corepack enable
+                  corepack prepare pnpm@9.15.1 --activate
+                  pnpm config set store-dir .pnpm-store
+            - run:
+                name: Install Dependencies
+                command: |
+                  pnpm install
+            - run: pnpm t
+            - coveralls/upload
+workflows:
+  test:
+    jobs:
+      - coverage
