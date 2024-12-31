@@ -1,6 +1,6 @@
 import { testProp, fc } from '@fast-check/ava'
 import type { Arbitrary } from 'fast-check'
-import { transposeLocations, type Location } from '../../../src/lib/pixelmanipulator'
+import { transposeLocations, type Location } from '../../src/pixelmanipulator'
 
 const MAX_LIST_SIZE = 2_500
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- this part of the file requires magic numbers

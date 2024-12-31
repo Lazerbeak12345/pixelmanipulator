@@ -6,26 +6,20 @@
   "browser": "dist/browser.js",
   "module": "dist/module.js",
   "types": "dist/types.d.ts",
-  "demo": "docs/pixelmanipulator.html",
   "unpkg": "dist/bundle.js",
   "targets": {
     "main": {
-      "source": "./src/lib/pixelmanipulator.ts"
+      "source": "./src/pixelmanipulator.ts"
     },
     "module": {
-      "source": "src/lib/pixelmanipulator.ts"
+      "source": "src/pixelmanipulator.ts"
     },
     "browser": {
-      "source": "src/lib/pixelmanipulator.ts",
+      "source": "src/pixelmanipulator.ts",
       "outputFormat": "commonjs"
     },
     "types": {
-      "source": "src/lib/pixelmanipulator.ts"
-    },
-    "demo": {
-      "source": "src/demo/pixelmanipulator.html",
-      "publicUrl": ".",
-      "context": "browser"
+      "source": "src/pixelmanipulator.ts"
     }
   },
   "repository": "git@github.com:Lazerbeak12345/pixelmanipulator.git",
@@ -62,18 +56,14 @@
   ],
   "devDependencies": {
     "@fast-check/ava": "catalog:",
-    "@fortawesome/fontawesome-free": "catalog:",
     "@parcel/packager-ts": "catalog:",
-    "@parcel/transformer-sass": "catalog:",
     "@parcel/transformer-typescript-types": "catalog:",
-    "@popperjs/core": "catalog:",
     "@rollup/plugin-commonjs": "catalog:",
     "@types/eslint": "catalog:",
     "@types/node": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "ava": "catalog:",
-    "bootstrap": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
     "eslint-config-love": "catalog:",
@@ -81,7 +71,6 @@
     "eslint-plugin-promise": "catalog:",
     "eslint-plugin-tsdoc": "catalog:",
     "fast-check": "catalog:",
-    "fps-control": "catalog:",
     "gh-pages": "catalog:",
     "parcel": "catalog:",
     "rollup": "catalog:",
@@ -95,13 +84,12 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern docs --ignore-pattern coverage --ignore-pattern build",
     "test:test": "c8 -r text -r text-summary -r lcov -r html --all --include build/src ava",
     "build": "pnpm t && pnpm run build:docs && pnpm run build:parcel && pnpm build:readme && pnpm run build:bundle && pnpm run build:prepare-ci",
-    "build:docs": "typedoc --name PixelManipulator --out docs --includeVersion src/lib/*.ts",
+    "build:docs": "typedoc --name PixelManipulator --out docs --includeVersion src/*.ts",
     "build:parcel": "parcel build",
     "build:readme": "cp ../../README.md .",
     "build:bundle": "rollup -c",
     "build:prepare-ci": "cp -r ../../.circleci docs && cp -r ../../media/* docs",
-    "updatedemo": "pnpm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf",
-    "watch": "parcel --target demo --dist-dir docs"
+    "watch": "parcel watch --no-hmr"
   },
   "ava": {
     "timeout": "20s"

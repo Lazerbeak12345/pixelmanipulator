@@ -140,21 +140,12 @@ importers:
       '@fast-check/ava':
         specifier: 'catalog:'
         version: 1.2.1(ava@6.2.0(rollup@4.29.1))
-      '@fortawesome/fontawesome-free':
-        specifier: 'catalog:'
-        version: 6.7.2
       '@parcel/packager-ts':
-        specifier: 'catalog:'
-        version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
-      '@parcel/transformer-sass':
         specifier: 'catalog:'
         version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
       '@parcel/transformer-typescript-types':
         specifier: 'catalog:'
         version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))(typescript@5.6.3)
-      '@popperjs/core':
-        specifier: 'catalog:'
-        version: 2.11.8
       '@rollup/plugin-commonjs':
         specifier: 'catalog:'
         version: 26.0.3(rollup@4.29.1)
@@ -173,9 +164,6 @@ importers:
       ava:
         specifier: 'catalog:'
         version: 6.2.0(rollup@4.29.1)
-      bootstrap:
-        specifier: 'catalog:'
-        version: 5.3.3(@popperjs/core@2.11.8)
       c8:
         specifier: 'catalog:'
         version: 10.1.3
@@ -255,6 +243,60 @@ importers:
       eslint-plugin-tsdoc:
         specifier: 'catalog:'
         version: 0.3.0
+
+  packages/pixelmanipulator-web-demo:
+    devDependencies:
+      '@fortawesome/fontawesome-free':
+        specifier: 'catalog:'
+        version: 6.7.2
+      '@parcel/packager-ts':
+        specifier: 'catalog:'
+        version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
+      '@parcel/transformer-sass':
+        specifier: 'catalog:'
+        version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))
+      '@parcel/transformer-typescript-types':
+        specifier: 'catalog:'
+        version: 2.13.3(@parcel/core@2.13.3(@swc/helpers@0.5.15))(typescript@5.6.3)
+      '@popperjs/core':
+        specifier: 'catalog:'
+        version: 2.11.8
+      '@typescript-eslint/eslint-plugin':
+        specifier: 'catalog:'
+        version: 8.18.2(@typescript-eslint/parser@8.18.2(eslint@9.17.0)(typescript@5.6.3))(eslint@9.17.0)(typescript@5.6.3)
+      '@typescript-eslint/parser':
+        specifier: 'catalog:'
+        version: 8.18.2(eslint@9.17.0)(typescript@5.6.3)
+      bootstrap:
+        specifier: 'catalog:'
+        version: 5.3.3(@popperjs/core@2.11.8)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.17.0
+      eslint-config-love:
+        specifier: 'catalog:'
+        version: 113.0.0(@typescript-eslint/parser@8.18.2(eslint@9.17.0)(typescript@5.6.3))(eslint@9.17.0)(typescript@5.6.3)
+      eslint-plugin-node:
+        specifier: 'catalog:'
+        version: 11.1.0(eslint@9.17.0)
+      eslint-plugin-promise:
+        specifier: 'catalog:'
+        version: 6.6.0(eslint@9.17.0)
+      eslint-plugin-tsdoc:
+        specifier: 'catalog:'
+        version: 0.3.0
+      fps-control:
+        specifier: 'catalog:'
+        version: 1.0.0
+      parcel:
+        specifier: 'catalog:'
+        version: 2.13.3(@swc/helpers@0.5.15)(typescript@5.6.3)
+      pixelmanipulator:
+        specifier: workspace:*
+        version: link:../pixelmanipulator
+      typescript:
+        specifier: 'catalog:'
+        version: 5.6.3
 
 packages:
 

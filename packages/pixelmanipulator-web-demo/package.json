@@ -1,0 +1,40 @@
+{
+  "name": "pixelmanipulator-web-demo",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "parcel build",
+    "lint": "eslint . --ignore-pattern build",
+    "watch": "parcel --target demo --dist-dir ../pixelmanipulator/docs",
+    "updatedemo": "pnpm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf"
+  },
+  "demo": "../pixelmanipulator/docs/pixelmanipulator.html",
+  "targets": {
+    "demo": {
+      "source": "src/pixelmanipulator.html",
+      "publicUrl": ".",
+      "context": "browser"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "pixelmanipulator": "workspace:*",
+    "@fortawesome/fontawesome-free": "catalog:",
+    "@parcel/packager-ts": "catalog:",
+    "@parcel/transformer-sass": "catalog:",
+    "@parcel/transformer-typescript-types": "catalog:",
+    "@popperjs/core": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "bootstrap": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-love": "catalog:",
+    "eslint-plugin-node": "catalog:",
+    "eslint-plugin-promise": "catalog:",
+    "eslint-plugin-tsdoc": "catalog:",
+    "parcel": "catalog:",
+    "typescript": "catalog:",
+    "fps-control": "catalog:"
+  },
+  "packageManager": "pnpm@9.15.1"
+}

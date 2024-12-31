@@ -1,6 +1,6 @@
 import test from 'ava'
 import { testProp, fc } from '@fast-check/ava'
-import { StringRenderer } from '../../../src/lib/renderers'
+import { StringRenderer } from '../../src/renderers'
 const it = test
 const propIt = testProp
 

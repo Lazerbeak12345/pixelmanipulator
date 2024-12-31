@@ -1,6 +1,6 @@
 import test from 'ava'
-import { version, licence } from '../../src/lib/pixelmanipulator'
-import * as package_json from '../../package.json'
+import { version, licence } from '../src/pixelmanipulator'
+import * as package_json from '../package.json'
 
 test('ava is probabbly working', t => {
   t.pass()

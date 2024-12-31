@@ -1,5 +1,5 @@
 import { testProp, fc } from '@fast-check/ava'
-import { neighborhoods } from '../../../src/lib/pixelmanipulator'
+import { neighborhoods } from '../../src/pixelmanipulator'
 import { sizeWithoutDuplicates } from '../_functions'
 const { rect } = neighborhoods
 

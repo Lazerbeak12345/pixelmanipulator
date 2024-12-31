@@ -1,5 +1,5 @@
 /* eslint-disable max-lines -- TODO: break this into more files */
-import { PixelManipulator, version, rules, Ctx2dRenderer, type Location } from '../lib/pixelmanipulator'
+import { PixelManipulator, version, rules, Ctx2dRenderer, type Location } from 'pixelmanipulator'
 //import '@fortawesome/fontawesome-free/attribution.js'
 import 'bootstrap/js/dist/collapse' // For #sideAccordion
 import FPSControl from 'fps-control'

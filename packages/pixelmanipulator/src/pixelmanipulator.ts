@@ -17,7 +17,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see http://www.gnu.org/licenses.
  */
-import * as package_json from '../../package.json'
+import * as package_json from '../package.json'
 import type { Hitbox } from './neighborhoods'
 import type { Renderer, Location } from './renderers'
 import * as _renderers from './renderers'
