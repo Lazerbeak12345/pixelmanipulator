@@ -5,8 +5,7 @@
   "scripts": {
     "build": "parcel build",
     "lint": "eslint . --ignore-pattern build",
-    "watch": "parcel --target demo --dist-dir ../pixelmanipulator/docs",
-    "updatedemo": "pnpm run build && gh-pages -d docs -m \"Update $npm_package_version\" -tf"
+    "watch": "parcel --target demo --dist-dir ../pixelmanipulator/docs"
   },
   "demo": "../pixelmanipulator/docs/pixelmanipulator.html",
   "targets": {

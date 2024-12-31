@@ -6,7 +6,8 @@
     "test": "pnpm run build && pnpm run --filter pixelmanipulator-node-demo lint",
     "build": "pnpm run --filter pixelmanipulator build && pnpm run --filter pixelmanipulator-web-demo build",
     "watch": "pnpm run --parallel -r watch",
-    "node-demo": "pnpm run build && pnpm run --filter pixelmanipulator-node-demo node-demo"
+    "node-demo": "pnpm run build && pnpm run --filter pixelmanipulator-node-demo node-demo",
+    "updatedemo": "pnpm run build && pnpm run --filter pixelmanipulator updatedemo"
   },
   "devDependencies": {
     "@parcel/packager-ts": "catalog:",

@@ -1,4 +1,4 @@
-# Snapshot report for `tests/lib/neighborhoods/test-vonNeumann.ts`
+# Snapshot report for `tests/neighborhoods/test-vonNeumann.ts`
 
 The actual snapshot is saved in `test-vonNeumann.ts.snap`.
 

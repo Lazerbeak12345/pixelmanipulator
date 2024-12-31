@@ -71,7 +71,6 @@
     "eslint-plugin-promise": "catalog:",
     "eslint-plugin-tsdoc": "catalog:",
     "fast-check": "catalog:",
-    "gh-pages": "catalog:",
     "parcel": "catalog:",
     "rollup": "catalog:",
     "typedoc": "catalog:",
@@ -89,7 +88,8 @@
     "build:readme": "cp ../../README.md .",
     "build:bundle": "rollup -c",
     "build:prepare-ci": "cp -r ../../.circleci docs && cp -r ../../media/* docs",
-    "watch": "parcel watch --no-hmr"
+    "watch": "parcel watch --no-hmr",
+    "updatedemo": "gh-pages -d docs -m \"Update $npm_package_version\" -tf"
   },
   "ava": {
     "timeout": "20s"

@@ -1,4 +1,4 @@
-# Snapshot report for `tests/lib/neighborhoods/test-moore.ts`
+# Snapshot report for `tests/neighborhoods/test-moore.ts`
 
 The actual snapshot is saved in `test-moore.ts.snap`.
 

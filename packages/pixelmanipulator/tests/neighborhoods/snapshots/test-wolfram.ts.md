@@ -1,4 +1,4 @@
-# Snapshot report for `tests/lib/neighborhoods/test-wolfram.ts`
+# Snapshot report for `tests/neighborhoods/test-wolfram.ts`
 
 The actual snapshot is saved in `test-wolfram.ts.snap`.
 
