@@ -1,8 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@5
-  # TODO: the univeral thingy seems to reading the lcov wrong
-  coveralls: coveralls/coveralls@1
+  coveralls: coveralls/coveralls@2
 jobs:
   coverage:
     docker:
@@ -34,8 +33,7 @@ jobs:
                 command: |
                   pnpm install
             - run: pnpm t
-            - coveralls/upload:
-              path_to_lcov: ./packages/pixelmanipulator/coverage/lcov.info
+            - coveralls/upload
 workflows:
   test:
     jobs:
