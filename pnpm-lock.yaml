@@ -69,9 +69,6 @@ catalogs:
     fps-control:
       specifier: ^1.0.0
       version: 1.0.0
-    gh-pages:
-      specifier: ^6.2.0
-      version: 6.2.0
     parcel:
       specifier: ^2.13.3
       version: 2.13.3
@@ -185,11 +182,8 @@ importers:
       fast-check:
         specifier: 'catalog:'
         version: 3.23.2
-      fps-control:
-        specifier: 'catalog:'
-        version: 1.0.0
       gh-pages:
-        specifier: 'catalog:'
+        specifier: ^6.2.0
         version: 6.2.0
       parcel:
         specifier: 'catalog:'
