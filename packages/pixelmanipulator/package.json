@@ -1,6 +1,6 @@
 {
   "name": "pixelmanipulator",
-  "version": "5.5.8",
+  "version": "5.5.9",
   "description": "A super powerful Typescript library for cellular automation.",
   "main": "dist/main.js",
   "browser": "dist/browser.js",
