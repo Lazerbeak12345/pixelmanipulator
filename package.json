@@ -13,8 +13,7 @@
     "@parcel/packager-ts": "catalog:",
     "@parcel/transformer-sass": "catalog:",
     "@parcel/transformer-typescript-types": "catalog:",
-    "typescript": "catalog:",
-    "tsimp": "catalog:",
+    "@parcel/transformer-vue": "catalog:",
     "@types/eslint": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
@@ -22,7 +21,9 @@
     "eslint-config-love": "catalog:",
     "eslint-plugin-n": "catalog:",
     "eslint-plugin-promise": "catalog:",
-    "eslint-plugin-tsdoc": "catalog:"
+    "eslint-plugin-tsdoc": "catalog:",
+    "tsimp": "catalog:",
+    "typescript": "catalog:"
   },
   "packageManager": "pnpm@9.15.1"
 }

@@ -1,8 +1,32 @@
 /* eslint-disable max-lines -- TODO: break this into more files */
-import { PixelManipulator, version, rules, Ctx2dRenderer, type Location } from 'pixelmanipulator'
-//import '@fortawesome/fontawesome-free/attribution.js'
+
+import { createApp } from 'vue'
+import { createPinia, defineStore } from 'pinia'
 import 'bootstrap/js/dist/collapse' // For #sideAccordion
+
 import FPSControl from 'fps-control'
+import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
+//import '@fortawesome/fontawesome-free/attribution.js'
+
+import Footer from './components/Footer.vue'
+import TargeterStats from './components/TargeterStats.vue'
+
+const pinia = createPinia()
+
+const footer = createApp(Footer)
+footer.mount("#footer")
+
+const useTargeterLocStore = defineStore("targeterLoc", {
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- start at top-left corner
+  state:()=>({ x: 0, y: 0 })
+})
+
+const targeterStatsApp = createApp(TargeterStats, {
+  useTargeterLocStore
+})
+targeterStatsApp.use(pinia)
+targeterStatsApp.mount("#targeterStats")
+
 /**
 * The X coordinate of where the center of [[zoom]] is windowed at.
 */
@@ -11,12 +35,7 @@ let zoomX = 10
 * The Y coordinate of where the center of the [[zoom]] is windowed at.
 */
 let zoomY = 10
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- start at top-left corner
-const targeterLoc: Location = { x: 0, y: 0 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const targeterX = document.getElementById('targeterX') as HTMLSpanElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const targeterY = document.getElementById('targeterY') as HTMLSpanElement
+const targeterLoc = useTargeterLocStore()
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const targeterStats = document.getElementById('targeterStats') as HTMLDivElement
 const ZOOM_SCALE_RAD_FACTOR = 2 // the scale factor is the radius, 1/2 the diameter
@@ -62,8 +81,6 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- top side
     cctx.fillRect(targeterLoc.x, 0, THICKNESS, targeterLoc.y)
     targeterStats.classList.remove('visually-hidden')
-    targeterX.innerText = targeterLoc.x.toString()
-    targeterY.innerText = targeterLoc.y.toString()
   } else {
     targeterStats.classList.add('visually-hidden')
   }
@@ -461,11 +478,6 @@ pixelCounterT.addEventListener('change', function() {
     pixelCounterBox.classList.add('visually-hidden')
   }
 })
-/// Version of backend
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const backendversion = document.getElementById('backendversion') as HTMLSpanElement
-backendversion.innerText = version
-
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement
