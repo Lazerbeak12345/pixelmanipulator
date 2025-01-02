@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-const props = defineProps([
-	// TODO: move state into better place
-	"useFpsAmountStore",
-	// TODO: convert to emit
-	'change'
-]);
-const fpsAmountStore = props.useFpsAmountStore()
-const { value } = storeToRefs(fpsAmountStore)
+const emit = defineEmits<{
+	(e: 'change', amount: string): void
+}>()
+const fpsAmount = defineModel()
 </script>
 <template>
 	<div class="input-group">
@@ -18,11 +14,11 @@ const { value } = storeToRefs(fpsAmountStore)
 			class="form-control"
 			id="fpsAmount"
 			list="fpsAmountSuggestions"
-			v-model="value"
+			v-model="fpsAmount"
 			pattern="\d*"
 			placeholder="60"
 			aria-labelledby="fpsAmountLabel"
-			@change="props.change(value)">
+			@change="emit('change',fpsAmount)">
 		<datalist id="fpsAmountSuggestions">
 			<option value="30"></option>
 			<option value="60"></option>

@@ -13,7 +13,7 @@ import TargeterStats from './components/TargeterStats.vue'
 import PixelCounterT from './components/PixelCounterT.vue'
 import ShFocusBox from './components/ShFocusBox.vue'
 import ShTargeter from './components/ShTargeter.vue'
-import FpsAmount from './components/FpsAmount.vue'
+import FpsRadio from './components/FpsRadio.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -139,39 +139,41 @@ const fpsc = new FPSControl(60)
 const fps = document.getElementById('fps') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const fpsUnlimited = document.getElementById('fpsUnlimited') as HTMLInputElement
-const useFpsAmountStore = defineStore("fpsAmount", {
-  state:()=>({ value: "60" })
+const useFpsRadioStore = defineStore("fpsRadio", {
+  state:()=>({
+    unlimited: false,
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
+    fpsAmount: 60,
+  })
 })
-const fpsAmountApp = createApp(FpsAmount, {
-  useFpsAmountStore,
-  change: (value: string) => {
-    fpsc.setFPS(parseInt(value))
-    fpsMax.innerText = value
+const fpsRadioApp = createApp(FpsRadio, {
+  useFpsRadioStore,
+  changeFps: (value: number)=>{
+    fpsc.setFPS(value)
+    fpsMax.innerText = value.toString()
+  },
+  changeUnlimited: (value: boolean) => {
+    if (value) {
+      fpsMax.innerText = 'unlimited'
+    } else {
+      const { fpsAmount } = fpsRadioStore
+      fpsMax.innerText = fpsAmount.toString()
+    }
   }
 })
-fpsAmountApp.use(pinia)
-fpsAmountApp.mount("#fpsAmountApp")
-const fpsAmountStore = useFpsAmountStore()
+fpsRadioApp.use(pinia)
+fpsRadioApp.mount("#fpsRadioApp")
+const fpsRadioStore = useFpsRadioStore()
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
-  if (!fpsUnlimited.checked && !fpsc.check()) return false
+  if (!fpsRadioStore.unlimited && !fpsc.check()) return false
   frames.innerText = `${++framecount}`
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- convert to frames/second
   fps.innerText = (1 / ((performance.now() - lasttime) / 1000)).toFixed(3)
   lasttime = performance.now()
   return undefined
 }
-fpsUnlimited.addEventListener('change', () => {
-  if (fpsUnlimited.checked) {
-    fpsMax.innerText = 'unlimited'
-  } else {
-    const { value } = fpsAmountStore
-    fpsMax.innerText = value
-  }
-})
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const frames = document.getElementById('frames') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
