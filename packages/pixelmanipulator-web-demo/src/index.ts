@@ -13,6 +13,7 @@ import TargeterStats from './components/TargeterStats.vue'
 import PixelCounterT from './components/PixelCounterT.vue'
 import ShFocusBox from './components/ShFocusBox.vue'
 import ShTargeter from './components/ShTargeter.vue'
+import FpsAmount from './components/FpsAmount.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -140,8 +141,19 @@ const fps = document.getElementById('fps') as HTMLParagraphElement
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsUnlimited = document.getElementById('fpsUnlimited') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const fpsAmount = document.getElementById('fpsAmount') as HTMLInputElement
+const useFpsAmountStore = defineStore("fpsAmount", {
+  state:()=>({ value: "60" })
+})
+const fpsAmountApp = createApp(FpsAmount, {
+  useFpsAmountStore,
+  change: (value: string) => {
+    fpsc.setFPS(parseInt(value))
+    fpsMax.innerText = value
+  }
+})
+fpsAmountApp.use(pinia)
+fpsAmountApp.mount("#fpsAmountApp")
+const fpsAmountStore = useFpsAmountStore()
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
@@ -152,16 +164,11 @@ function beforeIterate(): false | undefined {
   lasttime = performance.now()
   return undefined
 }
-fpsAmount.addEventListener('change', () => {
-  const { value } = fpsAmount
-  fpsc.setFPS(parseInt(value))
-  fpsMax.innerText = value
-})
 fpsUnlimited.addEventListener('change', () => {
   if (fpsUnlimited.checked) {
     fpsMax.innerText = 'unlimited'
   } else {
-    const { value } = fpsAmount
+    const { value } = fpsAmountStore
     fpsMax.innerText = value
   }
 })
