@@ -11,6 +11,7 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 import Footer from './components/Footer.vue'
 import TargeterStats from './components/TargeterStats.vue'
 import PixelCounterT from './components/PixelCounterT.vue'
+import ShFocusBox from './components/ShFocusBox.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -96,7 +97,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     0, 0,
     zoom.width, zoom.height)
   // Render the box _after_ copying over to zoom canvas
-  if (shfocusbox.checked) {
+  if (shFocusBoxStore.checked) {
     const fbw = zoom.width / zoomScaleFactor
     const fbh = zoom.height / zoomScaleFactor
     const fbx = zoomX - (zoom.width / (ZOOM_SCALE_RAD_FACTOR * zoomScaleFactor))
@@ -467,16 +468,23 @@ shtargeter.addEventListener('click', function() {
   p.update()
   oldZoom()
 })
-/// Hide focus box
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
-/// Hide pixelCounter
+/// Show focus box
+const useShFocusBoxStore = defineStore("shfocusbox", {
+  state:()=>({ checked: true })
+})
+const shFocusBoxApp = createApp(ShFocusBox, {
+  useShFocusBoxStore
+})
+shFocusBoxApp.use(pinia)
+shFocusBoxApp.mount("#shFocusBoxApp")
+const shFocusBoxStore = useShFocusBoxStore()
+/// Show pixelCounter
 const usePixelCounterTStore = defineStore("pixelCounterT", {
   state:()=>({ checked: true })
 })
 const pixelCounterTApp = createApp(PixelCounterT, {
   usePixelCounterTStore,
-  change: checked => {
+  change: (checked:boolean) => {
     if (checked) {
       pixelCounterBox.classList.remove('visually-hidden')
     } else {
@@ -485,7 +493,7 @@ const pixelCounterTApp = createApp(PixelCounterT, {
   }
 })
 pixelCounterTApp.use(pinia)
-pixelCounterTApp.mount("#pixelCounterTForm")
+pixelCounterTApp.mount("#pixelCounterTApp")
 const pixelCounterTStore = usePixelCounterTStore()
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
