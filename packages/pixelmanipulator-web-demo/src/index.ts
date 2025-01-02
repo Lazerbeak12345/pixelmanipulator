@@ -10,7 +10,9 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 
 import Footer from './components/Footer.vue'
 import TargeterStats from './components/TargeterStats.vue'
+import PixelCounterT from './components/PixelCounterT.vue'
 
+/* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
 
 const footer = createApp(Footer)
@@ -167,7 +169,7 @@ const frames = document.getElementById('frames') as HTMLParagraphElement
 const pixelRatio = document.getElementById('pixelRatio') as HTMLDivElement
 function afterIterate<T>(p: PixelManipulator<T>): void {
   pixelRatio.innerHTML = ''
-  if (!pixelCounterT.checked) return
+  if (!pixelCounterTStore.checked) return
   pixelCounter.innerHTML = ''
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- all but last item in render info TODO: why
   pixelRatio.style.background = `rgb(${renderer.renderInfo[p.defaultId].slice(0, -1).join(',')})`
@@ -469,15 +471,22 @@ shtargeter.addEventListener('click', function() {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
 /// Hide pixelCounter
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputElement
-pixelCounterT.addEventListener('change', function() {
-  if (this.checked) {
-    pixelCounterBox.classList.remove('visually-hidden')
-  } else {
-    pixelCounterBox.classList.add('visually-hidden')
+const usePixelCounterTStore = defineStore("pixelCounterT", {
+  state:()=>({ checked: true })
+})
+const pixelCounterTApp = createApp(PixelCounterT, {
+  usePixelCounterTStore,
+  change: checked => {
+    if (checked) {
+      pixelCounterBox.classList.remove('visually-hidden')
+    } else {
+      pixelCounterBox.classList.add('visually-hidden')
+    }
   }
 })
+pixelCounterTApp.use(pinia)
+pixelCounterTApp.mount("#pixelCounterTForm")
+const pixelCounterTStore = usePixelCounterTStore()
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement
