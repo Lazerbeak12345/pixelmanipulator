@@ -12,6 +12,7 @@ import Footer from './components/Footer.vue'
 import TargeterStats from './components/TargeterStats.vue'
 import PixelCounterT from './components/PixelCounterT.vue'
 import ShFocusBox from './components/ShFocusBox.vue'
+import ShTargeter from './components/ShTargeter.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -75,7 +76,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
   if (e.x >= 0 && e.y >= 0) {
     ({ x: zoomX, y: zoomY } = e)
   }
-  if (shtargeter.checked) {
+  if (shTargeterStore.checked) {
     const THICKNESS = 1
     cctx.fillRect(targeterLoc.x + THICKNESS, targeterLoc.y, canvas.width, THICKNESS)
     cctx.fillRect(targeterLoc.x, targeterLoc.y + THICKNESS, THICKNESS, canvas.height)
@@ -462,12 +463,19 @@ altFill.addEventListener('click', () => {
 const altFillP = document.getElementById('altFillP') as HTMLInputElement
 
 /// Show targeter lines
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const shtargeter = document.getElementById('shtargeter') as HTMLInputElement
-shtargeter.addEventListener('click', function() {
-  p.update()
-  oldZoom()
+const useShTargeterStore = defineStore("shtargeter", {
+  state:()=>({ checked: true })
 })
+const shTargeterApp = createApp(ShTargeter, {
+  useShTargeterStore,
+  change: (checked: boolean) => {
+    p.update()
+    oldZoom()
+  }
+})
+shTargeterApp.use(pinia)
+shTargeterApp.mount("#shTargeterApp")
+const shTargeterStore = useShTargeterStore()
 /// Show focus box
 const useShFocusBoxStore = defineStore("shfocusbox", {
   state:()=>({ checked: true })
