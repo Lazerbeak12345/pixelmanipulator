@@ -8,9 +8,9 @@ import FPSControl from 'fps-control'
 import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 //import '@fortawesome/fontawesome-free/attribution.js'
 
-import Footer from './components/Footer.vue'
+import Footer from './components/footer/Footer.vue'
 import TargeterStats from './components/TargeterStats.vue'
-import AppSettings from './components/AppSettings.vue'
+import AppSettings from './components/settings/AppSettings.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
