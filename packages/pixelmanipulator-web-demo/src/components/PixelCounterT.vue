@@ -1,15 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { storeToRefs } from 'pinia'
-const props = defineProps([
-	// TODO: move state into better place
-	'useSettingsStore',
-	// TODO: convert to emit
-	'change'
-]);
-const settingsStore = props.useSettingsStore()
-const { pixelCounterT : checked } = storeToRefs(settingsStore)
-watch(checked, checked => props.change(checked))
+const checked = defineModel<boolean>()
 </script>
 <template>
 	<div class="form-check">

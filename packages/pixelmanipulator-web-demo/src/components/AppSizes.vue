@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-const props = defineProps([
-	// TODO: move state into better place
-	'useSettingsStore',
-])
-const sizesStore = props.useSettingsStore()
-const { size } = storeToRefs(sizesStore)
+const w = defineModel<number>("w")
+const h = defineModel<number>("h")
 </script>
 <template>
 	<div>
@@ -17,7 +13,7 @@ const { size } = storeToRefs(sizesStore)
 				class="form-control"
 				id="width"
 				type="number"
-				v-model="size.w"
+				v-model="w"
 				placeholder="150"
 				title="Default:150"/>
 			<span class="input-group-text">by</span>
@@ -25,7 +21,7 @@ const { size } = storeToRefs(sizesStore)
 				class="form-control"
 				id="height"
 				type="number"
-				v-model="size.h"
+				v-model="h"
 				placeholder="150"
 				title="Default:150"/>
 			<span class="input-group-text">px</span>

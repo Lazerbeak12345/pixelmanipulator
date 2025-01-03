@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-const emit = defineEmits<{
-	(e: 'change', amount: string): void
-}>()
 const fpsAmount = defineModel()
 </script>
 <template>
@@ -17,8 +12,7 @@ const fpsAmount = defineModel()
 			v-model="fpsAmount"
 			pattern="\d*"
 			placeholder="60"
-			aria-labelledby="fpsAmountLabel"
-			@change="emit('change',fpsAmount)">
+			aria-labelledby="fpsAmountLabel">
 		<datalist id="fpsAmountSuggestions">
 			<option value="30"></option>
 			<option value="60"></option>
