@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- TODO: break this into more files */
 
-import { createApp } from 'vue'
+import { createApp, ref, reactive } from 'vue'
 import { createPinia, defineStore } from 'pinia'
 import 'bootstrap/js/dist/collapse' // For #sideAccordion
 
@@ -79,7 +79,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
   if (e.x >= 0 && e.y >= 0) {
     ({ x: zoomX, y: zoomY } = e)
   }
-  if (shTargeterStore.checked) {
+  if (settingsStore.shTargeter) {
     const THICKNESS = 1
     cctx.fillRect(targeterLoc.x + THICKNESS, targeterLoc.y, canvas.width, THICKNESS)
     cctx.fillRect(targeterLoc.x, targeterLoc.y + THICKNESS, THICKNESS, canvas.height)
@@ -101,7 +101,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     0, 0,
     zoom.width, zoom.height)
   // Render the box _after_ copying over to zoom canvas
-  if (shFocusBoxStore.checked) {
+  if (settingsStore.shFocusBox) {
     const fbw = zoom.width / zoomScaleFactor
     const fbh = zoom.height / zoomScaleFactor
     const fbx = zoomX - (zoom.width / (ZOOM_SCALE_RAD_FACTOR * zoomScaleFactor))
@@ -141,35 +141,54 @@ const fpsc = new FPSControl(60)
 const fps = document.getElementById('fps') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
-const useFpsRadioStore = defineStore("fpsRadio", {
-  state:()=>({
-    unlimited: false,
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
-    fpsAmount: 60,
-  })
+const useSettingsStore = defineStore("settings", ()=> {
+  const unlimitedFps = ref(false)
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
+  const fpsAmount = ref(60)
+  /// Sizes for render canvas
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+  const size = reactive({ w: 150, h: 150 })
+  /// Sizes for zoom canvas
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+  const zoomSize = reactive({ w: 20, h: 20 })
+  /// Show targeter lines
+  const shTargeter = ref(true)
+  /// Show focus box
+  const shFocusBox = ref(true)
+  /// Show pixelCounter
+  const pixelCounterT = ref(true)
+  return {
+    unlimitedFps,
+    fpsAmount,
+    size,
+    zoomSize,
+    shTargeter,
+    shFocusBox,
+    pixelCounterT
+  }
 })
+const settingsStore = useSettingsStore()
 const fpsRadioApp = createApp(FpsRadio, {
-  useFpsRadioStore,
-  changeFps: (value: number)=>{
-    fpsc.setFPS(value)
-    fpsMax.innerText = value.toString()
+  useSettingsStore,
+  changeFps: (fpsAmount: number)=>{
+    fpsc.setFPS(fpsAmount)
+    fpsMax.innerText = fpsAmount.toString()
   },
-  changeUnlimited: (value: boolean) => {
-    if (value) {
+  changeUnlimited: (unlimited: boolean) => {
+    if (unlimited) {
       fpsMax.innerText = 'unlimited'
     } else {
-      const { fpsAmount } = fpsRadioStore
+      const { fpsAmount } = settingsStore
       fpsMax.innerText = fpsAmount.toString()
     }
   }
 })
 fpsRadioApp.use(pinia)
 fpsRadioApp.mount("#fpsRadioApp")
-const fpsRadioStore = useFpsRadioStore()
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
-  if (!fpsRadioStore.unlimited && !fpsc.check()) return false
+  if (!settingsStore.unlimitedFps && !fpsc.check()) return false
   frames.innerText = `${++framecount}`
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- convert to frames/second
   fps.innerText = (1 / ((performance.now() - lasttime) / 1000)).toFixed(3)
@@ -182,7 +201,7 @@ const frames = document.getElementById('frames') as HTMLParagraphElement
 const pixelRatio = document.getElementById('pixelRatio') as HTMLDivElement
 function afterIterate<T>(p: PixelManipulator<T>): void {
   pixelRatio.innerHTML = ''
-  if (!pixelCounterTStore.checked) return
+  if (!settingsStore.pixelCounterT) return
   pixelCounter.innerHTML = ''
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- all but last item in render info TODO: why
   pixelRatio.style.background = `rgb(${renderer.renderInfo[p.defaultId].slice(0, -1).join(',')})`
@@ -370,8 +389,10 @@ function convertPlayToPause(): void {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function() {
-  const { w: canvasW, h: canvasH } = sizesStore
-  const { w: zoomW, h: zoomH } = zoomSizesStore
+  const {
+    size: { w: canvasW, h: canvasH },
+    zoomSize: { w: zoomW, h: zoomH }
+  } = settingsStore
   p.reset({ canvasW, canvasH })
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
   zoom.width = (Number.isNaN(zoomW) ? zoom.width / zoomScaleFactor : zoomW) * zoomScaleFactor
@@ -400,28 +421,16 @@ playBtn.addEventListener('click', () => {
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
-/// Sizes for render canvas
-const useSizesStore = defineStore("sizes", {
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-  state:()=>({ w: 150, h: 150 })
-})
 const sizesApp = createApp(Sizes, {
-  useSizesStore
+  useSettingsStore
 })
 sizesApp.use(pinia)
 sizesApp.mount("#sizesApp")
-const sizesStore = useSizesStore()
-/// Sizes for zoom canvas
-const useZoomSizesStore = defineStore("zoomSizes", {
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-  state:()=>({ w: 20, h: 20 })
-})
 const zoomSizesApp = createApp(ZoomSizes, {
-  useZoomSizesStore,
+  useSettingsStore,
 })
 zoomSizesApp.use(pinia)
 zoomSizesApp.mount("#zoomSizesApp")
-const zoomSizesStore = useZoomSizesStore()
 
 /// Element placed on normal-click
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
@@ -483,36 +492,22 @@ altFill.addEventListener('click', () => {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const altFillP = document.getElementById('altFillP') as HTMLInputElement
 
-/// Show targeter lines
-const useShTargeterStore = defineStore("shtargeter", {
-  state:()=>({ checked: true })
-})
 const shTargeterApp = createApp(ShTargeter, {
-  useShTargeterStore,
-  change: (checked: boolean) => {
+  useSettingsStore,
+  change: () => {
     p.update()
     oldZoom()
   }
 })
 shTargeterApp.use(pinia)
 shTargeterApp.mount("#shTargeterApp")
-const shTargeterStore = useShTargeterStore()
-/// Show focus box
-const useShFocusBoxStore = defineStore("shfocusbox", {
-  state:()=>({ checked: true })
-})
 const shFocusBoxApp = createApp(ShFocusBox, {
-  useShFocusBoxStore
+  useSettingsStore
 })
 shFocusBoxApp.use(pinia)
 shFocusBoxApp.mount("#shFocusBoxApp")
-const shFocusBoxStore = useShFocusBoxStore()
-/// Show pixelCounter
-const usePixelCounterTStore = defineStore("pixelCounterT", {
-  state:()=>({ checked: true })
-})
 const pixelCounterTApp = createApp(PixelCounterT, {
-  usePixelCounterTStore,
+  useSettingsStore,
   change: (checked:boolean) => {
     if (checked) {
       pixelCounterBox.classList.remove('visually-hidden')
@@ -523,7 +518,6 @@ const pixelCounterTApp = createApp(PixelCounterT, {
 })
 pixelCounterTApp.use(pinia)
 pixelCounterTApp.mount("#pixelCounterTApp")
-const pixelCounterTStore = usePixelCounterTStore()
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement

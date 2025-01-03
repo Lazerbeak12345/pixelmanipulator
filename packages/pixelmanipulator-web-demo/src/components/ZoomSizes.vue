@@ -3,10 +3,10 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const props = defineProps([
 	// TODO: move state into better place
-	'useZoomSizesStore',
+	'useSettingsStore',
 ])
-const zoomSizesStore = props.useZoomSizesStore()
-const { w, h } = storeToRefs(zoomSizesStore)
+const settingsStore = props.useSettingsStore()
+const { zoomSize } = storeToRefs(settingsStore)
 </script>
 <template>
 	<div>
@@ -17,7 +17,7 @@ const { w, h } = storeToRefs(zoomSizesStore)
 				class="form-control"
 				id="zoomWidthElm"
 				type="number"
-				v-model="w"
+				v-model="zoomSize.w"
 				placeholder="70"
 				title="Default:20" />
 			<span class="input-group-text">by</span>
@@ -25,7 +25,7 @@ const { w, h } = storeToRefs(zoomSizesStore)
 				class="form-control"
 				id="zoomHeightElm"
 				type="number"
-				v-model="h"
+				v-model="zoomSize.h"
 				placeholder="70"
 				title="Default:20" />
 			<span class="input-group-text">px</span>

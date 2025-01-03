@@ -3,12 +3,12 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const props = defineProps([
 	// TODO: move state into better place
-	'useShTargeterStore',
+	'useSettingsStore',
 	// TODO: convert to emit
 	'change'
 ]);
-const shTargeterStore = props.useShTargeterStore()
-const { checked } = storeToRefs(shTargeterStore)
+const settingsStore = props.useSettingsStore()
+const { shTargeter: checked } = storeToRefs(settingsStore)
 </script>
 <template>
 	<div class="form-check">

@@ -5,14 +5,14 @@ import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 const props = defineProps([
 	// TODO: move state into better place
-	"useFpsRadioStore",
+	"useSettingsStore",
 	// TODO: convert to emit
 	'changeFps',
 	// TODO: convert to emit
 	'changeUnlimited',
 ]);
-const fpsRadioStore = props.useFpsRadioStore()
-const { unlimited, fpsAmount } = storeToRefs(fpsRadioStore)
+const settingsStore = props.useSettingsStore()
+const { unlimitedFps : unlimited, fpsAmount } = storeToRefs(settingsStore)
 watch(unlimited, unlimited=> props.changeUnlimited(unlimited))
 </script>
 <template>
