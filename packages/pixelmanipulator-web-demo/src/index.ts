@@ -11,6 +11,7 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 import Footer from './components/footer/Footer.vue'
 import TargeterStats from './components/TargeterStats.vue'
 import AppSettings from './components/settings/AppSettings.vue'
+import CustomizeName from './components/CustomizeName.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -286,7 +287,7 @@ function updateCustomizer(): void {
   const alphaVal = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
   customizeColorAlpha.value = alphaVal// Raw alpha value
   customizeColorAlphaText.innerText = alphaVal
-  customizeName.value = name
+  customizeNameStore.name = name
 }
 function changeColor(): void {
   console.log('change color')
@@ -324,18 +325,24 @@ customizeColorAlpha.addEventListener('change', changeColor)
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const customizeColorAlphaText = document.getElementById('customColorAlphaText') as HTMLSpanElement
 /// Name of element
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeName = document.getElementById('customizeName') as HTMLInputElement
-customizeName.addEventListener('change', function(this: HTMLInputElement) {
-  const { value: name } = this
-  console.log('change name', name)
-  const num = p.nameToId(customSelect.value)
-  const NOT_FOUND = -1
-  if (num > NOT_FOUND) {
-    p.modifyElement(num, { name })
+const useCustomizeNameStore = defineStore("customizeName",()=>({
+  name: ref(""),
+}))
+const customizeNameApp = createApp(CustomizeName, {
+  useCustomizeNameStore,
+  change: (name: string) => {
+    console.log('change name', name)
+    const num = p.nameToId(customSelect.value)
+    const NOT_FOUND = -1
+    if (num > NOT_FOUND) {
+      p.modifyElement(num, { name })
+    }
+    updateCustomizer()
   }
-  updateCustomizer()
 })
+customizeNameApp.use(pinia)
+customizeNameApp.mount("#customizeNameApp")
+const customizeNameStore = useCustomizeNameStore()
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
