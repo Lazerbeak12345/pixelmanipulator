@@ -12,6 +12,7 @@ import Footer from './components/footer/Footer.vue'
 import TargeterStats from './components/TargeterStats.vue'
 import AppSettings from './components/settings/AppSettings.vue'
 import CustomizeName from './components/CustomizeName.vue'
+import CustomColorAlpha from './components/CustomColorAlpha.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -284,9 +285,7 @@ function updateCustomizer(): void {
   customizeColor.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
     dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
   ).join()}`
-  const alphaVal = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
-  customizeColorAlpha.value = alphaVal// Raw alpha value
-  customizeColorAlphaText.innerText = alphaVal
+  customColorAlphaStore.alpha = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
   customizeNameStore.name = name
 }
 function changeColor(): void {
@@ -306,7 +305,7 @@ function changeColor(): void {
       parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
       parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
       parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(customizeColorAlpha.value)
+      parseInt(customColorAlphaStore.alpha)
     ]
   })
 }
@@ -318,12 +317,17 @@ customSelect.addEventListener('change', () => { updateCustomizer(); })
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const customizeColor = document.getElementById('customizeColor') as HTMLInputElement
 customizeColor.addEventListener('change', changeColor)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColorAlpha = document.getElementById('customColorAlpha') as HTMLInputElement
-customizeColorAlpha.addEventListener('change', changeColor)
-/// Name for the alpha field of the color
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColorAlphaText = document.getElementById('customColorAlphaText') as HTMLSpanElement
+const useCustomColorAlphaStore = defineStore("customColorAlpha", ()=>({
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default
+  alpha: ref("0"),
+}))
+const customColorAlphaApp = createApp(CustomColorAlpha, {
+  useCustomColorAlphaStore,
+  change: changeColor,
+})
+customColorAlphaApp.use(pinia)
+customColorAlphaApp.mount("#customColorAlphaApp")
+const customColorAlphaStore = useCustomColorAlphaStore()
 /// Name of element
 const useCustomizeNameStore = defineStore("customizeName",()=>({
   name: ref(""),
