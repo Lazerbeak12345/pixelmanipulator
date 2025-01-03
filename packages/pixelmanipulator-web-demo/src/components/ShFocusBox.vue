@@ -2,10 +2,10 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 const props = defineProps([
-	"useShFocusBoxStore"
+	"useSettingsStore"
 ])
-const shFocusBoxStore = props.useShFocusBoxStore()
-const { checked } = storeToRefs(shFocusBoxStore)
+const settingsStore = props.useSettingsStore()
+const { shFocusBox : checked } = storeToRefs(settingsStore)
 </script>
 <template>
 	<div class="form-check">
