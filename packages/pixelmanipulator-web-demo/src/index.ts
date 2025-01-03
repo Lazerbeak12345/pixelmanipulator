@@ -15,6 +15,7 @@ import ShFocusBox from './components/ShFocusBox.vue'
 import ShTargeter from './components/ShTargeter.vue'
 import FpsRadio from './components/FpsRadio.vue'
 import ZoomSizes from './components/ZoomSizes.vue'
+import Sizes from './components/Sizes.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -369,8 +370,7 @@ function convertPlayToPause(): void {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function() {
-  const canvasW = parseInt(widthE.value)
-  const canvasH = parseInt(heightE.value)
+  const { w: canvasW, h: canvasH } = sizesStore
   const { w: zoomW, h: zoomH } = zoomSizesStore
   p.reset({ canvasW, canvasH })
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
@@ -401,10 +401,16 @@ const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButton
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
 /// Sizes for render canvas
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const widthE = document.getElementById('width') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const heightE = document.getElementById('height') as HTMLInputElement
+const useSizesStore = defineStore("sizes", {
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+  state:()=>({ w: 150, h: 150 })
+})
+const sizesApp = createApp(Sizes, {
+  useSizesStore
+})
+sizesApp.use(pinia)
+sizesApp.mount("#sizesApp")
+const sizesStore = useSizesStore()
 /// Sizes for zoom canvas
 const useZoomSizesStore = defineStore("zoomSizes", {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
