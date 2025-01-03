@@ -10,12 +10,7 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 
 import Footer from './components/Footer.vue'
 import TargeterStats from './components/TargeterStats.vue'
-import PixelCounterT from './components/PixelCounterT.vue'
-import ShFocusBox from './components/ShFocusBox.vue'
-import ShTargeter from './components/ShTargeter.vue'
-import FpsRadio from './components/FpsRadio.vue'
-import ZoomSizes from './components/ZoomSizes.vue'
-import Sizes from './components/Sizes.vue'
+import AppSettings from './components/AppSettings.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -141,34 +136,24 @@ const fpsc = new FPSControl(60)
 const fps = document.getElementById('fps') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
-const useSettingsStore = defineStore("settings", ()=> {
-  const unlimitedFps = ref(false)
+const useSettingsStore = defineStore("settings", ()=> ({
+  unlimitedFps : ref(false),
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
-  const fpsAmount = ref(60)
+  fpsAmount : ref(60),
   /// Sizes for render canvas
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-  const size = reactive({ w: 150, h: 150 })
+  size : reactive({ w: 150, h: 150 }),
   /// Sizes for zoom canvas
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-  const zoomSize = reactive({ w: 20, h: 20 })
+  zoomSize : reactive({ w: 20, h: 20 }),
   /// Show targeter lines
-  const shTargeter = ref(true)
+  shTargeter : ref(true),
   /// Show focus box
-  const shFocusBox = ref(true)
+  shFocusBox: ref(true),
   /// Show pixelCounter
-  const pixelCounterT = ref(true)
-  return {
-    unlimitedFps,
-    fpsAmount,
-    size,
-    zoomSize,
-    shTargeter,
-    shFocusBox,
-    pixelCounterT
-  }
-})
-const settingsStore = useSettingsStore()
-const fpsRadioApp = createApp(FpsRadio, {
+  pixelCounterT: ref(true),
+}))
+const settingsApp = createApp(AppSettings, {
   useSettingsStore,
   changeFps: (fpsAmount: number)=>{
     fpsc.setFPS(fpsAmount)
@@ -181,10 +166,22 @@ const fpsRadioApp = createApp(FpsRadio, {
       const { fpsAmount } = settingsStore
       fpsMax.innerText = fpsAmount.toString()
     }
+  },
+  changeTargeter: () => {
+    p.update()
+    oldZoom()
+  },
+  changePixelCounterT: (checked:boolean) => {
+    if (checked) {
+      pixelCounterBox.classList.remove('visually-hidden')
+    } else {
+      pixelCounterBox.classList.add('visually-hidden')
+    }
   }
 })
-fpsRadioApp.use(pinia)
-fpsRadioApp.mount("#fpsRadioApp")
+settingsApp.use(pinia)
+settingsApp.mount("#settingsApp")
+const settingsStore = useSettingsStore()
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
@@ -421,17 +418,6 @@ playBtn.addEventListener('click', () => {
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
-const sizesApp = createApp(Sizes, {
-  useSettingsStore
-})
-sizesApp.use(pinia)
-sizesApp.mount("#sizesApp")
-const zoomSizesApp = createApp(ZoomSizes, {
-  useSettingsStore,
-})
-zoomSizesApp.use(pinia)
-zoomSizesApp.mount("#zoomSizesApp")
-
 /// Element placed on normal-click
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const normalSelect = document.getElementById('normalSelect') as HTMLSelectElement
@@ -492,32 +478,6 @@ altFill.addEventListener('click', () => {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const altFillP = document.getElementById('altFillP') as HTMLInputElement
 
-const shTargeterApp = createApp(ShTargeter, {
-  useSettingsStore,
-  change: () => {
-    p.update()
-    oldZoom()
-  }
-})
-shTargeterApp.use(pinia)
-shTargeterApp.mount("#shTargeterApp")
-const shFocusBoxApp = createApp(ShFocusBox, {
-  useSettingsStore
-})
-shFocusBoxApp.use(pinia)
-shFocusBoxApp.mount("#shFocusBoxApp")
-const pixelCounterTApp = createApp(PixelCounterT, {
-  useSettingsStore,
-  change: (checked:boolean) => {
-    if (checked) {
-      pixelCounterBox.classList.remove('visually-hidden')
-    } else {
-      pixelCounterBox.classList.add('visually-hidden')
-    }
-  }
-})
-pixelCounterTApp.use(pinia)
-pixelCounterTApp.mount("#pixelCounterTApp")
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement

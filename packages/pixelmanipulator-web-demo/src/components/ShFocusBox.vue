@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { storeToRefs } from 'pinia'
-const props = defineProps([
-	"useSettingsStore"
-])
-const settingsStore = props.useSettingsStore()
-const { shFocusBox : checked } = storeToRefs(settingsStore)
+const checked = defineModel<number>()
 </script>
 <template>
 	<div class="form-check">

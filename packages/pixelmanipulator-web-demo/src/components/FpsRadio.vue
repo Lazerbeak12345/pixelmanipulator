@@ -1,19 +1,7 @@
 <script setup lang="ts">
 import FpsAmount from './FpsAmount.vue'
-
-import { computed, watch } from 'vue'
-import { storeToRefs } from 'pinia'
-const props = defineProps([
-	// TODO: move state into better place
-	"useSettingsStore",
-	// TODO: convert to emit
-	'changeFps',
-	// TODO: convert to emit
-	'changeUnlimited',
-]);
-const settingsStore = props.useSettingsStore()
-const { unlimitedFps : unlimited, fpsAmount } = storeToRefs(settingsStore)
-watch(unlimited, unlimited=> props.changeUnlimited(unlimited))
+const fpsAmount = defineModel<number>("fpsAmount")
+const unlimited = defineModel<number>("unlimited")
 </script>
 <template>
 	<div>
@@ -46,9 +34,7 @@ watch(unlimited, unlimited=> props.changeUnlimited(unlimited))
 			<label for="fpsLimited" class="form-check-label">
 				<i class="fa-solid fa-truck" aria-hidden="true"></i>
 				Value:
-				<FpsAmount
-					v-model="fpsAmount"
-					@change="props.changeFps" />
+				<FpsAmount v-model="fpsAmount" />
 			</label>
 		</div>
 	</div>
