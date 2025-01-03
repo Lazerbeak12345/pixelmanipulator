@@ -14,6 +14,7 @@ import PixelCounterT from './components/PixelCounterT.vue'
 import ShFocusBox from './components/ShFocusBox.vue'
 import ShTargeter from './components/ShTargeter.vue'
 import FpsRadio from './components/FpsRadio.vue'
+import ZoomSizes from './components/ZoomSizes.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -370,8 +371,7 @@ const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function() {
   const canvasW = parseInt(widthE.value)
   const canvasH = parseInt(heightE.value)
-  const zoomW = parseInt(zoomWidthElm.value)
-  const zoomH = parseInt(zoomHeightElm.value)
+  const { w: zoomW, h: zoomH } = zoomSizesStore
   p.reset({ canvasW, canvasH })
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
   zoom.width = (Number.isNaN(zoomW) ? zoom.width / zoomScaleFactor : zoomW) * zoomScaleFactor
@@ -406,10 +406,16 @@ const widthE = document.getElementById('width') as HTMLInputElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const heightE = document.getElementById('height') as HTMLInputElement
 /// Sizes for zoom canvas
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const zoomHeightElm = document.getElementById('zoomHeightElm') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const zoomWidthElm = document.getElementById('zoomWidthElm') as HTMLInputElement
+const useZoomSizesStore = defineStore("zoomSizes", {
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+  state:()=>({ w: 20, h: 20 })
+})
+const zoomSizesApp = createApp(ZoomSizes, {
+  useZoomSizesStore,
+})
+zoomSizesApp.use(pinia)
+zoomSizesApp.mount("#zoomSizesApp")
+const zoomSizesStore = useZoomSizesStore()
 
 /// Element placed on normal-click
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
