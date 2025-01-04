@@ -14,6 +14,7 @@ import Footer from './components/footer/Footer.vue'
 
 import TargeterStats from './components/TargeterStats.vue'
 
+import FillGroup from './components/FillGroup.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -274,14 +275,19 @@ const renderer = new Ctx2dRenderer(canvas)
 const p = new PixelManipulator(renderer, 1, 1)
 // The width and height are changed later
 
-const useCustomizeStore = defineStore("customize", ()=>{
-  /// Select the element to customize
-  const selected = ref("Conway's Game Of Life")
+const useElementsStore = defineStore("elements", ()=>{
   /// List of elements that should be in an elmDrop
   const elements = ref<string[]>([])
   function updateElements(): void {
     elements.value = p.elements.map(({ name }) => name)
   }
+  return { elements, updateElements }
+})
+const elementsStore = useElementsStore()
+
+const useCustomizeStore = defineStore("customize", ()=>{
+  /// Select the element to customize
+  const selected = ref("Conway's Game Of Life")
   /// Change the color
   const color = ref('')
   const alpha = ref("0")
@@ -302,10 +308,11 @@ const useCustomizeStore = defineStore("customize", ()=>{
     alpha.value = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
     name.value = n
   }
-  return { selected, elements, updateElements, color, alpha, name, updateCustomizer }
+  return { selected, color, alpha, name, updateCustomizer }
 })
 const customizeApp = createApp(ElementCustomize, {
   useCustomizeStore,
+  useElementsStore,
   changeSelected: ()=> { customizeStore.updateCustomizer() },
   changeColor(): void {
     console.log('change color')
@@ -340,7 +347,7 @@ const customizeApp = createApp(ElementCustomize, {
 })
 customizeApp.use(pinia)
 customizeApp.mount("#customizeApp")
-const customizeStore  = useCustomizeStore()
+const customizeStore = useCustomizeStore()
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
@@ -350,10 +357,10 @@ function zoomClick(e: MouseEvent): void {
       Math.floor(zoomY - (zoomScaleFactor / ZOOM_SCALE_RAD_FACTOR))
   }
   const active: string = e.ctrlKey ?
-    ctrlSelect.value :
+    ctrlFillStore.selected :
     e.altKey ?
-      altSelect.value :
-      normalSelect.value
+      altFillStore.selected :
+      normalFillStore.selected
   const pixel: string | number = p.confirmElm(zoomPos, active) ? p.defaultId : active
   p.setPixel(zoomPos, pixel)
   p.update()
@@ -423,65 +430,66 @@ playBtn.addEventListener('click', () => {
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
-/// Element placed on normal-click
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const normalSelect = document.getElementById('normalSelect') as HTMLSelectElement
-/// The button to fill canvas with normal elm of given percent
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const normalFill = document.getElementById('normalFill') as HTMLButtonElement
-normalFill.addEventListener('click', () => {
-  const fillP = parseInt(normalFillP.value)
-  p.randomlyFill(
-    normalSelect.value,
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    Number.isNaN(fillP) ? 15 : fillP
-  )
-  p.update() // needed after any changes are made
-  oldZoom()
+const useNormalFillStore = defineStore("normalFill", ()=>({
+  /// The percent of normal elm to fill canvas with when normalFill clicked
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+  percent: ref(15),
+  /// Element placed on normal-click
+  selected: ref("Blocks"),
+}))
+const normalFillApp = createApp(FillGroup, {
+  useStore: useNormalFillStore,
+  useElementsStore,
+  /// The button to fill canvas with normal elm of given percent
+  click: clickFill
 })
-/// The percent of normal elm to fill canvas with when normalFill clicked
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const normalFillP = document.getElementById('normalFillP') as HTMLInputElement
+normalFillApp.use(pinia)
+normalFillApp.mount("#normalFillApp")
+const normalFillStore = useNormalFillStore()
 
-/// Element placed on ctrl-click
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const ctrlSelect = document.getElementById('ctrlSelect') as HTMLSelectElement
-/// The button to fill canvas with ctrl elm of given percent
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const ctrlFill = document.getElementById('ctrlFill') as HTMLButtonElement
-ctrlFill.addEventListener('click', () => {
-  const fillP = parseInt(ctrlFillP.value)
-  p.randomlyFill(
-    ctrlSelect.value,
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    Number.isNaN(fillP) ? 15 : fillP
-  )
-  p.update()
-  oldZoom()
+const useCtrlFillStore = defineStore("ctrlFill", ()=>({
+  /// The percent of ctrl elm to fill canvas with when ctrlFill clicked
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+  percent: ref(15),
+  /// Element placed on ctrl-click
+  selected: ref("Blocks"),
+}))
+const ctrlFillApp = createApp(FillGroup, {
+  useStore: useCtrlFillStore,
+  useElementsStore,
+  /// The button to fill canvas with ctrl elm of given percent
+  click: clickFill,
 })
-/// The percent of ctrl elm to fill canvas with when ctrlFill clicked
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const ctrlFillP = document.getElementById('ctrlFillP') as HTMLInputElement
+ctrlFillApp.use(pinia)
+ctrlFillApp.mount("#ctrlFillApp")
+const ctrlFillStore = useCtrlFillStore()
 
-/// Element placed on alt-click
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const altSelect = document.getElementById('altSelect') as HTMLSelectElement
-/// The button to fill canvas with alt elm of given percent
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const altFill = document.getElementById('altFill') as HTMLButtonElement
-altFill.addEventListener('click', () => {
-  const fillP = parseInt(altFillP.value)
-  p.randomlyFill(
-    altSelect.value,
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    Number.isNaN(fillP) ? 15 : fillP
-  )
-  p.update()
-  oldZoom()
+const useAltFillStore = defineStore("altFill", ()=>({
+  /// The percent of alt elm to fill canvas with when altFill clicked
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+  percent: ref(15),
+  /// Element placed on alt-click
+  selected: ref("Water"),
+}))
+const altFillApp = createApp(FillGroup, {
+  useStore: useAltFillStore,
+  useElementsStore,
+  /// The button to fill canvas with alt elm of given percent
+  click: clickFill,
 })
-/// The percent of alt elm to fill canvas with when altFill clicked
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const altFillP = document.getElementById('altFillP') as HTMLInputElement
+altFillApp.use(pinia)
+altFillApp.mount("#altFillApp")
+const altFillStore = useAltFillStore()
+
+function clickFill(element: string, percent: number): void {
+    p.randomlyFill(
+      element,
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+      Number.isNaN(percent) ? 15 : percent
+    )
+    p.update()
+    oldZoom()
+}
 
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
@@ -508,16 +516,10 @@ oldZoom({ // zoom at the center
 
 // eslint-disable-next-line complexity -- TODO: simplify
 p.onElementModified = () => {
-  let { value: nsv } = normalSelect
-  let { value: csv } = ctrlSelect
-  let { value: asv } = altSelect
+  const { selected: nsv } = normalFillStore
+  const { selected: csv } = ctrlFillStore
+  const { selected: asv } = altFillStore
   const { selected: cusv } = customizeStore
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (nsv.length === 0) nsv = "Conway's Game Of Life"
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (csv.length === 0) csv = 'Blocks'
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (asv.length === 0) asv = 'Water'
   // TODO: generalize this into components
   Array.from(elmdrops).forEach(htmlElm => {
     htmlElm.innerHTML = ''
@@ -529,10 +531,10 @@ p.onElementModified = () => {
     })
   })
   // Restore that selection, accounting for aliases
-  normalSelect.value = p.getElementByName(nsv)?.name ?? ''
-  ctrlSelect.value = p.getElementByName(csv)?.name ?? ''
-  altSelect.value = p.getElementByName(asv)?.name ?? ''
-  customizeStore.updateElements()
+  normalFillStore.selected = p.getElementByName(nsv)?.name ?? "Conway's Game Of Life"
+  ctrlFillStore.selected = p.getElementByName(csv)?.name ?? "Blocks"
+  altFillStore.selected = p.getElementByName(asv)?.name ?? "Water"
+  elementsStore.updateElements()
   // TODO: abstract away the default value
   customizeStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
 
