@@ -13,6 +13,7 @@ import TargeterStats from './components/TargeterStats.vue'
 import AppSettings from './components/settings/AppSettings.vue'
 import CustomizeName from './components/CustomizeName.vue'
 import CustomColorAlpha from './components/CustomColorAlpha.vue'
+import CustomizeColor from './components/CustomizeColor.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -282,9 +283,9 @@ function updateCustomizer(): void {
   const ALPHA_INDEX = 3
   const HEX_VALUES_PER_DIGIT = 16
   const DIGITS_PER_DOT = 2
-  customizeColor.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
+  customizeColorStore.color = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
     dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
-  ).join()}`
+  ).join('')}`
   customColorAlphaStore.alpha = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
   customizeNameStore.name = name
 }
@@ -293,7 +294,7 @@ function changeColor(): void {
   const num = p.nameToId(customSelect.value)
   const NOT_FOUND = -1
   if (num === NOT_FOUND) return
-  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeColor.value)
+  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeColorStore.color)
   if (matches == null) return
   // The 0th is just the whole string
   const RED_IDX = 1
@@ -314,9 +315,16 @@ function changeColor(): void {
 const customSelect = document.getElementById('customSelect') as HTMLSelectElement
 customSelect.addEventListener('change', () => { updateCustomizer(); })
 /// Change the color
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColor = document.getElementById('customizeColor') as HTMLInputElement
-customizeColor.addEventListener('change', changeColor)
+const useCustomizeColorStore = defineStore("customizeColor", ()=>({
+  color: ref('')
+}))
+const customizeColorApp = createApp(CustomizeColor, {
+  useCustomizeColorStore,
+  change: changeColor,
+})
+customizeColorApp.use(pinia)
+customizeColorApp.mount("#customizeColorApp")
+const customizeColorStore = useCustomizeColorStore()
 const useCustomColorAlphaStore = defineStore("customColorAlpha", ()=>({
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default
   alpha: ref("0"),
