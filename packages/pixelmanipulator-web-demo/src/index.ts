@@ -1,8 +1,40 @@
 /* eslint-disable max-lines -- TODO: break this into more files */
-import { PixelManipulator, version, rules, Ctx2dRenderer, type Location } from 'pixelmanipulator'
-//import '@fortawesome/fontawesome-free/attribution.js'
+
+import { createApp, ref, reactive } from 'vue'
+import { createPinia, defineStore } from 'pinia'
 import 'bootstrap/js/dist/collapse' // For #sideAccordion
+
 import FPSControl from 'fps-control'
+import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
+//import '@fortawesome/fontawesome-free/attribution.js'
+
+import Footer from './components/footer/Footer.vue'
+import AppSettings from './components/settings/AppSettings.vue'
+
+import TargeterStats from './components/TargeterStats.vue'
+
+import CustomizeName from './components/CustomizeName.vue'
+import CustomColorAlpha from './components/CustomColorAlpha.vue'
+import CustomizeColor from './components/CustomizeColor.vue'
+import CustomSelect from './components/CustomSelect.vue'
+
+/* Use pinia for anything where the state can't be contained entirely within one vue app yet */
+const pinia = createPinia()
+
+const footer = createApp(Footer)
+footer.mount("#footer")
+
+const useTargeterLocStore = defineStore("targeterLoc", {
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- start at top-left corner
+  state:()=>({ x: 0, y: 0 })
+})
+
+const targeterStatsApp = createApp(TargeterStats, {
+  useTargeterLocStore
+})
+targeterStatsApp.use(pinia)
+targeterStatsApp.mount("#targeterStats")
+
 /**
 * The X coordinate of where the center of [[zoom]] is windowed at.
 */
@@ -11,12 +43,7 @@ let zoomX = 10
 * The Y coordinate of where the center of the [[zoom]] is windowed at.
 */
 let zoomY = 10
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- start at top-left corner
-const targeterLoc: Location = { x: 0, y: 0 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const targeterX = document.getElementById('targeterX') as HTMLSpanElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const targeterY = document.getElementById('targeterY') as HTMLSpanElement
+const targeterLoc = useTargeterLocStore()
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const targeterStats = document.getElementById('targeterStats') as HTMLDivElement
 const ZOOM_SCALE_RAD_FACTOR = 2 // the scale factor is the radius, 1/2 the diameter
@@ -53,7 +80,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
   if (e.x >= 0 && e.y >= 0) {
     ({ x: zoomX, y: zoomY } = e)
   }
-  if (shtargeter.checked) {
+  if (settingsStore.shTargeter) {
     const THICKNESS = 1
     cctx.fillRect(targeterLoc.x + THICKNESS, targeterLoc.y, canvas.width, THICKNESS)
     cctx.fillRect(targeterLoc.x, targeterLoc.y + THICKNESS, THICKNESS, canvas.height)
@@ -62,8 +89,6 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- top side
     cctx.fillRect(targeterLoc.x, 0, THICKNESS, targeterLoc.y)
     targeterStats.classList.remove('visually-hidden')
-    targeterX.innerText = targeterLoc.x.toString()
-    targeterY.innerText = targeterLoc.y.toString()
   } else {
     targeterStats.classList.add('visually-hidden')
   }
@@ -77,7 +102,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     0, 0,
     zoom.width, zoom.height)
   // Render the box _after_ copying over to zoom canvas
-  if (shfocusbox.checked) {
+  if (settingsStore.shFocusBox) {
     const fbw = zoom.width / zoomScaleFactor
     const fbh = zoom.height / zoomScaleFactor
     const fbx = zoomX - (zoom.width / (ZOOM_SCALE_RAD_FACTOR * zoomScaleFactor))
@@ -117,40 +142,69 @@ const fpsc = new FPSControl(60)
 const fps = document.getElementById('fps') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const fpsUnlimited = document.getElementById('fpsUnlimited') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const fpsAmount = document.getElementById('fpsAmount') as HTMLInputElement
+const useSettingsStore = defineStore("settings", ()=> ({
+  unlimitedFps : ref(false),
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
+  fpsAmount : ref(60),
+  /// Sizes for render canvas
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+  size : reactive({ w: 150, h: 150 }),
+  /// Sizes for zoom canvas
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+  zoomSize : reactive({ w: 20, h: 20 }),
+  /// Show targeter lines
+  shTargeter : ref(true),
+  /// Show focus box
+  shFocusBox: ref(true),
+  /// Show pixelCounter
+  pixelCounterT: ref(true),
+}))
+const settingsApp = createApp(AppSettings, {
+  useSettingsStore,
+  changeFps: (fpsAmount: number)=>{
+    fpsc.setFPS(fpsAmount)
+    fpsMax.innerText = fpsAmount.toString()
+  },
+  changeUnlimited: (unlimited: boolean) => {
+    if (unlimited) {
+      fpsMax.innerText = 'unlimited'
+    } else {
+      const { fpsAmount } = settingsStore
+      fpsMax.innerText = fpsAmount.toString()
+    }
+  },
+  changeTargeter: () => {
+    p.update()
+    oldZoom()
+  },
+  changePixelCounterT: (checked:boolean) => {
+    if (checked) {
+      pixelCounterBox.classList.remove('visually-hidden')
+    } else {
+      pixelCounterBox.classList.add('visually-hidden')
+    }
+  }
+})
+settingsApp.use(pinia)
+settingsApp.mount("#settingsApp")
+const settingsStore = useSettingsStore()
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
-  if (!fpsUnlimited.checked && !fpsc.check()) return false
+  if (!settingsStore.unlimitedFps && !fpsc.check()) return false
   frames.innerText = `${++framecount}`
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- convert to frames/second
   fps.innerText = (1 / ((performance.now() - lasttime) / 1000)).toFixed(3)
   lasttime = performance.now()
   return undefined
 }
-fpsAmount.addEventListener('change', () => {
-  const { value } = fpsAmount
-  fpsc.setFPS(parseInt(value))
-  fpsMax.innerText = value
-})
-fpsUnlimited.addEventListener('change', () => {
-  if (fpsUnlimited.checked) {
-    fpsMax.innerText = 'unlimited'
-  } else {
-    const { value } = fpsAmount
-    fpsMax.innerText = value
-  }
-})
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const frames = document.getElementById('frames') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelRatio = document.getElementById('pixelRatio') as HTMLDivElement
 function afterIterate<T>(p: PixelManipulator<T>): void {
   pixelRatio.innerHTML = ''
-  if (!pixelCounterT.checked) return
+  if (!settingsStore.pixelCounterT) return
   pixelCounter.innerHTML = ''
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- all but last item in render info TODO: why
   pixelRatio.style.background = `rgb(${renderer.renderInfo[p.defaultId].slice(0, -1).join(',')})`
@@ -223,8 +277,24 @@ const renderer = new Ctx2dRenderer(canvas)
 const p = new PixelManipulator(renderer, 1, 1)
 // The width and height are changed later
 
+/// Select the element to customize
+const useCustomSelectStore = defineStore("customSelect", ()=>{
+  const selected = ref("Conway's Game Of Life")
+  const elements = ref<string[]>([])
+  function updateElements(): void {
+    elements.value = p.elements.map(({ name }) => name)
+  }
+  return { selected, elements, updateElements }
+})
+const customSelectApp = createApp(CustomSelect, {
+  useCustomSelectStore,
+  change: ()=> { updateCustomizer(); }
+})
+customSelectApp.use(pinia)
+customSelectApp.mount("#customSelectApp")
+const customSelectStore = useCustomSelectStore()
 function updateCustomizer(): void {
-  const elm = p.getElementByName(customSelect.value)
+  const elm = p.getElementByName(customSelectStore.selected)
   if (elm == null) return
   const { renderAs, name } = elm
   const DEFAULT_DOT = 255
@@ -232,20 +302,18 @@ function updateCustomizer(): void {
   const ALPHA_INDEX = 3
   const HEX_VALUES_PER_DIGIT = 16
   const DIGITS_PER_DOT = 2
-  customizeColor.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
+  customizeColorStore.color = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
     dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
-  ).join()}`
-  const alphaVal = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
-  customizeColorAlpha.value = alphaVal// Raw alpha value
-  customizeColorAlphaText.innerText = alphaVal
-  customizeName.value = name
+  ).join('')}`
+  customColorAlphaStore.alpha = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
+  customizeNameStore.name = name
 }
 function changeColor(): void {
   console.log('change color')
-  const num = p.nameToId(customSelect.value)
+  const num = p.nameToId(customSelectStore.selected)
   const NOT_FOUND = -1
   if (num === NOT_FOUND) return
-  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeColor.value)
+  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeColorStore.color)
   if (matches == null) return
   // The 0th is just the whole string
   const RED_IDX = 1
@@ -257,37 +325,51 @@ function changeColor(): void {
       parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
       parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
       parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(customizeColorAlpha.value)
+      parseInt(customColorAlphaStore.alpha)
     ]
   })
 }
-/// Select the element to customize
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customSelect = document.getElementById('customSelect') as HTMLSelectElement
-customSelect.addEventListener('change', () => { updateCustomizer(); })
 /// Change the color
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColor = document.getElementById('customizeColor') as HTMLInputElement
-customizeColor.addEventListener('change', changeColor)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColorAlpha = document.getElementById('customColorAlpha') as HTMLInputElement
-customizeColorAlpha.addEventListener('change', changeColor)
-/// Name for the alpha field of the color
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColorAlphaText = document.getElementById('customColorAlphaText') as HTMLSpanElement
-/// Name of element
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeName = document.getElementById('customizeName') as HTMLInputElement
-customizeName.addEventListener('change', function(this: HTMLInputElement) {
-  const { value: name } = this
-  console.log('change name', name)
-  const num = p.nameToId(customSelect.value)
-  const NOT_FOUND = -1
-  if (num > NOT_FOUND) {
-    p.modifyElement(num, { name })
-  }
-  updateCustomizer()
+const useCustomizeColorStore = defineStore("customizeColor", ()=>({
+  color: ref('')
+}))
+const customizeColorApp = createApp(CustomizeColor, {
+  useCustomizeColorStore,
+  change: changeColor,
 })
+customizeColorApp.use(pinia)
+customizeColorApp.mount("#customizeColorApp")
+const customizeColorStore = useCustomizeColorStore()
+const useCustomColorAlphaStore = defineStore("customColorAlpha", ()=>({
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default
+  alpha: ref("0"),
+}))
+const customColorAlphaApp = createApp(CustomColorAlpha, {
+  useCustomColorAlphaStore,
+  change: changeColor,
+})
+customColorAlphaApp.use(pinia)
+customColorAlphaApp.mount("#customColorAlphaApp")
+const customColorAlphaStore = useCustomColorAlphaStore()
+/// Name of element
+const useCustomizeNameStore = defineStore("customizeName",()=>({
+  name: ref(""),
+}))
+const customizeNameApp = createApp(CustomizeName, {
+  useCustomizeNameStore,
+  change: (name: string) => {
+    console.log('change name', name)
+    const num = p.nameToId(customSelectStore.selected)
+    const NOT_FOUND = -1
+    if (num > NOT_FOUND) {
+      p.modifyElement(num, { name })
+    }
+    updateCustomizer()
+  }
+})
+customizeNameApp.use(pinia)
+customizeNameApp.mount("#customizeNameApp")
+const customizeNameStore = useCustomizeNameStore()
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
@@ -338,10 +420,10 @@ function convertPlayToPause(): void {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function() {
-  const canvasW = parseInt(widthE.value)
-  const canvasH = parseInt(heightE.value)
-  const zoomW = parseInt(zoomWidthElm.value)
-  const zoomH = parseInt(zoomHeightElm.value)
+  const {
+    size: { w: canvasW, h: canvasH },
+    zoomSize: { w: zoomW, h: zoomH }
+  } = settingsStore
   p.reset({ canvasW, canvasH })
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
   zoom.width = (Number.isNaN(zoomW) ? zoom.width / zoomScaleFactor : zoomW) * zoomScaleFactor
@@ -369,17 +451,6 @@ playBtn.addEventListener('click', () => {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
-
-/// Sizes for render canvas
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const widthE = document.getElementById('width') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const heightE = document.getElementById('height') as HTMLInputElement
-/// Sizes for zoom canvas
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const zoomHeightElm = document.getElementById('zoomHeightElm') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const zoomWidthElm = document.getElementById('zoomWidthElm') as HTMLInputElement
 
 /// Element placed on normal-click
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
@@ -441,31 +512,6 @@ altFill.addEventListener('click', () => {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const altFillP = document.getElementById('altFillP') as HTMLInputElement
 
-/// Show targeter lines
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const shtargeter = document.getElementById('shtargeter') as HTMLInputElement
-shtargeter.addEventListener('click', function() {
-  p.update()
-  oldZoom()
-})
-/// Hide focus box
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
-/// Hide pixelCounter
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputElement
-pixelCounterT.addEventListener('change', function() {
-  if (this.checked) {
-    pixelCounterBox.classList.remove('visually-hidden')
-  } else {
-    pixelCounterBox.classList.add('visually-hidden')
-  }
-})
-/// Version of backend
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const backendversion = document.getElementById('backendversion') as HTMLSpanElement
-backendversion.innerText = version
-
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement
@@ -494,15 +540,14 @@ p.onElementModified = () => {
   let { value: nsv } = normalSelect
   let { value: csv } = ctrlSelect
   let { value: asv } = altSelect
-  let { value: cusv } = customSelect
+  const { selected: cusv } = customSelectStore
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
   if (nsv.length === 0) nsv = "Conway's Game Of Life"
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
   if (csv.length === 0) csv = 'Blocks'
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
   if (asv.length === 0) asv = 'Water'
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (cusv.length === 0) cusv = "Conway's Game Of Life"
+  // TODO: generalize this into components
   Array.from(elmdrops).forEach(htmlElm => {
     htmlElm.innerHTML = ''
     p.elements.forEach(elm => {
@@ -516,7 +561,10 @@ p.onElementModified = () => {
   normalSelect.value = p.getElementByName(nsv)?.name ?? ''
   ctrlSelect.value = p.getElementByName(csv)?.name ?? ''
   altSelect.value = p.getElementByName(asv)?.name ?? ''
-  customSelect.value = p.getElementByName(cusv)?.name ?? ''
+  customSelectStore.updateElements()
+  // TODO: abstract away the default value
+  customSelectStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
+
   updateCustomizer()
 }
 p.addMultipleElements({
