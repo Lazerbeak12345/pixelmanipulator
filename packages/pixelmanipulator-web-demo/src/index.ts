@@ -9,11 +9,14 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 //import '@fortawesome/fontawesome-free/attribution.js'
 
 import Footer from './components/footer/Footer.vue'
-import TargeterStats from './components/TargeterStats.vue'
 import AppSettings from './components/settings/AppSettings.vue'
+
+import TargeterStats from './components/TargeterStats.vue'
+
 import CustomizeName from './components/CustomizeName.vue'
 import CustomColorAlpha from './components/CustomColorAlpha.vue'
 import CustomizeColor from './components/CustomizeColor.vue'
+import CustomSelect from './components/CustomSelect.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -274,8 +277,24 @@ const renderer = new Ctx2dRenderer(canvas)
 const p = new PixelManipulator(renderer, 1, 1)
 // The width and height are changed later
 
+/// Select the element to customize
+const useCustomSelectStore = defineStore("customSelect", ()=>{
+  const selected = ref("Conway's Game Of Life")
+  const elements = ref<string[]>([])
+  function updateElements(): void {
+    elements.value = p.elements.map(({ name }) => name)
+  }
+  return { selected, elements, updateElements }
+})
+const customSelectApp = createApp(CustomSelect, {
+  useCustomSelectStore,
+  change: ()=> { updateCustomizer(); }
+})
+customSelectApp.use(pinia)
+customSelectApp.mount("#customSelectApp")
+const customSelectStore = useCustomSelectStore()
 function updateCustomizer(): void {
-  const elm = p.getElementByName(customSelect.value)
+  const elm = p.getElementByName(customSelectStore.selected)
   if (elm == null) return
   const { renderAs, name } = elm
   const DEFAULT_DOT = 255
@@ -291,7 +310,7 @@ function updateCustomizer(): void {
 }
 function changeColor(): void {
   console.log('change color')
-  const num = p.nameToId(customSelect.value)
+  const num = p.nameToId(customSelectStore.selected)
   const NOT_FOUND = -1
   if (num === NOT_FOUND) return
   const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeColorStore.color)
@@ -310,10 +329,6 @@ function changeColor(): void {
     ]
   })
 }
-/// Select the element to customize
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customSelect = document.getElementById('customSelect') as HTMLSelectElement
-customSelect.addEventListener('change', () => { updateCustomizer(); })
 /// Change the color
 const useCustomizeColorStore = defineStore("customizeColor", ()=>({
   color: ref('')
@@ -344,7 +359,7 @@ const customizeNameApp = createApp(CustomizeName, {
   useCustomizeNameStore,
   change: (name: string) => {
     console.log('change name', name)
-    const num = p.nameToId(customSelect.value)
+    const num = p.nameToId(customSelectStore.selected)
     const NOT_FOUND = -1
     if (num > NOT_FOUND) {
       p.modifyElement(num, { name })
@@ -525,15 +540,14 @@ p.onElementModified = () => {
   let { value: nsv } = normalSelect
   let { value: csv } = ctrlSelect
   let { value: asv } = altSelect
-  let { value: cusv } = customSelect
+  const { selected: cusv } = customSelectStore
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
   if (nsv.length === 0) nsv = "Conway's Game Of Life"
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
   if (csv.length === 0) csv = 'Blocks'
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
   if (asv.length === 0) asv = 'Water'
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (cusv.length === 0) cusv = "Conway's Game Of Life"
+  // TODO: generalize this into components
   Array.from(elmdrops).forEach(htmlElm => {
     htmlElm.innerHTML = ''
     p.elements.forEach(elm => {
@@ -547,7 +561,10 @@ p.onElementModified = () => {
   normalSelect.value = p.getElementByName(nsv)?.name ?? ''
   ctrlSelect.value = p.getElementByName(csv)?.name ?? ''
   altSelect.value = p.getElementByName(asv)?.name ?? ''
-  customSelect.value = p.getElementByName(cusv)?.name ?? ''
+  customSelectStore.updateElements()
+  // TODO: abstract away the default value
+  customSelectStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
+
   updateCustomizer()
 }
 p.addMultipleElements({
