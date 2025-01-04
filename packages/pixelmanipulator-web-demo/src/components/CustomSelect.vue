@@ -1,15 +1,8 @@
 <script setup lang="ts">
-import { watch } from 'vue'
-import { storeToRefs } from 'pinia'
-const props = defineProps([
-	// TODO: move state into better place
-	'useCustomizeStore',
-	// TODO: convert to emit
-	'change',
-])
-const customizeStore = props.useCustomizeStore()
-const { selected, elements } = storeToRefs(customizeStore )
-watch(selected, s=>props.change(s))
+const props = defineProps<{
+	elements: string[]
+}>()
+const selected = defineModel<string>()
 </script>
 <template>
 	<select class="form-select" v-model="selected">

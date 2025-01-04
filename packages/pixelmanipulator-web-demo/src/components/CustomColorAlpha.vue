@@ -1,15 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
-import { storeToRefs } from 'pinia'
-const props = defineProps([
-	// TODO: move state into better place
-	'useCustomizeStore',
-	// TODO: convert to emit
-	'change'
-])
-const customizeStore = props.useCustomizeStore()
-const { alpha } = storeToRefs(customizeStore )
-watch(alpha, a=>props.change(a))
+const alpha = defineModel<string>()
 </script>
 <template>
 	<label>
