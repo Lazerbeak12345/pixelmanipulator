@@ -277,24 +277,30 @@ const renderer = new Ctx2dRenderer(canvas)
 const p = new PixelManipulator(renderer, 1, 1)
 // The width and height are changed later
 
-/// Select the element to customize
-const useCustomSelectStore = defineStore("customSelect", ()=>{
+const useCustomizeStore = defineStore("customize", ()=>{
+  /// Select the element to customize
   const selected = ref("Conway's Game Of Life")
+  /// List of elements that should be in an elmDrop
   const elements = ref<string[]>([])
   function updateElements(): void {
     elements.value = p.elements.map(({ name }) => name)
   }
-  return { selected, elements, updateElements }
+  /// Change the color
+  const color = ref('')
+  const alpha = ref("0")
+  /// Name of element
+  const name = ref("")
+  return { selected, elements, updateElements, color, alpha, name }
 })
+const customizeStore = useCustomizeStore()
 const customSelectApp = createApp(CustomSelect, {
-  useCustomSelectStore,
+  useCustomizeStore,
   change: ()=> { updateCustomizer(); }
 })
 customSelectApp.use(pinia)
 customSelectApp.mount("#customSelectApp")
-const customSelectStore = useCustomSelectStore()
 function updateCustomizer(): void {
-  const elm = p.getElementByName(customSelectStore.selected)
+  const elm = p.getElementByName(customizeStore.selected)
   if (elm == null) return
   const { renderAs, name } = elm
   const DEFAULT_DOT = 255
@@ -302,18 +308,18 @@ function updateCustomizer(): void {
   const ALPHA_INDEX = 3
   const HEX_VALUES_PER_DIGIT = 16
   const DIGITS_PER_DOT = 2
-  customizeColorStore.color = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
+  customizeStore.color = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
     dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
   ).join('')}`
-  customColorAlphaStore.alpha = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
-  customizeNameStore.name = name
+  customizeStore.alpha = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
+  customizeStore.name = name
 }
 function changeColor(): void {
   console.log('change color')
-  const num = p.nameToId(customSelectStore.selected)
+  const num = p.nameToId(customizeStore.selected)
   const NOT_FOUND = -1
   if (num === NOT_FOUND) return
-  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeColorStore.color)
+  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeStore.color)
   if (matches == null) return
   // The 0th is just the whole string
   const RED_IDX = 1
@@ -325,41 +331,27 @@ function changeColor(): void {
       parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
       parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
       parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(customColorAlphaStore.alpha)
+      parseInt(customizeStore.alpha)
     ]
   })
 }
-/// Change the color
-const useCustomizeColorStore = defineStore("customizeColor", ()=>({
-  color: ref('')
-}))
 const customizeColorApp = createApp(CustomizeColor, {
-  useCustomizeColorStore,
+  useCustomizeStore,
   change: changeColor,
 })
 customizeColorApp.use(pinia)
 customizeColorApp.mount("#customizeColorApp")
-const customizeColorStore = useCustomizeColorStore()
-const useCustomColorAlphaStore = defineStore("customColorAlpha", ()=>({
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default
-  alpha: ref("0"),
-}))
 const customColorAlphaApp = createApp(CustomColorAlpha, {
-  useCustomColorAlphaStore,
+  useCustomizeStore,
   change: changeColor,
 })
 customColorAlphaApp.use(pinia)
 customColorAlphaApp.mount("#customColorAlphaApp")
-const customColorAlphaStore = useCustomColorAlphaStore()
-/// Name of element
-const useCustomizeNameStore = defineStore("customizeName",()=>({
-  name: ref(""),
-}))
 const customizeNameApp = createApp(CustomizeName, {
-  useCustomizeNameStore,
+  useCustomizeStore,
   change: (name: string) => {
     console.log('change name', name)
-    const num = p.nameToId(customSelectStore.selected)
+    const num = p.nameToId(customizeStore.selected)
     const NOT_FOUND = -1
     if (num > NOT_FOUND) {
       p.modifyElement(num, { name })
@@ -369,7 +361,6 @@ const customizeNameApp = createApp(CustomizeName, {
 })
 customizeNameApp.use(pinia)
 customizeNameApp.mount("#customizeNameApp")
-const customizeNameStore = useCustomizeNameStore()
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
@@ -540,7 +531,7 @@ p.onElementModified = () => {
   let { value: nsv } = normalSelect
   let { value: csv } = ctrlSelect
   let { value: asv } = altSelect
-  const { selected: cusv } = customSelectStore
+  const { selected: cusv } = customizeStore
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
   if (nsv.length === 0) nsv = "Conway's Game Of Life"
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
@@ -561,9 +552,9 @@ p.onElementModified = () => {
   normalSelect.value = p.getElementByName(nsv)?.name ?? ''
   ctrlSelect.value = p.getElementByName(csv)?.name ?? ''
   altSelect.value = p.getElementByName(asv)?.name ?? ''
-  customSelectStore.updateElements()
+  customizeStore.updateElements()
   // TODO: abstract away the default value
-  customSelectStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
+  customizeStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
 
   updateCustomizer()
 }

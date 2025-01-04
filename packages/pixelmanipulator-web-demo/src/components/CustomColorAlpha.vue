@@ -3,12 +3,12 @@ import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
 const props = defineProps([
 	// TODO: move state into better place
-	'useCustomColorAlphaStore',
+	'useCustomizeStore',
 	// TODO: convert to emit
 	'change'
 ])
-const customColorAlphaStore = props.useCustomColorAlphaStore()
-const { alpha } = storeToRefs(customColorAlphaStore)
+const customizeStore = props.useCustomizeStore()
+const { alpha } = storeToRefs(customizeStore )
 watch(alpha, a=>props.change(a))
 </script>
 <template>
