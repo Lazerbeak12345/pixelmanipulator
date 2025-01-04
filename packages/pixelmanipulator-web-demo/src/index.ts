@@ -13,10 +13,7 @@ import AppSettings from './components/settings/AppSettings.vue'
 
 import TargeterStats from './components/TargeterStats.vue'
 
-import CustomizeName from './components/CustomizeName.vue'
-import CustomColorAlpha from './components/CustomColorAlpha.vue'
-import CustomizeColor from './components/CustomizeColor.vue'
-import CustomSelect from './components/CustomSelect.vue'
+import ElementCustomize from './components/ElementCustomize.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -290,77 +287,60 @@ const useCustomizeStore = defineStore("customize", ()=>{
   const alpha = ref("0")
   /// Name of element
   const name = ref("")
-  return { selected, elements, updateElements, color, alpha, name }
+  function updateCustomizer(): void {
+    const elm = p.getElementByName(selected.value)
+    if (elm == null) return
+    const { renderAs, name: n } = elm
+    const DEFAULT_DOT = 255
+    const START_OF_COLOR = 0
+    const ALPHA_INDEX = 3
+    const HEX_VALUES_PER_DIGIT = 16
+    const DIGITS_PER_DOT = 2
+    color.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
+      dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
+    ).join('')}`
+    alpha.value = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
+    name.value = n
+  }
+  return { selected, elements, updateElements, color, alpha, name, updateCustomizer }
 })
-const customizeStore = useCustomizeStore()
-const customSelectApp = createApp(CustomSelect, {
+const customizeApp = createApp(ElementCustomize, {
   useCustomizeStore,
-  change: ()=> { updateCustomizer(); }
-})
-customSelectApp.use(pinia)
-customSelectApp.mount("#customSelectApp")
-function updateCustomizer(): void {
-  const elm = p.getElementByName(customizeStore.selected)
-  if (elm == null) return
-  const { renderAs, name } = elm
-  const DEFAULT_DOT = 255
-  const START_OF_COLOR = 0
-  const ALPHA_INDEX = 3
-  const HEX_VALUES_PER_DIGIT = 16
-  const DIGITS_PER_DOT = 2
-  customizeStore.color = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
-    dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
-  ).join('')}`
-  customizeStore.alpha = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
-  customizeStore.name = name
-}
-function changeColor(): void {
-  console.log('change color')
-  const num = p.nameToId(customizeStore.selected)
-  const NOT_FOUND = -1
-  if (num === NOT_FOUND) return
-  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeStore.color)
-  if (matches == null) return
-  // The 0th is just the whole string
-  const RED_IDX = 1
-  const GREEN_IDX = 2
-  const BLUE_IDX = 3
-  const HEX_VALUES_PER_DIGIT = 16
-  p.modifyElement(num, {
-    renderAs: [
-      parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(customizeStore.alpha)
-    ]
-  })
-}
-const customizeColorApp = createApp(CustomizeColor, {
-  useCustomizeStore,
-  change: changeColor,
-})
-customizeColorApp.use(pinia)
-customizeColorApp.mount("#customizeColorApp")
-const customColorAlphaApp = createApp(CustomColorAlpha, {
-  useCustomizeStore,
-  change: changeColor,
-})
-customColorAlphaApp.use(pinia)
-customColorAlphaApp.mount("#customColorAlphaApp")
-const customizeNameApp = createApp(CustomizeName, {
-  useCustomizeStore,
-  change: (name: string) => {
+  changeSelected: ()=> { customizeStore.updateCustomizer() },
+  changeColor(): void {
+    console.log('change color')
+    const num = p.nameToId(customizeStore.selected)
+    const NOT_FOUND = -1
+    if (num === NOT_FOUND) return
+    const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeStore.color)
+    if (matches == null) return
+    // The 0th is just the whole string
+    const RED_IDX = 1
+    const GREEN_IDX = 2
+    const BLUE_IDX = 3
+    const HEX_VALUES_PER_DIGIT = 16
+    p.modifyElement(num, {
+      renderAs: [
+        parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
+        parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
+        parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
+        parseInt(customizeStore.alpha)
+      ]
+    })
+  },
+  changeName: (name: string) => {
     console.log('change name', name)
     const num = p.nameToId(customizeStore.selected)
     const NOT_FOUND = -1
     if (num > NOT_FOUND) {
       p.modifyElement(num, { name })
     }
-    updateCustomizer()
+    customizeStore.updateCustomizer()
   }
 })
-customizeNameApp.use(pinia)
-customizeNameApp.mount("#customizeNameApp")
+customizeApp.use(pinia)
+customizeApp.mount("#customizeApp")
+const customizeStore  = useCustomizeStore()
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
@@ -556,7 +536,7 @@ p.onElementModified = () => {
   // TODO: abstract away the default value
   customizeStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
 
-  updateCustomizer()
+  customizeStore.updateCustomizer()
 }
 p.addMultipleElements({
   Acid: {

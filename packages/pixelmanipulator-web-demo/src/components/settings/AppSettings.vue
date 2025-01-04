@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { watch } from 'vue'
+import { storeToRefs } from 'pinia'
+
 import AppSizes from './AppSizes.vue'
 import ZoomSizes from './ZoomSizes.vue'
 import FpsRadio from './FpsRadio.vue'
@@ -6,8 +9,6 @@ import ShTargeter from './ShTargeter.vue'
 import ShFocusBox from './ShFocusBox.vue'
 import PixelCounterT from './PixelCounterT.vue'
 
-import { watch } from 'vue'
-import { storeToRefs } from 'pinia'
 const props = defineProps([
 	// TODO: move state into better place
 	'useSettingsStore',
