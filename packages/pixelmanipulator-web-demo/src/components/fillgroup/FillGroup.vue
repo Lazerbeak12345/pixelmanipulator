@@ -2,7 +2,7 @@
 import { watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 
-import ElmSelect from './ElmSelect.vue'
+import ElmSelect from '../ElmSelect.vue'
 import FillButton from './FillButton.vue'
 import FillP from './FillP.vue'
 

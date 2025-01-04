@@ -11,10 +11,9 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 import ElementCustomize from './components/customize/ElementCustomize.vue'
 import AppSettings from './components/settings/AppSettings.vue'
 import Footer from './components/footer/Footer.vue'
+import FillGroup from './components/fillgroup/FillGroup.vue'
 
 import TargeterStats from './components/TargeterStats.vue'
-
-import FillGroup from './components/FillGroup.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
