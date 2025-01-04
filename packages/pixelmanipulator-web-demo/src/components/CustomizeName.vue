@@ -3,12 +3,12 @@ import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
 const props = defineProps([
 	// TODO: move state into better place
-	'useCustomizeNameStore',
+	'useCustomizeStore',
 	// TODO: convert to emit
 	'change',
 ])
-const customizeNameStore = props.useCustomizeNameStore()
-const { name } = storeToRefs(customizeNameStore)
+const customizeStore = props.useCustomizeStore()
+const { name } = storeToRefs(customizeStore)
 watch(name, name=>props.change(name))
 </script>
 <template>
