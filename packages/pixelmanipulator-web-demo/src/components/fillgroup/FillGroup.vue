@@ -6,23 +6,19 @@ import ElmSelect from '../ElmSelect.vue'
 import FillButton from './FillButton.vue'
 import FillP from './FillP.vue'
 
-const props = defineProps([
-	// TODO: move state into better place
-	'useStore',
-	// TODO: move state into better place
-	'useElementsStore',
-	// TODO: convert to emit
-	'click',
-])
-const store = props.useStore()
-const elementsStore = props.useElementsStore()
-const { percent, selected } = storeToRefs(store)
-const { elements } = storeToRefs(elementsStore)
+const props = defineProps<{
+	elements: string[]
+}>()
+const emit = defineEmits<{
+	(e: 'click', element: string, percent: number): void
+}>()
+const selected = defineModel<number>("selected")
+const percent = defineModel<number>("percent")
 </script>
 <template>
 	<div class="click-type-random input-group">
 		<ElmSelect v-model="selected" :elements />
-		<FillButton @click="props.click(selected, percent)" />
+		<FillButton @click="emit('click', selected, percent)" />
 		<FillP v-model="percent" />
 		<span class="input-group-text">%</span>
 	</div>

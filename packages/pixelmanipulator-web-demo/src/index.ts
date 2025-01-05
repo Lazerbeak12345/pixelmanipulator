@@ -11,9 +11,10 @@ import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 import ElementCustomize from './components/customize/ElementCustomize.vue'
 import AppSettings from './components/settings/AppSettings.vue'
 import Footer from './components/footer/Footer.vue'
-import FillGroup from './components/fillgroup/FillGroup.vue'
 
 import TargeterStats from './components/TargeterStats.vue'
+
+import AppElements from './components/AppElements.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -356,10 +357,10 @@ function zoomClick(e: MouseEvent): void {
       Math.floor(zoomY - (zoomScaleFactor / ZOOM_SCALE_RAD_FACTOR))
   }
   const active: string = e.ctrlKey ?
-    ctrlFillStore.selected :
+    appElementsStore.ctrlFill.selected :
     e.altKey ?
-      altFillStore.selected :
-      normalFillStore.selected
+      appElementsStore.altFill.selected :
+      appElementsStore.normalFill.selected
   const pixel: string | number = p.confirmElm(zoomPos, active) ? p.defaultId : active
   p.setPixel(zoomPos, pixel)
   p.update()
@@ -429,56 +430,29 @@ playBtn.addEventListener('click', () => {
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
-const useNormalFillStore = defineStore("normalFill", ()=>({
-  /// The percent of normal elm to fill canvas with when normalFill clicked
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-  percent: ref(15),
-  /// Element placed on normal-click
-  selected: ref("Blocks"),
+const useAppElementsStore = defineStore("appElements", ()=>({
+  normalFill: reactive({
+    /// The percent of normal elm to fill canvas with when normalFill clicked
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+    percent: 15,
+    /// Element placed on normal-click
+    selected: "Blocks",
+  }),
+  ctrlFill: reactive({
+    /// The percent of ctrl elm to fill canvas with when ctrlFill clicked
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+    percent: 15,
+    /// Element placed on ctrl-click
+    selected: "Blocks",
+  }),
+  altFill: reactive({
+    /// The percent of alt elm to fill canvas with when altFill clicked
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+    percent: 15,
+    /// Element placed on alt-click
+    selected: "Water",
+  }),
 }))
-const normalFillApp = createApp(FillGroup, {
-  useStore: useNormalFillStore,
-  useElementsStore,
-  /// The button to fill canvas with normal elm of given percent
-  click: clickFill
-})
-normalFillApp.use(pinia)
-normalFillApp.mount("#normalFillApp")
-const normalFillStore = useNormalFillStore()
-
-const useCtrlFillStore = defineStore("ctrlFill", ()=>({
-  /// The percent of ctrl elm to fill canvas with when ctrlFill clicked
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-  percent: ref(15),
-  /// Element placed on ctrl-click
-  selected: ref("Blocks"),
-}))
-const ctrlFillApp = createApp(FillGroup, {
-  useStore: useCtrlFillStore,
-  useElementsStore,
-  /// The button to fill canvas with ctrl elm of given percent
-  click: clickFill,
-})
-ctrlFillApp.use(pinia)
-ctrlFillApp.mount("#ctrlFillApp")
-const ctrlFillStore = useCtrlFillStore()
-
-const useAltFillStore = defineStore("altFill", ()=>({
-  /// The percent of alt elm to fill canvas with when altFill clicked
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-  percent: ref(15),
-  /// Element placed on alt-click
-  selected: ref("Water"),
-}))
-const altFillApp = createApp(FillGroup, {
-  useStore: useAltFillStore,
-  useElementsStore,
-  /// The button to fill canvas with alt elm of given percent
-  click: clickFill,
-})
-altFillApp.use(pinia)
-altFillApp.mount("#altFillApp")
-const altFillStore = useAltFillStore()
 
 function clickFill(element: string, percent: number): void {
     p.randomlyFill(
@@ -490,13 +464,20 @@ function clickFill(element: string, percent: number): void {
     oldZoom()
 }
 
+const appElements = createApp(AppElements, {
+  useAppElementsStore,
+  useElementsStore,
+  click: clickFill,
+})
+appElements.use(pinia)
+appElements.mount("#elementsApp")
+const appElementsStore = useAppElementsStore()
+
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounterBox = document.getElementById('pixelCounterBox') as HTMLUListElement
-
-const elmdrops = document.getElementsByClassName('elmDrop')
 
 const zoomctx = zoom.getContext('2d')
 if (zoomctx == null) {
@@ -515,24 +496,16 @@ oldZoom({ // zoom at the center
 
 // eslint-disable-next-line complexity -- TODO: simplify
 p.onElementModified = () => {
-  const { selected: nsv } = normalFillStore
-  const { selected: csv } = ctrlFillStore
-  const { selected: asv } = altFillStore
+  const {
+    normalFill: { selected: nsv },
+    ctrlFill: { selected: csv },
+    altFill: { selected: asv },
+  } = appElementsStore
   const { selected: cusv } = customizeStore
-  // TODO: generalize this into components
-  Array.from(elmdrops).forEach(htmlElm => {
-    htmlElm.innerHTML = ''
-    p.elements.forEach(elm => {
-      const newElement = document.createElement('option')
-      const { name } = elm
-      newElement.innerText = name
-      htmlElm.appendChild(newElement)
-    })
-  })
   // Restore that selection, accounting for aliases
-  normalFillStore.selected = p.getElementByName(nsv)?.name ?? "Conway's Game Of Life"
-  ctrlFillStore.selected = p.getElementByName(csv)?.name ?? "Blocks"
-  altFillStore.selected = p.getElementByName(asv)?.name ?? "Water"
+  appElementsStore.normalFill.selected = p.getElementByName(nsv)?.name ?? "Conway's Game Of Life"
+  appElementsStore.ctrlFill.selected = p.getElementByName(csv)?.name ?? "Blocks"
+  appElementsStore.altFill.selected = p.getElementByName(asv)?.name ?? "Water"
   elementsStore.updateElements()
   // TODO: abstract away the default value
   customizeStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
