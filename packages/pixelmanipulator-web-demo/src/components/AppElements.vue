@@ -8,15 +8,25 @@ const props = defineProps([
 	// TODO: move state into better place
 	'useElementsStore',
 	// TODO: move state into better place
-	'useAppElementsStore',
+	'useSideAccordionStore',
 	// TODO: convert to emit
 	'click',
 ])
 const elementsStore = props.useElementsStore()
-const appElementsStore = props.useAppElementsStore()
+const sideAccordionStore = props.useSideAccordionStore()
 
 const { elements } = storeToRefs(elementsStore)
-const { normalFill, ctrlFill, altFill } = storeToRefs(appElementsStore)
+const { fills } = storeToRefs(sideAccordionStore)
+// v-model doesn't like deep refs. This effectively flattens a deep ref.
+function flattenDeep<A>(name: string): ReturnType<typeof computed<A>> {
+	return computed({
+		get() { return fills.value[name] },
+		set(v) { fills.value[name] = v }
+	})
+}
+const normalFill = flattenDeep("normalFill")
+const ctrlFill = flattenDeep("ctrlFill")
+const altFill = flattenDeep("altFill")
 </script>
 <template>
 	<div>
