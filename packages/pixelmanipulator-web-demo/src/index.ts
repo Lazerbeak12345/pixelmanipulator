@@ -142,8 +142,6 @@ const fps = document.getElementById('fps') as HTMLParagraphElement
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
 const useSettingsStore = defineStore("settings", ()=> ({
   unlimitedFps : ref(false),
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
-  fpsAmount : ref(60),
   /// Sizes for render canvas
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
   size : reactive({ w: 150, h: 150 }),
@@ -163,11 +161,10 @@ const settingsApp = createApp(AppSettings, {
     fpsc.setFPS(fpsAmount)
     fpsMax.innerText = fpsAmount.toString()
   },
-  changeUnlimited: (unlimited: boolean) => {
+  changeUnlimited(unlimited: boolean, fpsAmount: number) {
     if (unlimited) {
       fpsMax.innerText = 'unlimited'
     } else {
-      const { fpsAmount } = settingsStore
       fpsMax.innerText = fpsAmount.toString()
     }
   },
@@ -454,20 +451,18 @@ const useAppElementsStore = defineStore("appElements", ()=>({
   }),
 }))
 
-function clickFill(element: string, percent: number): void {
-    p.randomlyFill(
-      element,
-      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-      Number.isNaN(percent) ? 15 : percent
-    )
-    p.update()
-    oldZoom()
-}
-
 const appElements = createApp(AppElements, {
   useAppElementsStore,
   useElementsStore,
-  click: clickFill,
+  click(element: string, percent: number): void {
+      p.randomlyFill(
+        element,
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+        Number.isNaN(percent) ? 15 : percent
+      )
+      p.update()
+      oldZoom()
+  },
 })
 appElements.use(pinia)
 appElements.mount("#elementsApp")
