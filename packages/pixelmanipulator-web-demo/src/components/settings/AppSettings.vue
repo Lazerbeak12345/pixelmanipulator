@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import AppSizes from './AppSizes.vue'
@@ -26,13 +26,14 @@ const {
 	size,
 	zoomSize,
 	unlimitedFps,
-	fpsAmount,
 	shTargeter,
 	shFocusBox,
 	pixelCounterT,
 } = storeToRefs(sizesStore)
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
+const fpsAmount = ref(60)
 watch(fpsAmount, a=> props.changeFps(a))
-watch(unlimitedFps, u=> props.changeUnlimited(u))
+watch(unlimitedFps, u=> props.changeUnlimited(u, fpsAmount.value))
 watch(shTargeter, c=> props.changeTargeter(c))
 watch(pixelCounterT, c => props.changePixelCounterT(c))
 </script>
