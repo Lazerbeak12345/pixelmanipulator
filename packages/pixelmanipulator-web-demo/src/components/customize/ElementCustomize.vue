@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import ElmSelect from '../ElmSelect.vue'
@@ -9,22 +9,37 @@ import CustomizeName from './CustomizeName.vue'
 
 const props = defineProps([
 	// TODO: move state into better place
-	'useCustomizeStore',
+	'useSideAccordionStore',
 	// TODO: move state into better place
 	'useElementsStore',
-	// TODO: convert to emit
-	'changeSelected',
 	// TODO: convert to emit
 	'changeColor',
 	// TODO: convert to emit
 	'changeName'
 ])
-const customizeStore = props.useCustomizeStore()
 const elementsStore = props.useElementsStore()
-const { selected, color, alpha, name } = storeToRefs(customizeStore)
+const sideAccordionStore = props.useSideAccordionStore()
+
+const { customize } = storeToRefs(sideAccordionStore)
 const { elements } = storeToRefs(elementsStore)
-watch(selected, s=>props.changeSelected(s))
-watch([color, alpha], ()=>props.changeColor())
+// v-model doesn't like deep refs. This effectively flattens a deep ref.
+function flattenDeep<A>(name: string): ReturnType<typeof computed<A>> {
+	return computed({
+		get() { return customize.value[name] },
+		set(v) { customize.value[name] = v }
+	})
+}
+const selected = flattenDeep("selected")
+const color = flattenDeep("color")
+const alpha = flattenDeep("alpha")
+const name = flattenDeep("name")
+
+watch(selected, ()=>sideAccordionStore.customize.updateCustomizer())
+watch([color, alpha], ()=>props.changeColor({
+	selected: selected.value,
+	color: color.value,
+	alpha: alpha.value,
+}))
 watch(name, name=>props.changeName(name))
 </script>
 <template>

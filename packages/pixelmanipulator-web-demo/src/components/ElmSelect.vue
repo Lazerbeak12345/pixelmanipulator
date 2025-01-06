@@ -4,7 +4,6 @@ const props = defineProps<{
 	elements: string[]
 }>()
 const selected = defineModel<string>()
-watch(selected, console.log)
 </script>
 <template>
 	<select class="form-select" v-model="selected">

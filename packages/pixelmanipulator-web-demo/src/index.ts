@@ -78,7 +78,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
   if (e.x >= 0 && e.y >= 0) {
     ({ x: zoomX, y: zoomY } = e)
   }
-  if (settingsStore.shTargeter) {
+  if (sideAccordionStore.settings.shTargeter) {
     const THICKNESS = 1
     cctx.fillRect(targeterLoc.x + THICKNESS, targeterLoc.y, canvas.width, THICKNESS)
     cctx.fillRect(targeterLoc.x, targeterLoc.y + THICKNESS, THICKNESS, canvas.height)
@@ -100,7 +100,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     0, 0,
     zoom.width, zoom.height)
   // Render the box _after_ copying over to zoom canvas
-  if (settingsStore.shFocusBox) {
+  if (sideAccordionStore.settings.shFocusBox) {
     const fbw = zoom.width / zoomScaleFactor
     const fbh = zoom.height / zoomScaleFactor
     const fbx = zoomX - (zoom.width / (ZOOM_SCALE_RAD_FACTOR * zoomScaleFactor))
@@ -140,23 +140,73 @@ const fpsc = new FPSControl(60)
 const fps = document.getElementById('fps') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
-const useSettingsStore = defineStore("settings", ()=> ({
-  unlimitedFps : ref(false),
-  /// Sizes for render canvas
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-  size : reactive({ w: 150, h: 150 }),
-  /// Sizes for zoom canvas
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-  zoomSize : reactive({ w: 20, h: 20 }),
-  /// Show targeter lines
-  shTargeter : ref(true),
-  /// Show focus box
-  shFocusBox: ref(true),
-  /// Show pixelCounter
-  pixelCounterT: ref(true),
+const useSideAccordionStore = defineStore("sideAccordion", ()=>({
+  settings: ref({
+    unlimitedFps : false,
+    /// Sizes for render canvas
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+    size : { w: 150, h: 150 },
+    /// Sizes for zoom canvas
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+    zoomSize : { w: 20, h: 20 },
+    /// Show targeter lines
+    shTargeter : true,
+    /// Show focus box
+    shFocusBox: true,
+    /// Show pixelCounter
+    pixelCounterT: true,
+  }),
+  customize: ref((()=>{
+    /// Select the element to customize
+    const selected = ref("Conway's Game Of Life")
+    /// Change the color
+    const color = ref('')
+    const alpha = ref("0")
+    /// Name of element
+    const name = ref("")
+    function updateCustomizer(): void {
+      const elm = p.getElementByName(selected.value)
+      if (elm == null) return
+      const { renderAs, name: n } = elm
+      const DEFAULT_DOT = 255
+      const START_OF_COLOR = 0
+      const ALPHA_INDEX = 3
+      const HEX_VALUES_PER_DIGIT = 16
+      const DIGITS_PER_DOT = 2
+      color.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
+        dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
+      ).join('')}`
+      alpha.value = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
+      name.value = n
+    }
+    return { selected, color, alpha, name, updateCustomizer }
+  })()),
+  fills: ref({
+    normalFill: {
+      /// The percent of normal elm to fill canvas with when normalFill clicked
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+      percent: 15,
+      /// Element placed on normal-click
+      selected: "Blocks",
+    },
+    ctrlFill: {
+      /// The percent of ctrl elm to fill canvas with when ctrlFill clicked
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+      percent: 15,
+      /// Element placed on ctrl-click
+      selected: "Blocks",
+    },
+    altFill: {
+      /// The percent of alt elm to fill canvas with when altFill clicked
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+      percent: 15,
+      /// Element placed on alt-click
+      selected: "Water",
+    },
+  }),
 }))
 const settingsApp = createApp(AppSettings, {
-  useSettingsStore,
+  useSideAccordionStore,
   changeFps: (fpsAmount: number)=>{
     fpsc.setFPS(fpsAmount)
     fpsMax.innerText = fpsAmount.toString()
@@ -182,11 +232,10 @@ const settingsApp = createApp(AppSettings, {
 })
 settingsApp.use(pinia)
 settingsApp.mount("#settingsApp")
-const settingsStore = useSettingsStore()
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
-  if (!settingsStore.unlimitedFps && !fpsc.check()) return false
+  if (!sideAccordionStore.settings.unlimitedFps && !fpsc.check()) return false
   frames.innerText = `${++framecount}`
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- convert to frames/second
   fps.innerText = (1 / ((performance.now() - lasttime) / 1000)).toFixed(3)
@@ -199,7 +248,7 @@ const frames = document.getElementById('frames') as HTMLParagraphElement
 const pixelRatio = document.getElementById('pixelRatio') as HTMLDivElement
 function afterIterate<T>(p: PixelManipulator<T>): void {
   pixelRatio.innerHTML = ''
-  if (!settingsStore.pixelCounterT) return
+  if (!sideAccordionStore.settings.pixelCounterT) return
   pixelCounter.innerHTML = ''
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- all but last item in render info TODO: why
   pixelRatio.style.background = `rgb(${renderer.renderInfo[p.defaultId].slice(0, -1).join(',')})`
@@ -282,41 +331,23 @@ const useElementsStore = defineStore("elements", ()=>{
 })
 const elementsStore = useElementsStore()
 
-const useCustomizeStore = defineStore("customize", ()=>{
-  /// Select the element to customize
-  const selected = ref("Conway's Game Of Life")
-  /// Change the color
-  const color = ref('')
-  const alpha = ref("0")
-  /// Name of element
-  const name = ref("")
-  function updateCustomizer(): void {
-    const elm = p.getElementByName(selected.value)
-    if (elm == null) return
-    const { renderAs, name: n } = elm
-    const DEFAULT_DOT = 255
-    const START_OF_COLOR = 0
-    const ALPHA_INDEX = 3
-    const HEX_VALUES_PER_DIGIT = 16
-    const DIGITS_PER_DOT = 2
-    color.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
-      dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
-    ).join('')}`
-    alpha.value = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
-    name.value = n
-  }
-  return { selected, color, alpha, name, updateCustomizer }
-})
 const customizeApp = createApp(ElementCustomize, {
-  useCustomizeStore,
+  useSideAccordionStore,
   useElementsStore,
-  changeSelected: ()=> { customizeStore.updateCustomizer() },
-  changeColor(): void {
+  changeColor({
+    selected,
+    color,
+    alpha
+  }: {
+    selected: string,
+    color: string,
+    alpha: string
+  }): void {
     console.log('change color')
-    const num = p.nameToId(customizeStore.selected)
+    const num = p.nameToId(selected)
     const NOT_FOUND = -1
     if (num === NOT_FOUND) return
-    const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeStore.color)
+    const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(color)
     if (matches == null) return
     // The 0th is just the whole string
     const RED_IDX = 1
@@ -328,23 +359,22 @@ const customizeApp = createApp(ElementCustomize, {
         parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
         parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
         parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
-        parseInt(customizeStore.alpha)
+        parseInt(alpha)
       ]
     })
   },
   changeName: (name: string) => {
     console.log('change name', name)
-    const num = p.nameToId(customizeStore.selected)
+    const num = p.nameToId(sideAccordionStore.customize.selected)
     const NOT_FOUND = -1
     if (num > NOT_FOUND) {
       p.modifyElement(num, { name })
     }
-    customizeStore.updateCustomizer()
+    sideAccordionStore.customize.updateCustomizer()
   }
 })
 customizeApp.use(pinia)
 customizeApp.mount("#customizeApp")
-const customizeStore = useCustomizeStore()
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
@@ -354,10 +384,10 @@ function zoomClick(e: MouseEvent): void {
       Math.floor(zoomY - (zoomScaleFactor / ZOOM_SCALE_RAD_FACTOR))
   }
   const active: string = e.ctrlKey ?
-    appElementsStore.ctrlFill.selected :
+    sideAccordionStore.fills.ctrlFill.selected :
     e.altKey ?
-      appElementsStore.altFill.selected :
-      appElementsStore.normalFill.selected
+      sideAccordionStore.fills.altFill.selected :
+      sideAccordionStore.fills.normalFill.selected
   const pixel: string | number = p.confirmElm(zoomPos, active) ? p.defaultId : active
   p.setPixel(zoomPos, pixel)
   p.update()
@@ -396,9 +426,11 @@ function convertPlayToPause(): void {
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function() {
   const {
-    size: { w: canvasW, h: canvasH },
-    zoomSize: { w: zoomW, h: zoomH }
-  } = settingsStore
+    settings: {
+      size: { w: canvasW, h: canvasH },
+      zoomSize: { w: zoomW, h: zoomH }
+    }
+  } = sideAccordionStore
   p.reset({ canvasW, canvasH })
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
   zoom.width = (Number.isNaN(zoomW) ? zoom.width / zoomScaleFactor : zoomW) * zoomScaleFactor
@@ -427,32 +459,8 @@ playBtn.addEventListener('click', () => {
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
-const useAppElementsStore = defineStore("appElements", ()=>({
-  normalFill: reactive({
-    /// The percent of normal elm to fill canvas with when normalFill clicked
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    percent: 15,
-    /// Element placed on normal-click
-    selected: "Blocks",
-  }),
-  ctrlFill: reactive({
-    /// The percent of ctrl elm to fill canvas with when ctrlFill clicked
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    percent: 15,
-    /// Element placed on ctrl-click
-    selected: "Blocks",
-  }),
-  altFill: reactive({
-    /// The percent of alt elm to fill canvas with when altFill clicked
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    percent: 15,
-    /// Element placed on alt-click
-    selected: "Water",
-  }),
-}))
-
 const appElements = createApp(AppElements, {
-  useAppElementsStore,
+  useSideAccordionStore,
   useElementsStore,
   click(element: string, percent: number): void {
       p.randomlyFill(
@@ -466,7 +474,7 @@ const appElements = createApp(AppElements, {
 })
 appElements.use(pinia)
 appElements.mount("#elementsApp")
-const appElementsStore = useAppElementsStore()
+const sideAccordionStore = useSideAccordionStore()
 
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
@@ -492,20 +500,22 @@ oldZoom({ // zoom at the center
 // eslint-disable-next-line complexity -- TODO: simplify
 p.onElementModified = () => {
   const {
-    normalFill: { selected: nsv },
-    ctrlFill: { selected: csv },
-    altFill: { selected: asv },
-  } = appElementsStore
-  const { selected: cusv } = customizeStore
+    customize: { selected: cusv },
+    fills: {
+      normalFill: { selected: nsv },
+      ctrlFill: { selected: csv },
+      altFill: { selected: asv },
+    }
+  } = sideAccordionStore
   // Restore that selection, accounting for aliases
-  appElementsStore.normalFill.selected = p.getElementByName(nsv)?.name ?? "Conway's Game Of Life"
-  appElementsStore.ctrlFill.selected = p.getElementByName(csv)?.name ?? "Blocks"
-  appElementsStore.altFill.selected = p.getElementByName(asv)?.name ?? "Water"
+  sideAccordionStore.fills.normalFill.selected = p.getElementByName(nsv)?.name ?? "Conway's Game Of Life"
+  sideAccordionStore.fills.ctrlFill.selected = p.getElementByName(csv)?.name ?? "Blocks"
+  sideAccordionStore.fills.altFill.selected = p.getElementByName(asv)?.name ?? "Water"
   elementsStore.updateElements()
   // TODO: abstract away the default value
-  customizeStore.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
+  sideAccordionStore.customize.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
 
-  customizeStore.updateCustomizer()
+  sideAccordionStore.customize.updateCustomizer()
 }
 p.addMultipleElements({
   Acid: {

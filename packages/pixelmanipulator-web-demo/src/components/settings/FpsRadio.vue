@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import FpsAmount from './FpsAmount.vue'
 const fpsAmount = defineModel<number>("fpsAmount")
-const unlimited = defineModel<number>("unlimited")
+const unlimited = defineModel<boolean>("unlimited")
 </script>
 <template>
 	<div>
