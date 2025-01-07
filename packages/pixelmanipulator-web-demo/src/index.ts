@@ -1,8 +1,36 @@
 /* eslint-disable max-lines -- TODO: break this into more files */
-import { PixelManipulator, version, rules, Ctx2dRenderer, type Location } from 'pixelmanipulator'
-//import '@fortawesome/fontawesome-free/attribution.js'
-import 'bootstrap/js/dist/collapse' // For #sideAccordion
+
+import { createApp, ref, computed } from 'vue'
+import { createPinia, defineStore } from 'pinia'
+
 import FPSControl from 'fps-control'
+import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
+//import '@fortawesome/fontawesome-free/attribution.js'
+
+import Footer from './components/footer/Footer.vue'
+
+import TargeterStats from './components/TargeterStats.vue'
+
+
+import SideAccordion from './components/SideAccordion.vue'
+
+/* Use pinia for anything where the state can't be contained entirely within one vue app yet */
+const pinia = createPinia()
+
+const footer = createApp(Footer)
+footer.mount("#footer")
+
+const useTargeterLocStore = defineStore("targeterLoc", {
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- start at top-left corner
+  state:()=>({ x: 0, y: 0 })
+})
+
+const targeterStatsApp = createApp(TargeterStats, {
+  useTargeterLocStore
+})
+targeterStatsApp.use(pinia)
+targeterStatsApp.mount("#targeterStats")
+
 /**
 * The X coordinate of where the center of [[zoom]] is windowed at.
 */
@@ -11,12 +39,7 @@ let zoomX = 10
 * The Y coordinate of where the center of the [[zoom]] is windowed at.
 */
 let zoomY = 10
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- start at top-left corner
-const targeterLoc: Location = { x: 0, y: 0 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const targeterX = document.getElementById('targeterX') as HTMLSpanElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const targeterY = document.getElementById('targeterY') as HTMLSpanElement
+const targeterLoc = useTargeterLocStore()
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const targeterStats = document.getElementById('targeterStats') as HTMLDivElement
 const ZOOM_SCALE_RAD_FACTOR = 2 // the scale factor is the radius, 1/2 the diameter
@@ -53,7 +76,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
   if (e.x >= 0 && e.y >= 0) {
     ({ x: zoomX, y: zoomY } = e)
   }
-  if (shtargeter.checked) {
+  if (sideAccordionStore.settings.shTargeter) {
     const THICKNESS = 1
     cctx.fillRect(targeterLoc.x + THICKNESS, targeterLoc.y, canvas.width, THICKNESS)
     cctx.fillRect(targeterLoc.x, targeterLoc.y + THICKNESS, THICKNESS, canvas.height)
@@ -62,8 +85,6 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- top side
     cctx.fillRect(targeterLoc.x, 0, THICKNESS, targeterLoc.y)
     targeterStats.classList.remove('visually-hidden')
-    targeterX.innerText = targeterLoc.x.toString()
-    targeterY.innerText = targeterLoc.y.toString()
   } else {
     targeterStats.classList.add('visually-hidden')
   }
@@ -77,7 +98,7 @@ function oldZoom(e?: { // eslint-disable-line complexity -- TODO: too complex
     0, 0,
     zoom.width, zoom.height)
   // Render the box _after_ copying over to zoom canvas
-  if (shfocusbox.checked) {
+  if (sideAccordionStore.settings.shFocusBox) {
     const fbw = zoom.width / zoomScaleFactor
     const fbh = zoom.height / zoomScaleFactor
     const fbx = zoomX - (zoom.width / (ZOOM_SCALE_RAD_FACTOR * zoomScaleFactor))
@@ -118,39 +139,146 @@ const fps = document.getElementById('fps') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const fpsUnlimited = document.getElementById('fpsUnlimited') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const fpsAmount = document.getElementById('fpsAmount') as HTMLInputElement
+const canvas = document.getElementById('canvas') as HTMLCanvasElement
+canvas.addEventListener('click', event => {
+  p.update()
+  oldZoom({
+    x: event.offsetX,
+    y: event.offsetY
+  })
+})
+canvas.addEventListener('mousemove', updateSmallLines)
+const renderer = new Ctx2dRenderer(canvas)
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+const p = new PixelManipulator(renderer, 1, 1)
+const useSideAccordionStore = defineStore("sideAccordion", ()=>({
+  settings: ref({
+    unlimitedFps : false,
+    /// Sizes for render canvas
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+    size : { w: 150, h: 150 },
+    /// Sizes for zoom canvas
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+    zoomSize : { w: 20, h: 20 },
+    /// Show targeter lines
+    shTargeter : true,
+    /// Show focus box
+    shFocusBox: true,
+    /// Show pixelCounter
+    pixelCounterT: true,
+  }),
+  customize: ref((()=>{
+    /// Select the element to customize
+    const selected = ref("")
+    // TODO: hacky workaround needed, since this is called eagerly, before there are any elements.
+    const elm = computed(()=> p.getElementByName(selected.value))
+    return { selected, elm }
+  })()),
+  fills: ref({
+    normalFill: {
+      /// The percent of normal elm to fill canvas with when normalFill clicked
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+      percent: 15,
+      /// Element placed on normal-click
+      selected: "Blocks",
+    },
+    ctrlFill: {
+      /// The percent of ctrl elm to fill canvas with when ctrlFill clicked
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+      percent: 15,
+      /// Element placed on ctrl-click
+      selected: "Blocks",
+    },
+    altFill: {
+      /// The percent of alt elm to fill canvas with when altFill clicked
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+      percent: 15,
+      /// Element placed on alt-click
+      selected: "Water",
+    },
+  }),
+}))
+const useElementsStore = defineStore("elements", ()=>{
+  /// List of elements that should be in an elmDrop
+  const elements = ref<string[]>([])
+  function updateElements(): void {
+    elements.value = p.elements.map(({ name }) => name)
+  }
+  return { elements, updateElements }
+})
+const sideAccordionApp = createApp(SideAccordion, {
+  useSideAccordionStore,
+  useElementsStore,
+  changeFps: (fpsAmount: number, unlimited: boolean)=>{
+    if (unlimited) {
+      fpsMax.innerText = 'unlimited'
+    } else {
+      fpsc.setFPS(fpsAmount)
+      fpsMax.innerText = fpsAmount.toString()
+    }
+  },
+  changeTargeter: () => {
+    p.update()
+    oldZoom()
+  },
+  changePixelCounterT: (checked:boolean) => {
+    if (checked) {
+      pixelCounterBox.classList.remove('visually-hidden')
+    } else {
+      pixelCounterBox.classList.add('visually-hidden')
+    }
+  },
+  changeColor({
+    selected,
+    renderAs
+  }: {
+    selected: string,
+    renderAs: [number, number, number, number]
+  }): void {
+    console.log('change color')
+    const num = p.nameToId(selected)
+    const NOT_FOUND = -1
+    if (num === NOT_FOUND) return
+    p.modifyElement(num, { renderAs })
+  },
+  changeName: ({ name, selected }: { selected: string, name: string}) => {
+    console.log('change name', name)
+    const num = p.nameToId(selected)
+    const NOT_FOUND = -1
+    if (num > NOT_FOUND) {
+      p.modifyElement(num, { name })
+    }
+  },
+  clickFill(element: string, percent: number): void {
+      p.randomlyFill(
+        element,
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+        Number.isNaN(percent) ? 15 : percent
+      )
+      p.update()
+      oldZoom()
+  },
+})
+const elementsStore = useElementsStore()
+sideAccordionApp.use(pinia)
+sideAccordionApp.mount("#sideAccordionApp")
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
-  if (!fpsUnlimited.checked && !fpsc.check()) return false
+  if (!sideAccordionStore.settings.unlimitedFps && !fpsc.check()) return false
   frames.innerText = `${++framecount}`
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- convert to frames/second
   fps.innerText = (1 / ((performance.now() - lasttime) / 1000)).toFixed(3)
   lasttime = performance.now()
   return undefined
 }
-fpsAmount.addEventListener('change', () => {
-  const { value } = fpsAmount
-  fpsc.setFPS(parseInt(value))
-  fpsMax.innerText = value
-})
-fpsUnlimited.addEventListener('change', () => {
-  if (fpsUnlimited.checked) {
-    fpsMax.innerText = 'unlimited'
-  } else {
-    const { value } = fpsAmount
-    fpsMax.innerText = value
-  }
-})
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const frames = document.getElementById('frames') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelRatio = document.getElementById('pixelRatio') as HTMLDivElement
 function afterIterate<T>(p: PixelManipulator<T>): void {
   pixelRatio.innerHTML = ''
-  if (!pixelCounterT.checked) return
+  if (!sideAccordionStore.settings.pixelCounterT) return
   pixelCounter.innerHTML = ''
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- all but last item in render info TODO: why
   pixelRatio.style.background = `rgb(${renderer.renderInfo[p.defaultId].slice(0, -1).join(',')})`
@@ -208,86 +336,7 @@ function afterIterate<T>(p: PixelManipulator<T>): void {
     pixelRatio.appendChild(ratioE)
   })
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const canvas = document.getElementById('canvas') as HTMLCanvasElement
-canvas.addEventListener('click', event => {
-  p.update()
-  oldZoom({
-    x: event.offsetX,
-    y: event.offsetY
-  })
-})
-canvas.addEventListener('mousemove', updateSmallLines)
-const renderer = new Ctx2dRenderer(canvas)
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-const p = new PixelManipulator(renderer, 1, 1)
 // The width and height are changed later
-
-function updateCustomizer(): void {
-  const elm = p.getElementByName(customSelect.value)
-  if (elm == null) return
-  const { renderAs, name } = elm
-  const DEFAULT_DOT = 255
-  const START_OF_COLOR = 0
-  const ALPHA_INDEX = 3
-  const HEX_VALUES_PER_DIGIT = 16
-  const DIGITS_PER_DOT = 2
-  customizeColor.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
-    dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
-  ).join()}`
-  const alphaVal = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
-  customizeColorAlpha.value = alphaVal// Raw alpha value
-  customizeColorAlphaText.innerText = alphaVal
-  customizeName.value = name
-}
-function changeColor(): void {
-  console.log('change color')
-  const num = p.nameToId(customSelect.value)
-  const NOT_FOUND = -1
-  if (num === NOT_FOUND) return
-  const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(customizeColor.value)
-  if (matches == null) return
-  // The 0th is just the whole string
-  const RED_IDX = 1
-  const GREEN_IDX = 2
-  const BLUE_IDX = 3
-  const HEX_VALUES_PER_DIGIT = 16
-  p.modifyElement(num, {
-    renderAs: [
-      parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
-      parseInt(customizeColorAlpha.value)
-    ]
-  })
-}
-/// Select the element to customize
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customSelect = document.getElementById('customSelect') as HTMLSelectElement
-customSelect.addEventListener('change', () => { updateCustomizer(); })
-/// Change the color
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColor = document.getElementById('customizeColor') as HTMLInputElement
-customizeColor.addEventListener('change', changeColor)
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColorAlpha = document.getElementById('customColorAlpha') as HTMLInputElement
-customizeColorAlpha.addEventListener('change', changeColor)
-/// Name for the alpha field of the color
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeColorAlphaText = document.getElementById('customColorAlphaText') as HTMLSpanElement
-/// Name of element
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const customizeName = document.getElementById('customizeName') as HTMLInputElement
-customizeName.addEventListener('change', function(this: HTMLInputElement) {
-  const { value: name } = this
-  console.log('change name', name)
-  const num = p.nameToId(customSelect.value)
-  const NOT_FOUND = -1
-  if (num > NOT_FOUND) {
-    p.modifyElement(num, { name })
-  }
-  updateCustomizer()
-})
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
@@ -297,10 +346,10 @@ function zoomClick(e: MouseEvent): void {
       Math.floor(zoomY - (zoomScaleFactor / ZOOM_SCALE_RAD_FACTOR))
   }
   const active: string = e.ctrlKey ?
-    ctrlSelect.value :
+    sideAccordionStore.fills.ctrlFill.selected :
     e.altKey ?
-      altSelect.value :
-      normalSelect.value
+      sideAccordionStore.fills.altFill.selected :
+      sideAccordionStore.fills.normalFill.selected
   const pixel: string | number = p.confirmElm(zoomPos, active) ? p.defaultId : active
   p.setPixel(zoomPos, pixel)
   p.update()
@@ -338,10 +387,12 @@ function convertPlayToPause(): void {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const resetBtn = document.getElementById('reset') as HTMLButtonElement
 resetBtn.addEventListener('click', function() {
-  const canvasW = parseInt(widthE.value)
-  const canvasH = parseInt(heightE.value)
-  const zoomW = parseInt(zoomWidthElm.value)
-  const zoomH = parseInt(zoomHeightElm.value)
+  const {
+    settings: {
+      size: { w: canvasW, h: canvasH },
+      zoomSize: { w: zoomW, h: zoomH }
+    }
+  } = sideAccordionStore
   p.reset({ canvasW, canvasH })
   // Reccomended to have a function here that sets the canvas size here (or earlier), due to how startup works.
   zoom.width = (Number.isNaN(zoomW) ? zoom.width / zoomScaleFactor : zoomW) * zoomScaleFactor
@@ -370,109 +421,13 @@ playBtn.addEventListener('click', () => {
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
-/// Sizes for render canvas
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const widthE = document.getElementById('width') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const heightE = document.getElementById('height') as HTMLInputElement
-/// Sizes for zoom canvas
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const zoomHeightElm = document.getElementById('zoomHeightElm') as HTMLInputElement
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const zoomWidthElm = document.getElementById('zoomWidthElm') as HTMLInputElement
-
-/// Element placed on normal-click
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const normalSelect = document.getElementById('normalSelect') as HTMLSelectElement
-/// The button to fill canvas with normal elm of given percent
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const normalFill = document.getElementById('normalFill') as HTMLButtonElement
-normalFill.addEventListener('click', () => {
-  const fillP = parseInt(normalFillP.value)
-  p.randomlyFill(
-    normalSelect.value,
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    Number.isNaN(fillP) ? 15 : fillP
-  )
-  p.update() // needed after any changes are made
-  oldZoom()
-})
-/// The percent of normal elm to fill canvas with when normalFill clicked
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const normalFillP = document.getElementById('normalFillP') as HTMLInputElement
-
-/// Element placed on ctrl-click
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const ctrlSelect = document.getElementById('ctrlSelect') as HTMLSelectElement
-/// The button to fill canvas with ctrl elm of given percent
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const ctrlFill = document.getElementById('ctrlFill') as HTMLButtonElement
-ctrlFill.addEventListener('click', () => {
-  const fillP = parseInt(ctrlFillP.value)
-  p.randomlyFill(
-    ctrlSelect.value,
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    Number.isNaN(fillP) ? 15 : fillP
-  )
-  p.update()
-  oldZoom()
-})
-/// The percent of ctrl elm to fill canvas with when ctrlFill clicked
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const ctrlFillP = document.getElementById('ctrlFillP') as HTMLInputElement
-
-/// Element placed on alt-click
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const altSelect = document.getElementById('altSelect') as HTMLSelectElement
-/// The button to fill canvas with alt elm of given percent
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const altFill = document.getElementById('altFill') as HTMLButtonElement
-altFill.addEventListener('click', () => {
-  const fillP = parseInt(altFillP.value)
-  p.randomlyFill(
-    altSelect.value,
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-    Number.isNaN(fillP) ? 15 : fillP
-  )
-  p.update()
-  oldZoom()
-})
-/// The percent of alt elm to fill canvas with when altFill clicked
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const altFillP = document.getElementById('altFillP') as HTMLInputElement
-
-/// Show targeter lines
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const shtargeter = document.getElementById('shtargeter') as HTMLInputElement
-shtargeter.addEventListener('click', function() {
-  p.update()
-  oldZoom()
-})
-/// Hide focus box
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const shfocusbox = document.getElementById('shfocusbox') as HTMLInputElement
-/// Hide pixelCounter
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const pixelCounterT = document.getElementById('pixelCounterT') as HTMLInputElement
-pixelCounterT.addEventListener('change', function() {
-  if (this.checked) {
-    pixelCounterBox.classList.remove('visually-hidden')
-  } else {
-    pixelCounterBox.classList.add('visually-hidden')
-  }
-})
-/// Version of backend
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const backendversion = document.getElementById('backendversion') as HTMLSpanElement
-backendversion.innerText = version
+const sideAccordionStore = useSideAccordionStore()
 
 /// Text element for pixel totals
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounter = document.getElementById('pixelCounter') as HTMLUListElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const pixelCounterBox = document.getElementById('pixelCounterBox') as HTMLUListElement
-
-const elmdrops = document.getElementsByClassName('elmDrop')
 
 const zoomctx = zoom.getContext('2d')
 if (zoomctx == null) {
@@ -491,33 +446,21 @@ oldZoom({ // zoom at the center
 
 // eslint-disable-next-line complexity -- TODO: simplify
 p.onElementModified = () => {
-  let { value: nsv } = normalSelect
-  let { value: csv } = ctrlSelect
-  let { value: asv } = altSelect
-  let { value: cusv } = customSelect
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (nsv.length === 0) nsv = "Conway's Game Of Life"
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (csv.length === 0) csv = 'Blocks'
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (asv.length === 0) asv = 'Water'
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fallback if empty
-  if (cusv.length === 0) cusv = "Conway's Game Of Life"
-  Array.from(elmdrops).forEach(htmlElm => {
-    htmlElm.innerHTML = ''
-    p.elements.forEach(elm => {
-      const newElement = document.createElement('option')
-      const { name } = elm
-      newElement.innerText = name
-      htmlElm.appendChild(newElement)
-    })
-  })
+  const {
+    customize: { selected: cusv },
+    fills: {
+      normalFill: { selected: nsv },
+      ctrlFill: { selected: csv },
+      altFill: { selected: asv },
+    }
+  } = sideAccordionStore
   // Restore that selection, accounting for aliases
-  normalSelect.value = p.getElementByName(nsv)?.name ?? ''
-  ctrlSelect.value = p.getElementByName(csv)?.name ?? ''
-  altSelect.value = p.getElementByName(asv)?.name ?? ''
-  customSelect.value = p.getElementByName(cusv)?.name ?? ''
-  updateCustomizer()
+  sideAccordionStore.fills.normalFill.selected = p.getElementByName(nsv)?.name ?? "Conway's Game Of Life"
+  sideAccordionStore.fills.ctrlFill.selected = p.getElementByName(csv)?.name ?? "Blocks"
+  sideAccordionStore.fills.altFill.selected = p.getElementByName(asv)?.name ?? "Water"
+  elementsStore.updateElements()
+  // TODO: abstract away the default value
+  sideAccordionStore.customize.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
 }
 p.addMultipleElements({
   Acid: {
@@ -673,5 +616,7 @@ p.onAfterIterate = () => {
   afterIterate(p)
 }
 lasttime = performance.now()
+// TODO: hacky workaround needed, since a computed is called eagerly, before there are any elements.
+sideAccordionStore.customize.selected = "Conway's Game Of Life"
 resetBtn.click()
 // vim: tabstop=2 shiftwidth=2 expandtab
