@@ -9,40 +9,22 @@ import ShTargeter from './ShTargeter.vue'
 import ShFocusBox from './ShFocusBox.vue'
 import PixelCounterT from './PixelCounterT.vue'
 
-const props = defineProps([
-	// TODO: move state into better place
-	'useSideAccordionStore',
-	// TODO: convert to emit
-	'changeFps',
-	// TODO: convert to emit
-	'changeUnlimited',
-	// TODO: convert to emit
-	'changeTargeter',
-	// TODO: convert to emit
-	'changePixelCounterT',
-])
-const sideAccordionStore = props.useSideAccordionStore()
-const { settings } = storeToRefs(sideAccordionStore)
+const emit = defineEmits<{
+	(e: 'changeFps', fps: number, unlimited: boolean): type
+}>()
+
+const unlimitedFps = defineModel<boolean>("unlimitedFps")
+const size = defineModel("size")
+const zoomSize = defineModel("zoomSize")
+const shTargeter = defineModel("shTargeter")
+const shFocusBox = defineModel("shFocusBox")
+const pixelCounterT = defineModel("pixelCounterT")
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- fps default
 const fpsAmount = ref(60)
-// v-model doesn't like deep refs. This effectively flattens a deep ref.
-function flattenDeep<A>(name: string): ReturnType<typeof computed<A>> {
-	return computed({
-		get() { return settings.value[name] },
-		set(v) { settings.value[name] = v }
-	})
-}
-const unlimitedFps = flattenDeep("unlimitedFps")
-const size = flattenDeep("size")
-const zoomSize = flattenDeep("zoomSize")
-const shTargeter = flattenDeep("shTargeter")
-const shFocusBox = flattenDeep("shFocusBox")
-const pixelCounterT = flattenDeep("pixelCounterT")
-
-watch(fpsAmount, a=> props.changeFps(a))
-watch(unlimitedFps, u=> props.changeUnlimited(u, fpsAmount.value))
-watch(shTargeter, c=> props.changeTargeter(c))
-watch(pixelCounterT, c => props.changePixelCounterT(c))
+watch(
+	[fpsAmount, unlimitedFps],
+	([fps, unl])=> emit('changeFps', fps, unl)
+)
 </script>
 <template>
 	<AppSizes v-model:w="size.w" v-model:h="size.h" />

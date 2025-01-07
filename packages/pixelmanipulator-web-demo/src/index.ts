@@ -1,20 +1,18 @@
 /* eslint-disable max-lines -- TODO: break this into more files */
 
-import { createApp, ref, reactive } from 'vue'
+import { createApp, ref, computed } from 'vue'
 import { createPinia, defineStore } from 'pinia'
-import 'bootstrap/js/dist/collapse' // For #sideAccordion
 
 import FPSControl from 'fps-control'
 import { PixelManipulator, rules, Ctx2dRenderer } from 'pixelmanipulator'
 //import '@fortawesome/fontawesome-free/attribution.js'
 
-import ElementCustomize from './components/customize/ElementCustomize.vue'
-import AppSettings from './components/settings/AppSettings.vue'
 import Footer from './components/footer/Footer.vue'
 
 import TargeterStats from './components/TargeterStats.vue'
 
-import AppElements from './components/AppElements.vue'
+
+import SideAccordion from './components/SideAccordion.vue'
 
 /* Use pinia for anything where the state can't be contained entirely within one vue app yet */
 const pinia = createPinia()
@@ -140,6 +138,19 @@ const fpsc = new FPSControl(60)
 const fps = document.getElementById('fps') as HTMLParagraphElement
 // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
 const fpsMax = document.getElementById('fpsMax') as HTMLParagraphElement
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
+const canvas = document.getElementById('canvas') as HTMLCanvasElement
+canvas.addEventListener('click', event => {
+  p.update()
+  oldZoom({
+    x: event.offsetX,
+    y: event.offsetY
+  })
+})
+canvas.addEventListener('mousemove', updateSmallLines)
+const renderer = new Ctx2dRenderer(canvas)
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
+const p = new PixelManipulator(renderer, 1, 1)
 const useSideAccordionStore = defineStore("sideAccordion", ()=>({
   settings: ref({
     unlimitedFps : false,
@@ -158,28 +169,10 @@ const useSideAccordionStore = defineStore("sideAccordion", ()=>({
   }),
   customize: ref((()=>{
     /// Select the element to customize
-    const selected = ref("Conway's Game Of Life")
-    /// Change the color
-    const color = ref('')
-    const alpha = ref("0")
-    /// Name of element
-    const name = ref("")
-    function updateCustomizer(): void {
-      const elm = p.getElementByName(selected.value)
-      if (elm == null) return
-      const { renderAs, name: n } = elm
-      const DEFAULT_DOT = 255
-      const START_OF_COLOR = 0
-      const ALPHA_INDEX = 3
-      const HEX_VALUES_PER_DIGIT = 16
-      const DIGITS_PER_DOT = 2
-      color.value = `#${renderAs.slice(START_OF_COLOR, ALPHA_INDEX).map(dot =>
-        dot.toString(HEX_VALUES_PER_DIGIT).padStart(DIGITS_PER_DOT, '0')
-      ).join('')}`
-      alpha.value = (renderAs[ALPHA_INDEX] ?? DEFAULT_DOT).toString()
-      name.value = n
-    }
-    return { selected, color, alpha, name, updateCustomizer }
+    const selected = ref("")
+    // TODO: hacky workaround needed, since this is called eagerly, before there are any elements.
+    const elm = computed(()=> p.getElementByName(selected.value))
+    return { selected, elm }
   })()),
   fills: ref({
     normalFill: {
@@ -205,16 +198,22 @@ const useSideAccordionStore = defineStore("sideAccordion", ()=>({
     },
   }),
 }))
-const settingsApp = createApp(AppSettings, {
+const useElementsStore = defineStore("elements", ()=>{
+  /// List of elements that should be in an elmDrop
+  const elements = ref<string[]>([])
+  function updateElements(): void {
+    elements.value = p.elements.map(({ name }) => name)
+  }
+  return { elements, updateElements }
+})
+const sideAccordionApp = createApp(SideAccordion, {
   useSideAccordionStore,
-  changeFps: (fpsAmount: number)=>{
-    fpsc.setFPS(fpsAmount)
-    fpsMax.innerText = fpsAmount.toString()
-  },
-  changeUnlimited(unlimited: boolean, fpsAmount: number) {
+  useElementsStore,
+  changeFps: (fpsAmount: number, unlimited: boolean)=>{
     if (unlimited) {
       fpsMax.innerText = 'unlimited'
     } else {
+      fpsc.setFPS(fpsAmount)
       fpsMax.innerText = fpsAmount.toString()
     }
   },
@@ -228,10 +227,41 @@ const settingsApp = createApp(AppSettings, {
     } else {
       pixelCounterBox.classList.add('visually-hidden')
     }
-  }
+  },
+  changeColor({
+    selected,
+    renderAs
+  }: {
+    selected: string,
+    renderAs: [number, number, number, number]
+  }): void {
+    console.log('change color')
+    const num = p.nameToId(selected)
+    const NOT_FOUND = -1
+    if (num === NOT_FOUND) return
+    p.modifyElement(num, { renderAs })
+  },
+  changeName: ({ name, selected }: { selected: string, name: string}) => {
+    console.log('change name', name)
+    const num = p.nameToId(selected)
+    const NOT_FOUND = -1
+    if (num > NOT_FOUND) {
+      p.modifyElement(num, { name })
+    }
+  },
+  clickFill(element: string, percent: number): void {
+      p.randomlyFill(
+        element,
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
+        Number.isNaN(percent) ? 15 : percent
+      )
+      p.update()
+      oldZoom()
+  },
 })
-settingsApp.use(pinia)
-settingsApp.mount("#settingsApp")
+const elementsStore = useElementsStore()
+sideAccordionApp.use(pinia)
+sideAccordionApp.mount("#sideAccordionApp")
 let framecount = 0
 let lasttime: number = performance.now()
 function beforeIterate(): false | undefined {
@@ -306,75 +336,7 @@ function afterIterate<T>(p: PixelManipulator<T>): void {
     pixelRatio.appendChild(ratioE)
   })
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- TODO: use a MVC tool instead (svelte, vue3, etc)
-const canvas = document.getElementById('canvas') as HTMLCanvasElement
-canvas.addEventListener('click', event => {
-  p.update()
-  oldZoom({
-    x: event.offsetX,
-    y: event.offsetY
-  })
-})
-canvas.addEventListener('mousemove', updateSmallLines)
-const renderer = new Ctx2dRenderer(canvas)
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default values
-const p = new PixelManipulator(renderer, 1, 1)
 // The width and height are changed later
-
-const useElementsStore = defineStore("elements", ()=>{
-  /// List of elements that should be in an elmDrop
-  const elements = ref<string[]>([])
-  function updateElements(): void {
-    elements.value = p.elements.map(({ name }) => name)
-  }
-  return { elements, updateElements }
-})
-const elementsStore = useElementsStore()
-
-const customizeApp = createApp(ElementCustomize, {
-  useSideAccordionStore,
-  useElementsStore,
-  changeColor({
-    selected,
-    color,
-    alpha
-  }: {
-    selected: string,
-    color: string,
-    alpha: string
-  }): void {
-    console.log('change color')
-    const num = p.nameToId(selected)
-    const NOT_FOUND = -1
-    if (num === NOT_FOUND) return
-    const matches = /#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(color)
-    if (matches == null) return
-    // The 0th is just the whole string
-    const RED_IDX = 1
-    const GREEN_IDX = 2
-    const BLUE_IDX = 3
-    const HEX_VALUES_PER_DIGIT = 16
-    p.modifyElement(num, {
-      renderAs: [
-        parseInt(matches[RED_IDX], HEX_VALUES_PER_DIGIT),
-        parseInt(matches[GREEN_IDX], HEX_VALUES_PER_DIGIT),
-        parseInt(matches[BLUE_IDX], HEX_VALUES_PER_DIGIT),
-        parseInt(alpha)
-      ]
-    })
-  },
-  changeName: (name: string) => {
-    console.log('change name', name)
-    const num = p.nameToId(sideAccordionStore.customize.selected)
-    const NOT_FOUND = -1
-    if (num > NOT_FOUND) {
-      p.modifyElement(num, { name })
-    }
-    sideAccordionStore.customize.updateCustomizer()
-  }
-})
-customizeApp.use(pinia)
-customizeApp.mount("#customizeApp")
 
 function zoomClick(e: MouseEvent): void {
   const zoomPos = {
@@ -459,21 +421,6 @@ playBtn.addEventListener('click', () => {
 const oneFrameAtATime = document.getElementById('oneFrameAtATime') as HTMLButtonElement
 oneFrameAtATime.addEventListener('click', () => { p.iterate(); })
 
-const appElements = createApp(AppElements, {
-  useSideAccordionStore,
-  useElementsStore,
-  click(element: string, percent: number): void {
-      p.randomlyFill(
-        element,
-        // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default fill percent
-        Number.isNaN(percent) ? 15 : percent
-      )
-      p.update()
-      oldZoom()
-  },
-})
-appElements.use(pinia)
-appElements.mount("#elementsApp")
 const sideAccordionStore = useSideAccordionStore()
 
 /// Text element for pixel totals
@@ -514,8 +461,6 @@ p.onElementModified = () => {
   elementsStore.updateElements()
   // TODO: abstract away the default value
   sideAccordionStore.customize.selected = p.getElementByName(cusv)?.name ?? "Conway's Game Of Life"
-
-  sideAccordionStore.customize.updateCustomizer()
 }
 p.addMultipleElements({
   Acid: {
@@ -671,5 +616,7 @@ p.onAfterIterate = () => {
   afterIterate(p)
 }
 lasttime = performance.now()
+// TODO: hacky workaround needed, since a computed is called eagerly, before there are any elements.
+sideAccordionStore.customize.selected = "Conway's Game Of Life"
 resetBtn.click()
 // vim: tabstop=2 shiftwidth=2 expandtab
