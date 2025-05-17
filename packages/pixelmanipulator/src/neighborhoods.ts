@@ -49,7 +49,7 @@ export function rect(topLeft: Location, bottomRight: Location): Location[] {
 *  O
 * ```
 */
-export function wolfram(radius?: number, y?: number, includeSelf?: boolean): Hitbox { // eslint-disable-line complexity -- can't reasonably simplify
+export function wolfram(radius?: number, y?: number, includeSelf?: boolean): Hitbox {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default value
   radius ??= 1;
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default value

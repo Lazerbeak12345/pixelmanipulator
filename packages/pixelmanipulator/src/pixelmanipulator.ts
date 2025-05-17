@@ -198,6 +198,7 @@ export class PixelManipulator<T> {
   * @param height - How tall should the initial target be?
   */
   constructor(renderer: Renderer<T>, width: number, height: number) {
+    // eslint-disable-next-line no-console -- Branding. Only printed in a web context.
     if (typeof window !== 'undefined') console.log(licence)
     this.renderer = renderer
     this.defaultId = this.addElement({
@@ -451,7 +452,7 @@ export class PixelManipulator<T> {
   * @param loc - Location of the pixel (could be out of bounds).
   * @returns null if out-of-bounds when loop setting is false, or the location (loop set to false).
   */
-  locationBoundsCheck(loc: Location): null | Location { // eslint-disable-line complexity -- close enough for me tbh
+  locationBoundsCheck(loc: Location): null | Location {
     const LEFTMOST = 0
     const TOPMOST = 0
 

@@ -71,7 +71,7 @@
     "eslint-plugin-promise": "catalog:",
     "eslint-plugin-tsdoc": "catalog:",
     "fast-check": "catalog:",
-    "gh-pages": "^6.2.0",
+    "gh-pages": "catalog:",
     "parcel": "catalog:",
     "rollup": "catalog:",
     "typedoc": "catalog:",

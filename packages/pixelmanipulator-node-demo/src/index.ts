@@ -7,8 +7,8 @@
 import { PixelManipulator, rules, StringRenderer } from 'pixelmanipulator'
 
 const renderer = new StringRenderer(str => {
-  console.clear()
-  console.log(str)
+  console.clear() // eslint-disable-line no-console -- Entire point of the demo.
+  console.log(str) // eslint-disable-line no-console -- Entire point of the demo.
 })
 renderer.defaultRenderAs = '`'
 // make space for cursor
