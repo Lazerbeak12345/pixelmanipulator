@@ -16,7 +16,7 @@ catalog:
   bootstrap: ^5.3.6
   c8: ^10.1.3
   eslint: ^9.39.2
-  eslint-config-love: ^120.0.0
+  eslint-config-love: ^140.0.0
   eslint-plugin-node: ^11.1.0
   eslint-plugin-promise: ^7.2.1
   eslint-plugin-tsdoc: ^0.4.0
@@ -25,6 +25,7 @@ catalog:
   gh-pages: ^6.3.0
   parcel: 2.15.1
   rollup: ^4.40.2
+  # INFO: this library may stalemate till ts7 is out.
   tsimp: ^2.0.12
   typedoc: ^0.28.4
   typedoc-plugin-mdn-links: ^5.0.2
