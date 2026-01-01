@@ -110,8 +110,9 @@ function _convertNumListToBf(nl: string): number {
   // there are 0-8, I could use a 9bit field (remember: off by one)
   let out = 0
   for (const item of nl) {
-    // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- largest binary digit
-    out |= 1 << parseInt(item)
+    const BINARY_SHIFT_DIGITS = 1
+    const PARSED_RADIX = 10
+    out |= BINARY_SHIFT_DIGITS << parseInt(item, PARSED_RADIX)
   }
   return out
 }
@@ -159,8 +160,9 @@ export const rules = {
   * @param loop - Should this loop around screen edges? (Passed to {@link PixelManipulator.wolframNearby})
   */
   wolfram: function <T>(p: PixelManipulator<T>, pattern: string, loop?: boolean): ElementDataUnknown<T> {
+    const WOLFRAM_INPUT_RADIX = 10
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- after the pattern
-    const binStates = parseInt(pattern.split(/Rule /gi)[1])
+    const binStates = parseInt(pattern.split(/Rule /gi)[1], WOLFRAM_INPUT_RADIX)
     const FIRST_ROW = 0
     const PREV_FRAME = 1
     return {
@@ -290,12 +292,13 @@ export class PixelManipulator<T> {
   randomlyFill(value: string | number, pr?: number): void {
     const DEFAULT_PERCENT = 15
     const MAX_PERCENT = 100
-    pr ??= DEFAULT_PERCENT
+    const _pr = pr ?? DEFAULT_PERCENT
     const w = this.get_width()
     const h = this.get_height()
-    for (let x = 0; x < w; x++) {
-      for (let y = 0; y < h; y++) { // iterate through x and y
-        if (Math.random() * MAX_PERCENT < pr) { this.setPixel({ x, y }, value) }
+    const STEP = 1
+    for (let x = 0; x < w; x+= STEP) {
+      for (let y = 0; y < h; y+= STEP) { // iterate through x and y
+        if (Math.random() * MAX_PERCENT < _pr) { this.setPixel({ x, y }, value) }
       }
     }
   }
@@ -321,7 +324,6 @@ export class PixelManipulator<T> {
   ): number { // adds a single element
     const { name, renderAs } = data
     if (typeof name === 'undefined') throw new Error('Name is required for element')
-    if (typeof data.name === 'undefined') data.name = name
     // @ts-expect-error renderAs might be undefined here, but it's fixed in the call to this.modifyElement below
     this.elements.push({ name, renderAs })
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- last item in list
@@ -361,7 +363,8 @@ export class PixelManipulator<T> {
   */
   aliasElements(oldName: string, newName: string): void {
     // Intentionally ignores aliases when checking for duplicate name.
-    if (this.elements.find(elm => elm.name === newName) != null) {
+    const foundElement = this.elements.find(elm => elm.name === newName)
+    if (typeof foundElement === "object") {
       throw new Error('The name ' + newName + ' is already in use!')
     }
     this.nameAliases.delete(newName)
@@ -374,11 +377,12 @@ export class PixelManipulator<T> {
   */
   nameToId(name: string): number {
     let unaliased: string | undefined = name
+    let _name = name
     while (typeof unaliased !== 'undefined') {
-      name = unaliased
-      unaliased = this.nameAliases.get(name)
+      _name = unaliased
+      unaliased = this.nameAliases.get(_name)
     }
-    return this.elements.findIndex(elm => elm.name === name)
+    return this.elements.findIndex(elm => elm.name === _name)
   }
 
   /**
@@ -426,10 +430,10 @@ export class PixelManipulator<T> {
     const CURRENT_FRAME = 0
     const NEXT_FRAME = 1
     const MAX_PERCENT = 100
-    if (typeof canvasSizes === 'undefined') { canvasSizes = {} }
+    const _canvasSizes = canvasSizes ?? {}
     this.pause()
-    const w = canvasSizes.canvasW ?? this.get_width()
-    const h = canvasSizes.canvasH ?? this.get_height()
+    const w = _canvasSizes.canvasW ?? this.get_width()
+    const h = _canvasSizes.canvasH ?? this.get_height()
     this.set_width(w)
     this.set_height(h)
     this.frames[CURRENT_FRAME] = new Uint32Array(w * h)
@@ -465,12 +469,17 @@ export class PixelManipulator<T> {
     const overflowBottom = loc.y >= h
 
     if (loc.loop ?? true) {
+      // eslint-disable-next-line no-param-reassign -- We expect that loc is modified
       loc.x %= w
+      // eslint-disable-next-line no-param-reassign -- We expect that loc is modified
       loc.y %= h
 
+      // eslint-disable-next-line no-param-reassign -- We expect that loc is modified
       if (overflowLeft) loc.x += w
+      // eslint-disable-next-line no-param-reassign -- We expect that loc is modified
       if (overflowTop) loc.y += h
 
+      // eslint-disable-next-line no-param-reassign -- We expect that loc is modified
       loc.loop = false
     } else if (overflowLeft || overflowRight || overflowTop || overflowBottom) {
       return null
@@ -484,7 +493,7 @@ export class PixelManipulator<T> {
   */
   getPixelId(loc: Location): number {
     const fixedLoc = this.locationBoundsCheck(loc)
-    if (fixedLoc == null) return this.defaultId
+    if (fixedLoc === null) return this.defaultId
     const w = this.get_width()
     const CURRENT_FRAME = 0 // TODO: dedupe this const
     return this.frames[fixedLoc.frame ?? CURRENT_FRAME][_renderers.location2Index(fixedLoc, w)]
@@ -562,6 +571,7 @@ export class PixelManipulator<T> {
   */
   wolframNewState(loc: Location, ruleNum: number, search: number | string): boolean {
     // one-dimentional detectors by default don't loop around edges
+    // eslint-disable-next-line no-param-reassign -- We expect that loc is modified
     loc.loop ??= false
     return this.fundamentalNewState(
       _renderers.transposeLocations(PixelManipulator._wolfram, loc),
@@ -578,6 +588,7 @@ export class PixelManipulator<T> {
   */
   wolframNearby(current: Location, search: number | string): number {
     // one-dimentional detectors by default don't loop around edges
+    // eslint-disable-next-line no-param-reassign -- We expect that loc is modified
     current.loop ??= false
     return this.fundamentalStatesWithin(
       _renderers.transposeLocations(PixelManipulator._wolfram, current),
@@ -594,11 +605,12 @@ export class PixelManipulator<T> {
   * encoded as a number.
   * @returns Number of elements in wolfram radius */
   wolframNearbyCounter(current: Location, name: number | string, binDex: number | string): boolean {
-    if (typeof binDex === 'string') {
+    let _binDex = binDex
+    if (typeof _binDex === 'string') {
       // Old format was a string of ones and zeros, three long.
-      binDex = parseInt(binDex, 2)
+      _binDex = parseInt(_binDex, 2)
     }
-    return this.wolframNearby(current, name) === binDex
+    return this.wolframNearby(current, name) === _binDex
   }
 
   /** Set a pixel in a given location.
@@ -614,7 +626,8 @@ export class PixelManipulator<T> {
   */
   setPixel(loc: Location, ident: string | number): void {
     const NOT_FOUND = -1
-    let id = 0
+    // eslint-disable-next-line @typescript-eslint/init-declarations -- unless the below error is thrown, the value is always defined
+    let id
     if (typeof ident === 'string') {
       id = this.nameToId(ident)
       if (id === NOT_FOUND) {
@@ -624,7 +637,7 @@ export class PixelManipulator<T> {
       id = ident
     }
     const fixedLoc = this.locationBoundsCheck(loc)
-    if (fixedLoc == null) return
+    if (fixedLoc === null) return
     this.renderer.renderPixel(fixedLoc, id)
     const w = this.get_width()
     const CURRENT_FRAME = 0
@@ -644,8 +657,9 @@ export class PixelManipulator<T> {
   */
   iterate(): void { // eslint-disable-line complexity -- TODO: break this down a bit
     if (this.onIterate() ?? true) {
+      const FRAME_STEP = 1
       // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- last item in list
-      for (let frame = this.frames.length - 1; frame >= 0; frame--) {
+      for (let frame = this.frames.length - 1; frame >= 0; frame-= FRAME_STEP) {
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- nonzero
         if (frame > 0) {
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- next is minus one
@@ -658,8 +672,10 @@ export class PixelManipulator<T> {
       const typedUpdatedDead = new Array<Uint8Array>(this.elements.length)
       this.pixelCounts = {}
       const NEXT_FRAME = 1
-      for (let x = 0; x < w; x++) {
-        for (let y = 0; y < h; y++) { // iterate through x and y
+      const X_STEP = 1
+      for (let x = 0; x < w; x+= X_STEP) {
+        const Y_STEP = 1
+        for (let y = 0; y < h; y+= Y_STEP) { // iterate through x and y
           const currentPixId = this.getPixelId({ x, y, frame: NEXT_FRAME })
           if (currentPixId === this.defaultId) continue
           const { elements: { [currentPixId]: elm } } = this
@@ -681,7 +697,10 @@ export class PixelManipulator<T> {
           if (typeof this.pixelCounts[currentPixId] === "undefined") {
             // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- starting at 1
             this.pixelCounts[currentPixId] = 1
-          } else this.pixelCounts[currentPixId]++
+          } else {
+            // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- increment
+            this.pixelCounts[currentPixId] += 1
+          }
           if (typeof elm.deadCell !== "undefined") {
             const UPDATED_SIZE = 8 // TODO: this is a guess. document this better, or rewrite this.
             typedUpdatedDead[currentPixId] ??= new Uint8Array(Math.ceil((w * h) / UPDATED_SIZE));

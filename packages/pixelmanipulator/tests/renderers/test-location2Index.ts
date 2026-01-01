@@ -11,8 +11,9 @@ const wOrH = fc.integer({
 
 function listFullOfIndexes (w: number, h: number): number[] {
   const list:number[] = []
-  for (let y = 0; y < h; y++) { // That we start on y matters a lot.
-    for (let x = 0; x < w; x++) {
+  const STEP=1
+  for (let y = 0; y < h; y+=STEP) { // That we start on y matters a lot.
+    for (let x = 0; x < w; x+=STEP) {
       list.push(location2Index({ x, y }, w))
     }
   }

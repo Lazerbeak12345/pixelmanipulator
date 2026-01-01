@@ -26,8 +26,9 @@ export type Hitbox = Location[]
 */
 export function rect(topLeft: Location, bottomRight: Location): Location[] {
   const output: Hitbox = []
-  for (let { x } = topLeft; x <= bottomRight.x; x++) {
-    for (let { y } = topLeft; y <= bottomRight.y; y++) {
+  const STEP = 1
+  for (let { x } = topLeft; x <= bottomRight.x; x+= STEP) {
+    for (let { y } = topLeft; y <= bottomRight.y; y+= STEP) {
       output.push({ x, y })
     }
   }
@@ -51,21 +52,22 @@ export function rect(topLeft: Location, bottomRight: Location): Location[] {
 */
 export function wolfram(radius?: number, y?: number, includeSelf?: boolean): Hitbox {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default value
-  radius ??= 1;
+  const _radius = radius ?? 1;
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default value
-  y ??= -1;
+  const _y = y ?? -1;
+  const _includeSelf = includeSelf ?? true
   const output: Hitbox = []
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- reverse iterated
-  for (let i = radius; i > 0; i--) {
-    output.push({ x: -i, y })
+  const START = 0
+  const STEP = 1
+  for (let i = _radius; i > START; i-= STEP) {
+    output.push({ x: -i, y: _y })
   }
-  if (includeSelf == null || includeSelf) {
+  if (_includeSelf) {
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- center
-    output.push({ x: 0, y })
+    output.push({ x: 0, y: _y })
   }
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- reverse iterated
-  for (let i = radius; i > 0; i--) {
-    output.push({ x: i, y })
+  for (let i = _radius; i > START; i-= STEP) {
+    output.push({ x: i, y: _y })
   }
   return output
 }
@@ -86,18 +88,18 @@ export function wolfram(radius?: number, y?: number, includeSelf?: boolean): Hit
 */
 export function moore(radius?: number, includeSelf?: boolean): Hitbox {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- default value
-  radius ??= 1
-  includeSelf ??= false
+  const _radius = radius ?? 1
+  const _includeSelf = includeSelf ?? false
   // Note: no need to calculate the Chebyshev distance. All pixels in this
   // range are "magically" within.
   const r = rect({
-    x: -radius,
-    y: -radius
+    x: -_radius,
+    y: -_radius
   }, {
-    x: radius,
-    y: radius
+    x: _radius,
+    y: _radius
   })
-  if (includeSelf) return r
+  if (_includeSelf) return r
   return r.filter(({ x, y }) => !(x === 0 && y === 0)) // eslint-disable-line @typescript-eslint/no-magic-numbers -- center is zeros
   // And to think that this used to be hard... Perhaps they had a different
   // goal? Or just weren't using higher-order algorithims?
@@ -131,9 +133,9 @@ export function vonNeumann(radius?: number, includeSelf?: boolean): Hitbox {
   // A Von Neumann neighborhood of a given distance always fits inside of a
   // Moore neighborhood of the same. (This is a bit brute-force)
   const DEFAULT_RADIUS = 1
-  radius ??= DEFAULT_RADIUS
-  return moore(radius, includeSelf).filter(({ x, y }) =>
-    (Math.abs(x) + Math.abs(y) <= radius)) // Taxicab distance
+  const _radius = radius ?? DEFAULT_RADIUS
+  return moore(_radius, includeSelf).filter(({ x, y }) =>
+    (Math.abs(x) + Math.abs(y) <= _radius)) // Taxicab distance
 }
 /** Makes a euclidean neighborhood.
 *
@@ -151,7 +153,7 @@ export function euclidean(radius?: number, includeSelf?: boolean): Hitbox {
   const DEFAULT_RADIUS = 1
   return moore(radius, includeSelf).filter(({ x, y }) =>
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- pythagorean theorum
-    (Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)) <= (radius ?? DEFAULT_RADIUS))) // Euclidean distance
+    (Math.sqrt((x ** 2) + (y ** 2)) <= (radius ?? DEFAULT_RADIUS))) // Euclidean distance
 }
 // TODO https://www.npmjs.com/package/compute-minkowski-distance ?
 // TODO Non-Euclidean distance algorithim?

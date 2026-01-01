@@ -31,6 +31,7 @@ function makeGrid(r: number): boolean[][] {
 } */
 function fillGrid(grid: boolean[][], r: number, includeSelf?: boolean): void {
   vonNeumann(r, includeSelf).forEach(({ x, y }) => {
+    // eslint-disable-next-line no-param-reassign -- we are expected to modify the given table
     grid[y + r][x + r] = true
   })
 }
@@ -44,10 +45,11 @@ testProp('empty slots on left and right are equal', [radius], (t, r) => {
     let leftSide = 0
     let rightSide = 0
     let countingLeft = true
+    const STEP = 1
     row.forEach(cell => {
       if (cell) countingLeft = false
-      else if (countingLeft) leftSide++
-      else rightSide++
+      else if (countingLeft) leftSide+=STEP
+      else rightSide+=STEP
     })
     t.is(leftSide, rightSide, `row number ${index}`)
   })
@@ -57,20 +59,23 @@ testProp(
   [radius],
   (t, r) => {
     let currentDepth = r
+    const STEP=1
     const counts = makeAndFillGrid(r).map(row => {
       let count = 0
-      for (let i = 0, { [i]: cell } = row; i < row.length; { [++i]: cell } = row) {
+      for (let i = 0; i < row.length; i+=STEP) {
+        const { [i]: cell } = row;
         if (cell) break
-        count++
+        count+=STEP
       }
       return count
     })
     counts.forEach((num, i) => {
       if (i <= r) {
         t.is(num, currentDepth)
-        if (i !== r) currentDepth--
+        if (i !== r) currentDepth-=STEP
       } else {
-        t.is(num, ++currentDepth)
+        currentDepth+=STEP
+        t.is(num, currentDepth)
       }
     })
   }
@@ -84,7 +89,7 @@ testProp('has no duplicates', [radius, includeSelf], (t, r, i) => {
 testProp('size', [radius, includeSelf], (t, r, i) => {
   const list = vonNeumann(r, i)
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- well known math equation
-  const equation = Math.pow(r, 2) + Math.pow(r + 1, 2) - (i ? 0 : 1)
+  const equation = (r ** 2) + ((r + 1) ** 2) - (i ? 0 : 1)
   t.is(list.length, equation)
 })
 testProp('includeSelf means 0,0 is included any given radius', [radius, includeSelf], (t, r, i) => {

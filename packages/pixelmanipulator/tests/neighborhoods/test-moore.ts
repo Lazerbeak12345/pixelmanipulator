@@ -11,9 +11,10 @@ const MAX_RAD_SIZE = 25
 const radius = fc.nat({ max: MAX_RAD_SIZE }) // This spends memory and time, so limit it.
 testProp('provided radius size', [radius], (t, r) =>
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- well-known equation
-  t.is(moore(r).length, Math.pow((2 * r) + 1, 2) - 1) // Keep in mind includeSelf is false
+  t.is(moore(r).length, (((2 * r) + 1) ** 2) - 1) // Keep in mind includeSelf is false
 )
-testProp('provided radius all within bounds', [radius.map(num => ++num)], (t, r) => {
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- starting from one, not zero
+testProp('provided radius all within bounds', [radius.map(num => num + 1)], (t, r) => {
   moore(r).forEach(({ x, y }) => {
     t.true(-r <= x, 'left bound')
     t.true(x <= r, 'right bound')
@@ -38,14 +39,16 @@ testProp('provided includeSelf?', [radius, includeSelf], (t, r, i) => {
 })
 testProp('provided includeSelf size', [radius, includeSelf], (t, r, i) =>
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- well-known equation
-  t.is(moore(r, i).length, Math.pow((2 * r) + 1, 2) - (i ? 0 : 1))
+  t.is(moore(r, i).length, (((2 * r) + 1) ** 2) - (i ? 0 : 1))
 )
 testProp('has no duplicates', [radius, includeSelf], (t, r, i) => {
   const list = moore(r, i)
   t.is(list.length, sizeWithoutDuplicates(list))
 })
 const rAndIWithNoZero = fc.tuple(radius, includeSelf).map(([r, i]) =>
-  (i ? [r, i] : [++r, i]) as [number, boolean])
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- ensure they are different sizes
+  (i ? [r, i] : [r + 1, i]) as [number, boolean]
+)
 testProp('provided includeSelf all within bounds', [rAndIWithNoZero], (t, [r, i]) => {
   moore(r, i).forEach(({ x, y }) => {
     t.true(-r <= x, 'left bound')

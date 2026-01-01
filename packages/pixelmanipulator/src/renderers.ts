@@ -54,8 +54,8 @@ export function transposeLocations(locs: Location[], offset: Location): Location
       frame: loc.frame ?? frame,
       loop: loc.loop ?? loop
     }
-    if (newLoc.frame == null) delete newLoc.frame
-    if (newLoc.loop == null) delete newLoc.loop
+    if (typeof newLoc.frame === "undefined") delete newLoc.frame
+    if (typeof newLoc.loop === "undefined") delete newLoc.loop
     return newLoc
   })
 }
@@ -124,7 +124,7 @@ export class Ctx2dRenderer extends Renderer<Color> {
     super()
     this.canvas = canvas
     const ctx = canvas.getContext('2d')
-    if (ctx == null) {
+    if (ctx === null) {
       throw new Error('CanvasRenderingContext2D not supported in enviroment')
     }
     this.ctx = ctx
@@ -177,7 +177,8 @@ export class Ctx2dRenderer extends Renderer<Color> {
     }
     const w = this.get_width()
     const pixelOffset = location2Index(loc, w) * NUMBER_OF_COLORS
-    for (let i = 0; i < NUMBER_OF_COLORS; ++i) {
+    const STEP = 1
+    for (let i = 0; i < NUMBER_OF_COLORS; i+= STEP) {
       // eslint-disable-next-line @typescript-eslint/prefer-destructuring -- destructuring is more messy here
       this.imageData.data[pixelOffset + i] = color[i]
     }
