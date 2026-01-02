@@ -28,5 +28,5 @@ catalog:
   # INFO: this library may stalemate till ts7 is out.
   tsimp: ^2.0.12
   typedoc: ^0.28.15
-  typedoc-plugin-mdn-links: ^5.0.2
+  typedoc-plugin-mdn-links: ^5.0.10
   typescript: ">=4.8.4 <6.0.0"

@@ -85,8 +85,8 @@ catalogs:
       specifier: ^0.28.15
       version: 0.28.15
     typedoc-plugin-mdn-links:
-      specifier: ^5.0.2
-      version: 5.0.2
+      specifier: ^5.0.10
+      version: 5.0.10
     typescript:
       specifier: '>=4.8.4 <6.0.0'
       version: 5.8.3
@@ -199,7 +199,7 @@ importers:
         version: 0.28.15(typescript@5.8.3)
       typedoc-plugin-mdn-links:
         specifier: 'catalog:'
-        version: 5.0.2(typedoc@0.28.15(typescript@5.8.3))
+        version: 5.0.10(typedoc@0.28.15(typescript@5.8.3))
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
@@ -3004,8 +3004,8 @@ packages:
     resolution: {integrity: sha512-3KS2b+kL7fsuk/eJZ7EQdnEmQoaho/r6KUef7hxvltNA5DR8NAUM+8wJMbJyZ4G9/7i3v5zPBIMN5aybAh2/Jg==}
     engines: {node: '>= 0.4'}
 
-  typedoc-plugin-mdn-links@5.0.2:
-    resolution: {integrity: sha512-Bd3lsVWPSpDkn6NGZyPHpcK088PUvH4SRq4RD97OjA6l8PQA3yOnJhGACtjmIDdcenRTgWUosH+55ANZhx/wkw==}
+  typedoc-plugin-mdn-links@5.0.10:
+    resolution: {integrity: sha512-TOMj1+fyhqhdJaMwfkw7ANz+0KHjRVUnE/SorPW83wghElmsMxxCZhDSBgF2hRB9+qsf/qIjDw65RDay94E2Wg==}
     peerDependencies:
       typedoc: 0.27.x || 0.28.x
 
@@ -6340,7 +6340,7 @@ snapshots:
       possible-typed-array-names: 1.0.0
       reflect.getprototypeof: 1.0.9
 
-  typedoc-plugin-mdn-links@5.0.2(typedoc@0.28.15(typescript@5.8.3)):
+  typedoc-plugin-mdn-links@5.0.10(typedoc@0.28.15(typescript@5.8.3)):
     dependencies:
       typedoc: 0.28.15(typescript@5.8.3)
 
