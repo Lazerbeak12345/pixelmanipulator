@@ -5,7 +5,7 @@ orbs:
 jobs:
   coverage:
     docker:
-      - image: node:18
+      - image: node:22
     resource_class: large
     parallelism: 10
 
@@ -30,9 +30,10 @@ jobs:
                   pnpm config set store-dir .pnpm-store
             - run:
                 name: Install Dependencies
-                command: |
-                  pnpm install
-            - run: pnpm t
+                command: pnpm install
+            - run:
+                name: Run Tests
+                command: pnpm t
             - coveralls/upload
 workflows:
   test:

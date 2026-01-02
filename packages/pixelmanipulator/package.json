@@ -67,7 +67,7 @@
     "c8": "catalog:",
     "eslint": "catalog:",
     "eslint-config-love": "catalog:",
-    "eslint-plugin-node": "catalog:",
+    "eslint-plugin-n": "catalog:",
     "eslint-plugin-promise": "catalog:",
     "eslint-plugin-tsdoc": "catalog:",
     "fast-check": "catalog:",
