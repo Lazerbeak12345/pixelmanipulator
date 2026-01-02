@@ -3,9 +3,9 @@ packages:
 catalog:
   "@fast-check/ava": ^2.0.2
   "@fortawesome/fontawesome-free": ^6.7.2
-  "@parcel/packager-ts": 2.15.1
-  "@parcel/transformer-sass": 2.15.1
-  "@parcel/transformer-typescript-types": 2.15.1
+  "@parcel/packager-ts": 2.16.3
+  "@parcel/transformer-sass": 2.16.3
+  "@parcel/transformer-typescript-types": 2.16.3
   "@popperjs/core": ^2.11.8
   "@rollup/plugin-commonjs": ^28.0.3
   "@types/eslint": ^9.6.1
@@ -23,7 +23,7 @@ catalog:
   fast-check: ^4.1.1
   fps-control: ^1.0.0
   gh-pages: ^6.3.0
-  parcel: 2.15.1
+  parcel: 2.16.3
   rollup: ^4.40.2
   # INFO: this library may stalemate till ts7 is out.
   tsimp: ^2.0.12
