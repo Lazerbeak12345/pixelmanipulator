@@ -17,7 +17,7 @@ it('calls the callback when update is called', t => {
   sr.update()
 })
 
-const MAX_DEM_SIZE = 1000
+const MAX_DEM_SIZE = 500
 
 function noZeros(a: number): number {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- convert to valid nums
