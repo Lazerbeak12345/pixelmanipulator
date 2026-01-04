@@ -1,27 +1,26 @@
 {
   "name": "pixelmanipulator-web-demo",
-  "version": "0.0.0",
+  "version": "1.40.0-alpha.1",
   "private": true,
   "scripts": {
     "build": "parcel build",
     "lint": "eslint . --ignore-pattern build",
-    "watch": "parcel --target demo --dist-dir ../pixelmanipulator/docs"
+    "watch": "parcel"
   },
   "demo": "../pixelmanipulator/docs/pixelmanipulator.html",
   "targets": {
     "demo": {
-      "source": "src/pixelmanipulator.html",
+      "source": "./src/pixelmanipulator.html",
       "publicUrl": ".",
       "context": "browser"
     }
   },
-  "dependencies": {},
   "devDependencies": {
-    "pixelmanipulator": "workspace:*",
     "@fortawesome/fontawesome-free": "catalog:",
     "@parcel/packager-ts": "catalog:",
     "@parcel/transformer-sass": "catalog:",
     "@parcel/transformer-typescript-types": "catalog:",
+    "@parcel/transformer-vue": "catalog:",
     "@popperjs/core": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
@@ -31,9 +30,12 @@
     "eslint-plugin-n": "catalog:",
     "eslint-plugin-promise": "catalog:",
     "eslint-plugin-tsdoc": "catalog:",
+    "fps-control": "catalog:",
     "parcel": "catalog:",
+    "pinia": "catalog:",
+    "pixelmanipulator": "workspace:*",
     "typescript": "catalog:",
-    "fps-control": "catalog:"
+    "vue": "catalog:"
   },
   "packageManager": "pnpm@9.15.1"
 }
